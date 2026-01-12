@@ -16,9 +16,9 @@ Noble Port ETF enables institutional investors to gain exposure to tokenized rea
 - Automated NAV (Net Asset Value) calculation through smart contract integration
 
 **Institutional Access**
-- Standard brokerage account compatibility
+- Qualified purchaser and accredited investor eligibility
 - Traditional settlement processes (T+2)
-- SEC-registered investment vehicle
+- Reg D 506(b) exempt offering structure
 - Professional custodian services
 
 **Blockchain Benefits**
@@ -32,12 +32,12 @@ Noble Port ETF enables institutional investors to gain exposure to tokenized rea
 ### ETF Structure
 
 ```
-Noble Port Real Estate ETF (Ticker: NBPT)
-├── Traditional ETF Wrapper
-│   ├── SEC Registration (1940 Act)
-│   ├── Authorized Participants
-│   ├── Market Makers
-│   └── Custodian Bank
+Noble Port Real Estate Fund (Token: NBPT)
+├── Reg D 506(b) Exempt Structure
+│   ├── Accredited Investor Verification
+│   ├── Private Placement Memorandum
+│   ├── Subscription Agreement Process
+│   └── Qualified Custodian
 │
 └── Blockchain Layer
     ├── Token 2022 Asset Backing
@@ -96,27 +96,35 @@ Noble Port Real Estate ETF (Ticker: NBPT)
 - Family offices demanding lower fees
 - Insurance companies needing compliance
 
-**Retail Investors**
-- Brokerage account holders wanting real estate access
-- ESG-focused investors requiring transparency
-- Tech-savvy individuals bridging traditional and crypto
-- Diversification seekers with small capital
+**Accredited Individual Investors**
+- High-net-worth individuals seeking real estate exposure
+- ESG-focused accredited investors requiring transparency
+- Tech-savvy accredited individuals bridging traditional and crypto
+- Qualified purchasers seeking portfolio diversification
 
 ## 🔐 Regulatory Compliance
 
-### SEC Registration
+### Securities Exemption Structure
 
-**Investment Company Act of 1940**
-- Registered investment company structure
-- Board of directors oversight
-- Annual audit requirements
-- Prospectus disclosure obligations
+**Regulation D Rule 506(b) Exemption**
+- Private placement to accredited investors only
+- No general solicitation or public advertising
+- Up to 35 non-accredited sophisticated investors permitted
+- Form D filing with SEC within 15 days of first sale
+- State blue sky notice filings as required
 
-**Securities Act of 1933**
-- Public offering registration
-- Continuous disclosure requirements
-- Material event reporting
-- Investor protection provisions
+**Accredited Investor Requirements**
+- Individual net worth exceeding $1 million (excluding primary residence)
+- Individual income exceeding $200,000 ($300,000 joint) in each of the two most recent years
+- Qualified institutional buyers and registered investment advisers
+- Verification documentation required prior to investment
+
+**Compliance Obligations**
+- Private Placement Memorandum (PPM) disclosure
+- Subscription agreement execution
+- Investor suitability verification
+- Ongoing material event reporting to existing investors
+- Annual audited financial statements
 
 ### Blockchain Compliance
 
@@ -180,13 +188,14 @@ cp .env.example .env
 npm run ap-portal
 ```
 
-### For Investors
+### For Accredited Investors
 
-**Purchase NBPT ETF**
-1. Open account with participating broker
-2. Search for ticker symbol: NBPT
-3. Place order (market or limit)
-4. Receive shares in brokerage account
+**Private Placement Participation**
+1. Complete accredited investor verification
+2. Review Private Placement Memorandum (PPM)
+3. Execute subscription agreement
+4. Fund investment via approved transfer method
+5. Receive token allocation to verified wallet
 
 **Verify Holdings**
 1. Visit transparency dashboard: [holdings.nobleport.etf](https://holdings.nobleport.etf)
@@ -218,9 +227,9 @@ npm run ap-portal
 - Tenant: Multiple income sources
 
 **Liquidity**
-- Daily ETF trading on exchanges
-- Blockchain-enabled secondary market
-- Creation/redemption mechanism
+- Periodic redemption windows (quarterly)
+- Blockchain-enabled secondary market for accredited transferees
+- Transfer restrictions per Reg D requirements
 
 **Volatility**
 - Target beta: 0.6-0.8 vs. S&P 500
