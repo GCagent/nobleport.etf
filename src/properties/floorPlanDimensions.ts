@@ -21,6 +21,11 @@ export interface Room {
   notes?: string;
 }
 
+export interface AdditionalMeasurement {
+  location: string;
+  dimension: Dimension;
+}
+
 export interface FloorPlan {
   name: string;
   label: string;
@@ -29,6 +34,7 @@ export interface FloorPlan {
     length?: Dimension;
     width?: Dimension;
   };
+  additionalMeasurements?: AdditionalMeasurement[];
   notes?: string[];
 }
 
@@ -97,7 +103,7 @@ export const existingFirstFloor: FloorPlan = {
       name: 'Master Bedroom',
       width: parseDimension("14' 1 1/2\""),
       length: parseDimension("17' 4 7/16\""),
-      notes: 'Primary bedroom with attached master bathroom'
+      notes: 'Primary bedroom with attached master bathroom. Planned work: replace closet with soaking tub, replace window, molding, patch hole in dry wall, add new outlet at door, new bay window, repair sheetrock and molding.'
     },
     {
       name: 'Master Bathroom',
@@ -107,42 +113,49 @@ export const existingFirstFloor: FloorPlan = {
     },
     {
       name: 'Dining/Living Area',
-      length: parseDimension("19' 0 1/2\""),
-      width: parseDimension("11' 0\""),
+      length: parseDimension("6' 11 15/16\""),
+      width: parseDimension("10' 6 1/16\""),
       notes: 'Central room with dining table'
     },
     {
       name: 'Kitchen',
-      width: parseDimension("14' 5 1/6\""),
+      width: parseDimension("14' 6 1/6\""),
       notes: 'Area with counters and sinks'
-    },
-    {
-      name: 'Kitchen Entry/Closet',
-      width: parseDimension("1' 5 1/6\""),
-      notes: 'Small feature, possibly entry or closet adjacent to kitchen'
     },
     {
       name: 'Deck',
       length: parseDimension("26' 5 3/4\""),
-      depth: parseDimension("13' 1 1/2\""),
+      depth: parseDimension("13' 11 1/2\""),
       notes: 'Exterior area on the right side of the house'
     },
     {
       name: 'Porch',
+      length: parseDimension("18' 10\""),
       depth: parseDimension("4' 10\""),
       notes: 'Front entry area'
     },
     {
-      name: 'Steps to Garage',
+      name: 'Steps Down to Garage',
       width: parseDimension("17' 8\""),
-      notes: 'Left side access to garage/cellar'
+      notes: 'Left side access down to garage'
+    },
+    {
+      name: 'Steps to Cellar',
+      notes: 'Access to cellar with 4 foot wall nearby'
     }
   ],
   overallDimensions: {
     length: parseDimension("47' 3\"")
   },
+  additionalMeasurements: [
+    { location: 'Bottom span (left section)', dimension: parseDimension("33' 2 1/4\"") },
+    { location: 'Bottom span (center section)', dimension: parseDimension("12' 7 15/16\"") },
+    { location: 'Bottom span (right section)', dimension: parseDimension("20' 7 5/8\"") }
+  ],
   notes: [
-    'Revision markers on plan: 8/15 1-20, 9/15 1-21',
+    'Labeled "Week" at top of plan',
+    'Work notes: replace closet, add soaking tub, replace window, molding repairs, new bay window',
+    '"In five locations" and "and painted" noted at bottom',
     'Access to garage and cellar included',
     'Measurements in feet and inches'
   ]
@@ -155,36 +168,50 @@ export const proposedSecondFloor: FloorPlan = {
     {
       name: 'Balcony',
       span: parseDimension("18'"),
-      notes: 'Left side of floor plan'
+      notes: 'Left side of floor plan, exterior'
     },
     {
       name: 'Kitchen',
-      length: parseDimension("15' 9\""),
+      length: parseDimension("15'"),
       width: parseDimension("18'"),
-      notes: 'Bottom left area of plan'
+      notes: 'Bottom left area of plan, labeled "15\'+" and "18\'"'
     },
     {
       name: 'Great Room',
-      length: parseDimension("20'"),
-      width: parseDimension("12'"),
-      notes: 'Large central/right area. Original notation "20\' 12\"" may indicate 20\' x 12\' or require clarification.'
+      notes: 'Large central/right area labeled "Greatroom", with tree/plant symbol'
     },
     {
       name: 'Hallway',
-      width: parseDimension("1' 6\""),
-      notes: 'Top central area, measurement labeled near stair'
+      notes: 'Central corridor connecting rooms'
     },
     {
-      name: 'Steps Down',
+      name: 'Bathroom',
+      notes: 'Contains tub symbol, located in upper area'
+    },
+    {
+      name: 'Pantry',
+      notes: 'Storage area near kitchen'
+    },
+    {
+      name: 'Closet (Primary)',
+      notes: 'Multiple closets labeled throughout, main closet near bathroom'
+    },
+    {
+      name: 'Closet (Secondary)',
+      notes: 'Additional closet space'
+    },
+    {
+      name: 'Storage/Stairs',
       length: parseDimension("5' 11\""),
-      notes: 'Bottom left, arrow points to stairs or door leading down'
+      notes: 'Bottom left area with arrow pointing to stairs going down'
     }
   ],
   notes: [
     'Hand-drawn on graph paper (likely 1 square = 1\')',
-    'Some dimensions sparsely labeled and handwritten',
-    'Additional scattered measurements: 10\' 5", 8\' 7", 20\' 5" (possibly room spans)',
-    'Features labeled but without dimensions: French Doors, Windows, Pantry, Door'
+    'Features on right side: French doors, shadowbox windows, regular windows',
+    'Multiple closet spaces throughout',
+    'Stairs connect to first floor',
+    'Door labeled at bottom left corner'
   ]
 };
 
