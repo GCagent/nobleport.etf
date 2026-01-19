@@ -535,6 +535,71 @@ A resolved `did:ens:nobleport.eth` returns a DID Document containing:
 - [ENS Documentation](https://docs.ens.domains/)
 - [DID Core Specification](https://www.w3.org/TR/did-core/)
 
+## 📘 PitchBook Resources
+
+The term "PitchBook" refers to two distinct but related concepts in finance that are relevant to Noble Port ETF operations:
+
+### Pitch Book (The Document)
+
+A comprehensive sales or marketing presentation used by investment banks and financial advisors to win business. Its primary goal is to convince a client to hire the firm for a financial transaction like a merger, acquisition, or fundraising.
+
+**Purpose:** To market the bank's services and secure a deal.
+
+**Typical Users:** Investment bankers, financial advisors.
+
+**Key Contents:**
+- **Firm & Team Credentials:** Showcases the bank's expertise and past successful deals
+- **Market & Industry Analysis:** Provides data and trends relevant to the client's sector
+- **Strategic Recommendations & Valuation:** Outlines proposed transaction strategies and financial valuations
+
+**Example:** An investment bank like Goldman Sachs creates a 50-page "pitch book" to convince a technology company to hire them to lead its Initial Public Offering (IPO).
+
+#### Noble Port ETF Pitch Book Applications
+
+When creating pitch books for Noble Port ETF, include:
+- Tokenized real estate market analysis
+- Blockchain transparency advantages
+- Regulatory compliance framework (SEC registration)
+- Performance metrics and fee comparisons vs. traditional REITs
+- Portfolio composition and rebalancing strategy
+- Integration with NoblePort ecosystem (Stephanie.ai, NBPT token)
+
+### PitchBook (The Data Platform)
+
+A specialized software platform and database widely used for private market intelligence. It provides data on companies, investors, deals, and funds, particularly in venture capital and private equity.
+
+**Purpose:** To provide data for research, analysis, and deal sourcing.
+
+**Typical Users:** Investors (VC, PE), consultants, corporate development teams, academics.
+
+**Key Functions:**
+- **Company & Investor Screening:** Find startups or investors based on specific criteria like industry, funding stage, or location
+- **Deal & Market Analysis:** Research past transactions and analyze industry trends
+- **Creating Market Maps:** Visually map competitive landscapes within an industry
+
+**Example:** A venture capital firm uses the PitchBook platform to identify all Series B-funded biotechnology startups in Europe, analyze their investors, and benchmark their valuations.
+
+#### PitchBook Platform for Noble Port ETF
+
+Leverage PitchBook data platform for:
+- Real estate technology (PropTech) market research
+- Tokenization and blockchain company analysis
+- Competitive landscape mapping for tokenized real estate ETFs
+- Investor relationship management and targeting
+- Deal flow tracking for property acquisitions
+- Market trend analysis for portfolio strategy
+
+### Choosing the Right Resource
+
+| Need | Resource |
+|------|----------|
+| Creating a persuasive presentation to attract investors | Pitch Book (document) |
+| Researching private companies or analyzing market data | PitchBook (data platform) |
+| Investor meetings and roadshows | Pitch Book (document) |
+| Due diligence on potential acquisitions | PitchBook (data platform) |
+| Marketing Noble Port ETF to institutional investors | Pitch Book (document) |
+| Finding comparable tokenized real estate deals | PitchBook (data platform) |
+
 ## 📞 Contact & Resources
 
 **Website:** [nobleport.etf](https://nobleport.etf)  
