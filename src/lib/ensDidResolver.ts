@@ -160,8 +160,11 @@ export async function getEnsTextRecords(
 export const NOBLEPORT_ENS = {
   ROOT: 'nobleport.eth',
   ROOT_DID: 'did:ens:nobleport.eth',
+  ROOT_ADDRESS: '0xb446af340df7f1d960037daecfa9de2fad42adca',
   ETF: 'etf.nobleport.eth',
   ETF_DID: 'did:ens:etf.nobleport.eth',
+  NETWORK: 'mainnet',
+  CHAIN_ID: 1,
 } as const;
 
 /**

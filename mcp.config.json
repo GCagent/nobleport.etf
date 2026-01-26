@@ -3,6 +3,13 @@
   "version": "1.0.0",
   "name": "stephanie-nobleport-mcp",
   "description": "Stephanie.ai MCP Configuration for NoblePort.eth Ecosystem",
+  "nobleport": {
+    "ens": "nobleport.eth",
+    "did": "did:ens:nobleport.eth",
+    "address": "0xb446af340df7f1d960037daecfa9de2fad42adca",
+    "network": "mainnet",
+    "chainId": 1
+  },
   "identity": {
     "ens": "stephanie.nobleport.eth",
     "did": "did:ens:stephanie.nobleport.eth",
