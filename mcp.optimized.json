@@ -1,0 +1,220 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/specification/main/schema/mcp-config.json",
+  "v": "2.0.0",
+  "n": "stephanie-nobleport-mcp-optimized",
+  "d": "Optimized MCP Configuration - Reduced Latency",
+  "id": {
+    "e": "stephanie.nobleport.eth",
+    "d": "did:ens:stephanie.nobleport.eth",
+    "dm": ["stephanie.ai", "stephanie.io"],
+    "ri": "nobleport.eth"
+  },
+  "srv": {
+    "claude": {
+      "pv": "Anthropic",
+      "cmd": "mcp-server-anthropic",
+      "args": ["--model", "claude-opus-4-5-20251101", "--streaming", "--compression"],
+      "env": {"ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"},
+      "cap": {"t": true, "r": true, "p": true, "s": true},
+      "roles": ["cg", "da", "pi", "cr", "nlp", "aw"],
+      "pri": 1,
+      "pool": {"min": 2, "max": 10, "idle": 30000},
+      "retry": {"max": 3, "delay": 500, "backoff": 2}
+    },
+    "chatgpt": {
+      "pv": "OpenAI",
+      "cmd": "mcp-server-openai",
+      "args": ["--model", "gpt-4o", "--streaming"],
+      "env": {"OPENAI_API_KEY": "${OPENAI_API_KEY}"},
+      "cap": {"t": true, "r": true, "p": true, "v": true, "ci": true},
+      "roles": ["ca", "ci", "da", "fc", "va"],
+      "pri": 2,
+      "pool": {"min": 2, "max": 8, "idle": 30000},
+      "retry": {"max": 3, "delay": 500, "backoff": 2}
+    },
+    "grok": {
+      "pv": "xAI",
+      "cmd": "mcp-server-xai",
+      "args": ["--model", "grok-2", "--realtime"],
+      "env": {"XAI_API_KEY": "${XAI_API_KEY}"},
+      "cap": {"t": true, "r": true, "rtd": true, "si": true},
+      "roles": ["rtd", "ma", "ss", "na", "tp"],
+      "pri": 3,
+      "pool": {"min": 1, "max": 5, "idle": 20000}
+    },
+    "gemini": {
+      "pv": "Google",
+      "cmd": "mcp-server-google",
+      "args": ["--model", "gemini-2.0-pro", "--long-context"],
+      "env": {"GOOGLE_AI_API_KEY": "${GOOGLE_AI_API_KEY}"},
+      "cap": {"t": true, "r": true, "mm": true, "lc": true},
+      "roles": ["mmr", "lca", "rs", "gi"],
+      "pri": 4,
+      "pool": {"min": 1, "max": 6, "idle": 30000}
+    },
+    "groq": {
+      "pv": "Groq",
+      "cmd": "mcp-server-groq",
+      "args": ["--model", "llama-3.3-70b", "--ultra-fast"],
+      "env": {"GROQ_API_KEY": "${GROQ_API_KEY}"},
+      "cap": {"t": true, "ufi": true},
+      "roles": ["ufi", "llr", "rta"],
+      "pri": 5,
+      "pool": {"min": 3, "max": 15, "idle": 10000},
+      "latency": {"target": 50, "max": 200}
+    },
+    "perplexity": {
+      "pv": "Perplexity",
+      "cmd": "mcp-server-perplexity",
+      "args": ["--model", "pplx-70b-online", "--citations"],
+      "env": {"PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}"},
+      "cap": {"t": true, "ws": true, "ct": true},
+      "roles": ["rts", "cg", "rs", "fc"],
+      "pri": 6
+    },
+    "mistral": {
+      "pv": "Mistral",
+      "cmd": "mcp-server-mistral",
+      "args": ["--model", "mistral-large"],
+      "env": {"MISTRAL_API_KEY": "${MISTRAL_API_KEY}"},
+      "cap": {"t": true, "r": true, "fc": true},
+      "roles": ["ei", "cg", "ec"],
+      "pri": 7
+    },
+    "deepseek": {
+      "pv": "DeepSeek",
+      "cmd": "mcp-server-deepseek",
+      "args": ["--model", "deepseek-v3"],
+      "env": {"DEEPSEEK_API_KEY": "${DEEPSEEK_API_KEY}"},
+      "cap": {"t": true, "cg": true, "mr": true},
+      "roles": ["cg", "mr", "ra"],
+      "pri": 8
+    },
+    "replit": {
+      "pv": "Replit",
+      "cmd": "mcp-server-replit",
+      "env": {"REPLIT_API_KEY": "${REPLIT_API_KEY}"},
+      "cap": {"t": true, "ce": true, "dp": true, "cl": true},
+      "roles": ["cg", "ce", "da", "ps", "dpa"],
+      "pri": 9
+    },
+    "huggingface": {
+      "pv": "HF",
+      "cmd": "mcp-server-huggingface",
+      "env": {"HUGGINGFACE_API_KEY": "${HUGGINGFACE_API_KEY}"},
+      "cap": {"t": true, "mh": true, "cm": true, "ft": true},
+      "roles": ["mha", "cmh", "ie"],
+      "pri": 10
+    },
+    "cohere": {
+      "pv": "Cohere",
+      "cmd": "mcp-server-cohere",
+      "args": ["--model", "command-r-plus"],
+      "env": {"COHERE_API_KEY": "${COHERE_API_KEY}"},
+      "cap": {"t": true, "rag": true, "emb": true, "rr": true},
+      "roles": ["es", "ro", "de"],
+      "pri": 11
+    },
+    "together": {
+      "pv": "Together",
+      "cmd": "mcp-server-together",
+      "env": {"TOGETHER_API_KEY": "${TOGETHER_API_KEY}"},
+      "cap": {"t": true, "om": true, "ft": true},
+      "roles": ["omh", "ft", "bi"],
+      "pri": 12
+    },
+    "llama": {
+      "pv": "Meta",
+      "cmd": "mcp-server-meta",
+      "args": ["--model", "llama-3.3-70b"],
+      "env": {"META_AI_API_KEY": "${META_AI_API_KEY}"},
+      "cap": {"t": true, "os": true, "sh": true},
+      "roles": ["osm", "opd", "ms"],
+      "pri": 13
+    }
+  },
+  "mod": {
+    "pf": {"e": "portfolio.nobleport.eth", "d": "did:ens:portfolio.nobleport.eth", "ai": ["claude", "chatgpt", "perplexity"]},
+    "op": {"e": "operations.nobleport.eth", "d": "did:ens:operations.nobleport.eth", "ai": ["claude", "grok", "groq"]},
+    "cp": {"e": "compliance.nobleport.eth", "d": "did:ens:compliance.nobleport.eth", "ai": ["claude", "mistral"]},
+    "gv": {"e": "governance.nobleport.eth", "d": "did:ens:governance.nobleport.eth", "ai": ["claude", "chatgpt"]},
+    "iv": {"e": "investors.nobleport.eth", "d": "did:ens:investors.nobleport.eth", "ai": ["claude", "chatgpt", "gemini"]},
+    "ap": {"e": "ap.nobleport.eth", "d": "did:ens:ap.nobleport.eth", "ai": ["claude", "groq"]},
+    "hd": {"e": "holdings.nobleport.eth", "d": "did:ens:holdings.nobleport.eth", "ai": ["claude", "perplexity", "grok"]},
+    "or": {"e": "oracle.nobleport.eth", "d": "did:ens:oracle.nobleport.eth", "ai": ["grok", "perplexity", "groq"]},
+    "cu": {"e": "custodian.nobleport.eth", "d": "did:ens:custodian.nobleport.eth", "ai": ["claude"]},
+    "bk": {"e": "bookkeeper.nobleport.eth", "d": "did:ens:bookkeeper.nobleport.eth", "ai": ["claude", "chatgpt", "replit"]},
+    "cpa": {"e": "cpa.nobleport.eth", "d": "did:ens:cpa.nobleport.eth", "ai": ["claude", "chatgpt", "mistral"]},
+    "ssi": {"e": "identity.nobleport.eth", "d": "did:ens:identity.nobleport.eth", "ai": ["claude"]}
+  },
+  "orch": {
+    "default": "claude",
+    "fallback": ["claude", "chatgpt", "gemini", "mistral"],
+    "routing": {
+      "cg": ["claude", "chatgpt", "replit", "deepseek"],
+      "rta": ["grok", "perplexity", "groq"],
+      "cr": ["claude", "mistral"],
+      "da": ["claude", "chatgpt", "gemini"],
+      "mp": ["grok", "perplexity"],
+      "ic": ["claude", "chatgpt"],
+      "rs": ["perplexity", "gemini", "claude"]
+    },
+    "lb": {
+      "strategy": "weighted-round-robin",
+      "healthCheck": 15000,
+      "retries": 3,
+      "retryDelay": 500,
+      "circuitBreaker": {"threshold": 5, "timeout": 60000}
+    }
+  },
+  "perf": {
+    "compression": {
+      "enabled": true,
+      "algorithm": "lz4",
+      "level": 3,
+      "minSize": 1024
+    },
+    "batching": {
+      "enabled": true,
+      "maxSize": 100,
+      "maxWait": 50
+    },
+    "caching": {
+      "enabled": true,
+      "ttl": 300000,
+      "maxEntries": 10000
+    },
+    "pooling": {
+      "enabled": true,
+      "warmup": true,
+      "preconnect": ["claude", "chatgpt", "groq"]
+    }
+  },
+  "sec": {
+    "auth": {
+      "primary": "did_auth",
+      "fallback": "api_key",
+      "methods": ["did:ens", "did:web", "did:key"]
+    },
+    "enc": {
+      "transport": "TLS1.3",
+      "atRest": "AES-256-GCM",
+      "keyRotation": 86400000
+    },
+    "rl": {
+      "global": {"rpm": 2000, "tpm": 2000000},
+      "perPlatform": {"rpm": 500, "tpm": 500000}
+    }
+  },
+  "log": {
+    "level": "warn",
+    "dest": ["console", "file"],
+    "retention": "30d",
+    "sampling": 0.1
+  },
+  "metrics": {
+    "enabled": true,
+    "interval": 10000,
+    "export": ["prometheus", "statsd"]
+  }
+}
