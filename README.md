@@ -269,6 +269,166 @@ npm run ap-portal
 - Approve rebalancing strategies
 - Elect advisory board members
 
+## 🤖 Stephanie.ai Network Hub
+
+Stephanie.ai (stephanie.ai / stephanie.io) serves as the central AI orchestration hub for the NoblePort.eth ecosystem, connecting all modules and platforms through the Model Context Protocol (MCP) with multiple AI LLM providers.
+
+### Identity
+
+| Attribute | Value |
+|-----------|-------|
+| ENS Name | `stephanie.nobleport.eth` |
+| DID | `did:ens:stephanie.nobleport.eth` |
+| Domains | stephanie.ai, stephanie.io |
+| Root Identity | nobleport.eth |
+
+### Connected AI Platforms (MCP)
+
+Stephanie.ai establishes MCP connections to leading AI platforms for intelligent task orchestration:
+
+| Platform | Provider | Capabilities |
+|----------|----------|--------------|
+| **Claude** | Anthropic | Code generation, document analysis, compliance review, agentic workflows |
+| **ChatGPT** | OpenAI | Conversational AI, code interpreter, vision analysis, function calling |
+| **Grok** | xAI | Real-time data, market analysis, social sentiment, trend prediction |
+| **Gemini** | Google | Multi-modal reasoning, long-context analysis, research synthesis |
+| **Llama** | Meta | Open-source models, on-premise deployment, multilingual support |
+| **Replit** | Replit | Code generation, debugging, project scaffolding, deployment automation |
+| **Mistral** | Mistral | Efficient inference, European compliance, function calling |
+| **Cohere** | Cohere | Enterprise search, RAG optimization, document embedding |
+| **Perplexity** | Perplexity | Real-time search, citation generation, fact-checking |
+| **Hugging Face** | Hugging Face | Model hub access, custom model hosting, fine-tuning |
+| **Together AI** | Together | Open model hosting, batch inference, cost-efficient scaling |
+| **Groq** | Groq | Ultra-fast inference, low-latency responses, real-time applications |
+| **DeepSeek** | DeepSeek | Code generation, mathematical reasoning, research assistance |
+
+### NoblePort Module Network
+
+Each NoblePort module operates with its own ENS identity and DID:
+
+| Module | ENS Name | Capabilities |
+|--------|----------|--------------|
+| Portfolio Manager | `portfolio.nobleport.eth` | Asset valuation, rebalancing, risk assessment |
+| Operations Monitor | `operations.nobleport.eth` | Health monitoring, anomaly detection, audit trails |
+| Compliance Engine | `compliance.nobleport.eth` | Regulatory filing, KYC/AML, accreditation |
+| NBPT Governance | `governance.nobleport.eth` | Voting, proposals, staking, fee management |
+| Investor Portal | `investors.nobleport.eth` | Account management, reporting, communications |
+| Authorized Participants | `ap.nobleport.eth` | Basket creation, redemption, settlement |
+| Holdings Dashboard | `holdings.nobleport.eth` | Transparency, NAV display, asset verification |
+| Oracle Network | `oracle.nobleport.eth` | Price feeds, valuation updates, cross-chain data |
+| Custodian Bridge | `custodian.nobleport.eth` | Key management, multi-sig, asset custody |
+| Bookkeeper Ops | `bookkeeper.nobleport.eth` | Transaction recording, reconciliation, reporting |
+| CPA Operations | `cpa.nobleport.eth` | Tax preparation, auditing, financial statements |
+| SSI Identity | `identity.nobleport.eth` | DID resolution, credential verification |
+
+### MCP Configuration
+
+The MCP configuration (`mcp.config.json`) defines:
+
+- **Server Connections**: API endpoints and authentication for each AI platform
+- **Module Integrations**: Which AI platforms serve each NoblePort module
+- **Task Routing**: Intelligent routing based on task type and platform capabilities
+- **Load Balancing**: Round-robin with priority-based failover
+- **Security**: DID-based authentication with API key fallback
+
+### Intelligent Task Routing
+
+Stephanie.ai routes tasks to optimal platforms based on capabilities:
+
+| Task Type | Primary Platforms |
+|-----------|-------------------|
+| Code Generation | Claude, ChatGPT, Replit, DeepSeek |
+| Real-Time Analysis | Grok, Perplexity, Groq |
+| Compliance Review | Claude, Mistral |
+| Document Analysis | Claude, ChatGPT, Gemini |
+| Market Prediction | Grok, Perplexity |
+| Research Synthesis | Perplexity, Gemini, Claude |
+| Investor Communication | Claude, ChatGPT |
+
+### Usage
+
+```typescript
+import { createStephanieAI } from './src/lib/stephanieAI';
+
+// Initialize Stephanie.ai
+const stephanie = createStephanieAI();
+await stephanie.initialize();
+
+// Execute AI-powered portfolio analysis
+const analysis = await stephanie.analyzePortfolio(portfolioData);
+
+// Predict market trends using real-time data
+const prediction = await stephanie.predictMarketTrends(marketData);
+
+// Generate investor reports
+const report = await stephanie.generateInvestorReport(investorId, 'Q4-2025');
+
+// Review compliance documents
+const compliance = await stephanie.reviewCompliance(documentData);
+
+// Health check across all platforms
+const health = await stephanie.healthCheck();
+```
+
+### Network Architecture
+
+```
+                    ┌─────────────────────────────────────┐
+                    │        STEPHANIE.AI / STEPHANIE.IO  │
+                    │      AI Orchestration & Network Hub │
+                    │   ENS: stephanie.nobleport.eth      │
+                    │   DID: did:ens:stephanie.nobleport.eth │
+                    └─────────────────────────────────────┘
+                                      │
+         ┌────────────────────────────┼────────────────────────────┐
+         │                            │                            │
+    ┌────▼────┐                 ┌─────▼─────┐               ┌──────▼──────┐
+    │   MCP   │                 │ NOBLEPORT │               │  EXTERNAL   │
+    │PLATFORMS│                 │  MODULES  │               │  SERVICES   │
+    └────┬────┘                 └─────┬─────┘               └──────┬──────┘
+         │                            │                            │
+  ┌──────┼──────┐            ┌────────┼────────┐          ┌────────┼────────┐
+  │      │      │            │        │        │          │        │        │
+Claude ChatGPT Grok    Portfolio Operations Oracle    DeFi   Custodian External
+Gemini Replit  ...     Manager   Monitor   Network   Protocols Bridge    APIs
+Mistral Groq                     ...
+```
+
+### Environment Variables
+
+Add the following to your `.env` file:
+
+```bash
+# Ethereum Provider (for ENS resolution)
+NEXT_PUBLIC_INFURA_ID=your_infura_project_id
+NEXT_PUBLIC_ALCHEMY_KEY=your_alchemy_key
+
+# AI Platform API Keys
+ANTHROPIC_API_KEY=your_anthropic_key
+OPENAI_API_KEY=your_openai_key
+XAI_API_KEY=your_xai_key
+GOOGLE_AI_API_KEY=your_google_ai_key
+META_AI_API_KEY=your_meta_key
+REPLIT_API_KEY=your_replit_key
+MISTRAL_API_KEY=your_mistral_key
+COHERE_API_KEY=your_cohere_key
+PERPLEXITY_API_KEY=your_perplexity_key
+HUGGINGFACE_API_KEY=your_huggingface_key
+TOGETHER_API_KEY=your_together_key
+GROQ_API_KEY=your_groq_key
+DEEPSEEK_API_KEY=your_deepseek_key
+```
+
+### Dashboard Component
+
+The Stephanie.ai Network Hub dashboard (`src/components/StephanieAINetworkHub.tsx`) provides:
+
+- **Platform Overview**: Status and capabilities of all connected AI platforms
+- **Module Network**: Real-time view of NoblePort module connections
+- **Architecture Visualization**: Interactive network topology diagram
+- **Task Routing Display**: Current routing rules and platform assignments
+- **Health Monitoring**: System-wide health checks and status indicators
+
 ## 🛠️ Bookkeeper & CPA Operations Infrastructure
 
 Noble Port ETF requires robust accounting and compliance infrastructure to support institutional investors and regulatory requirements. This section outlines both the technology stack for operational efficiency and the full-stack service model for comprehensive financial management.

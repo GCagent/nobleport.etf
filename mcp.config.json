@@ -1,0 +1,394 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/specification/main/schema/mcp-config.json",
+  "version": "1.0.0",
+  "name": "stephanie-nobleport-mcp",
+  "description": "Stephanie.ai MCP Configuration for NoblePort.eth Ecosystem",
+  "identity": {
+    "ens": "stephanie.nobleport.eth",
+    "did": "did:ens:stephanie.nobleport.eth",
+    "domain": ["stephanie.ai", "stephanie.io"],
+    "rootIdentity": "nobleport.eth"
+  },
+  "mcpServers": {
+    "claude": {
+      "provider": "Anthropic",
+      "command": "mcp-server-anthropic",
+      "args": ["--model", "claude-opus-4-5-20251101"],
+      "env": {
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "resources": true,
+        "prompts": true,
+        "sampling": true
+      },
+      "roles": [
+        "code-generation",
+        "document-analysis",
+        "portfolio-insights",
+        "compliance-review",
+        "natural-language-processing",
+        "agentic-workflows"
+      ],
+      "priority": 1
+    },
+    "chatgpt": {
+      "provider": "OpenAI",
+      "command": "mcp-server-openai",
+      "args": ["--model", "gpt-4o"],
+      "env": {
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "resources": true,
+        "prompts": true,
+        "vision": true,
+        "codeInterpreter": true
+      },
+      "roles": [
+        "conversational-ai",
+        "code-interpreter",
+        "data-analysis",
+        "function-calling",
+        "vision-analysis"
+      ],
+      "priority": 2
+    },
+    "grok": {
+      "provider": "xAI",
+      "command": "mcp-server-xai",
+      "args": ["--model", "grok-2"],
+      "env": {
+        "XAI_API_KEY": "${XAI_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "resources": true,
+        "realTimeData": true,
+        "socialIntegration": true
+      },
+      "roles": [
+        "real-time-data",
+        "market-analysis",
+        "social-sentiment",
+        "news-aggregation",
+        "trend-prediction"
+      ],
+      "priority": 3
+    },
+    "gemini": {
+      "provider": "Google",
+      "command": "mcp-server-google",
+      "args": ["--model", "gemini-2.0-pro"],
+      "env": {
+        "GOOGLE_AI_API_KEY": "${GOOGLE_AI_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "resources": true,
+        "multiModal": true,
+        "longContext": true
+      },
+      "roles": [
+        "multi-modal-reasoning",
+        "long-context-analysis",
+        "research-synthesis",
+        "google-integration"
+      ],
+      "priority": 4
+    },
+    "replit": {
+      "provider": "Replit",
+      "command": "mcp-server-replit",
+      "args": [],
+      "env": {
+        "REPLIT_API_KEY": "${REPLIT_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "codeExecution": true,
+        "deployment": true,
+        "collaboration": true
+      },
+      "roles": [
+        "code-generation",
+        "code-explanation",
+        "debugging-assistance",
+        "project-scaffolding",
+        "deployment-automation"
+      ],
+      "priority": 5
+    },
+    "perplexity": {
+      "provider": "Perplexity",
+      "command": "mcp-server-perplexity",
+      "args": ["--model", "pplx-70b-online"],
+      "env": {
+        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "webSearch": true,
+        "citations": true
+      },
+      "roles": [
+        "real-time-search",
+        "citation-generation",
+        "research-synthesis",
+        "fact-checking"
+      ],
+      "priority": 6
+    },
+    "mistral": {
+      "provider": "Mistral",
+      "command": "mcp-server-mistral",
+      "args": ["--model", "mistral-large"],
+      "env": {
+        "MISTRAL_API_KEY": "${MISTRAL_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "resources": true,
+        "functionCalling": true
+      },
+      "roles": [
+        "efficient-inference",
+        "code-generation",
+        "european-compliance"
+      ],
+      "priority": 7
+    },
+    "groq": {
+      "provider": "Groq",
+      "command": "mcp-server-groq",
+      "args": ["--model", "llama-3.3-70b"],
+      "env": {
+        "GROQ_API_KEY": "${GROQ_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "ultraFastInference": true
+      },
+      "roles": [
+        "ultra-fast-inference",
+        "low-latency-responses",
+        "real-time-applications"
+      ],
+      "priority": 8
+    },
+    "deepseek": {
+      "provider": "DeepSeek",
+      "command": "mcp-server-deepseek",
+      "args": ["--model", "deepseek-v3"],
+      "env": {
+        "DEEPSEEK_API_KEY": "${DEEPSEEK_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "codeGeneration": true,
+        "mathReasoning": true
+      },
+      "roles": [
+        "code-generation",
+        "mathematical-reasoning",
+        "research-assistance"
+      ],
+      "priority": 9
+    },
+    "huggingface": {
+      "provider": "Hugging Face",
+      "command": "mcp-server-huggingface",
+      "args": [],
+      "env": {
+        "HUGGINGFACE_API_KEY": "${HUGGINGFACE_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "modelHub": true,
+        "customModels": true,
+        "fineTuning": true
+      },
+      "roles": [
+        "model-hub-access",
+        "custom-model-hosting",
+        "inference-endpoints"
+      ],
+      "priority": 10
+    },
+    "cohere": {
+      "provider": "Cohere",
+      "command": "mcp-server-cohere",
+      "args": ["--model", "command-r-plus"],
+      "env": {
+        "COHERE_API_KEY": "${COHERE_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "rag": true,
+        "embeddings": true,
+        "reranking": true
+      },
+      "roles": [
+        "enterprise-search",
+        "rag-optimization",
+        "document-embedding"
+      ],
+      "priority": 11
+    },
+    "together": {
+      "provider": "Together",
+      "command": "mcp-server-together",
+      "args": [],
+      "env": {
+        "TOGETHER_API_KEY": "${TOGETHER_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "openModels": true,
+        "fineTuning": true
+      },
+      "roles": [
+        "open-model-hosting",
+        "fine-tuning",
+        "batch-inference"
+      ],
+      "priority": 12
+    },
+    "llama": {
+      "provider": "Meta",
+      "command": "mcp-server-meta",
+      "args": ["--model", "llama-3.3-70b"],
+      "env": {
+        "META_AI_API_KEY": "${META_AI_API_KEY}"
+      },
+      "capabilities": {
+        "tools": true,
+        "openSource": true,
+        "selfHosted": true
+      },
+      "roles": [
+        "open-source-models",
+        "on-premise-deployment",
+        "multilingual-support"
+      ],
+      "priority": 13
+    }
+  },
+  "nobleportModules": {
+    "portfolioManager": {
+      "ens": "portfolio.nobleport.eth",
+      "did": "did:ens:portfolio.nobleport.eth",
+      "capabilities": ["asset-valuation", "rebalancing", "risk-assessment", "performance-tracking"],
+      "aiIntegrations": ["claude", "chatgpt", "perplexity"]
+    },
+    "operationsMonitor": {
+      "ens": "operations.nobleport.eth",
+      "did": "did:ens:operations.nobleport.eth",
+      "capabilities": ["health-monitoring", "anomaly-detection", "alert-management", "audit-trails"],
+      "aiIntegrations": ["claude", "grok", "groq"]
+    },
+    "complianceEngine": {
+      "ens": "compliance.nobleport.eth",
+      "did": "did:ens:compliance.nobleport.eth",
+      "capabilities": ["regulatory-filing", "kyc-aml", "accreditation-verification", "audit-support"],
+      "aiIntegrations": ["claude", "mistral"]
+    },
+    "nbptGovernance": {
+      "ens": "governance.nobleport.eth",
+      "did": "did:ens:governance.nobleport.eth",
+      "capabilities": ["voting", "proposals", "staking", "fee-management"],
+      "aiIntegrations": ["claude", "chatgpt"]
+    },
+    "investorPortal": {
+      "ens": "investors.nobleport.eth",
+      "did": "did:ens:investors.nobleport.eth",
+      "capabilities": ["account-management", "reporting", "communications", "education"],
+      "aiIntegrations": ["claude", "chatgpt", "gemini"]
+    },
+    "authorizedParticipants": {
+      "ens": "ap.nobleport.eth",
+      "did": "did:ens:ap.nobleport.eth",
+      "capabilities": ["basket-creation", "redemption", "settlement", "inventory"],
+      "aiIntegrations": ["claude", "groq"]
+    },
+    "holdingsDashboard": {
+      "ens": "holdings.nobleport.eth",
+      "did": "did:ens:holdings.nobleport.eth",
+      "capabilities": ["transparency", "nav-display", "asset-verification", "real-time-updates"],
+      "aiIntegrations": ["claude", "perplexity", "grok"]
+    },
+    "oracleNetwork": {
+      "ens": "oracle.nobleport.eth",
+      "did": "did:ens:oracle.nobleport.eth",
+      "capabilities": ["price-feeds", "valuation-updates", "cross-chain-data", "verification"],
+      "aiIntegrations": ["grok", "perplexity", "groq"]
+    },
+    "custodianBridge": {
+      "ens": "custodian.nobleport.eth",
+      "did": "did:ens:custodian.nobleport.eth",
+      "capabilities": ["key-management", "multi-sig", "security-protocols", "asset-custody"],
+      "aiIntegrations": ["claude"]
+    },
+    "bookkeeperOps": {
+      "ens": "bookkeeper.nobleport.eth",
+      "did": "did:ens:bookkeeper.nobleport.eth",
+      "capabilities": ["transaction-recording", "reconciliation", "expense-tracking", "reporting"],
+      "aiIntegrations": ["claude", "chatgpt", "replit"]
+    },
+    "cpaOperations": {
+      "ens": "cpa.nobleport.eth",
+      "did": "did:ens:cpa.nobleport.eth",
+      "capabilities": ["tax-preparation", "auditing", "financial-statements", "compliance"],
+      "aiIntegrations": ["claude", "chatgpt", "mistral"]
+    },
+    "ssiIdentity": {
+      "ens": "identity.nobleport.eth",
+      "did": "did:ens:identity.nobleport.eth",
+      "capabilities": ["did-resolution", "credential-verification", "authentication", "authorization"],
+      "aiIntegrations": ["claude"]
+    }
+  },
+  "orchestration": {
+    "defaultPlatform": "claude",
+    "fallbackChain": ["claude", "chatgpt", "gemini", "mistral"],
+    "taskRouting": {
+      "code-generation": ["claude", "chatgpt", "replit", "deepseek"],
+      "real-time-analysis": ["grok", "perplexity", "groq"],
+      "compliance-review": ["claude", "mistral"],
+      "document-analysis": ["claude", "chatgpt", "gemini"],
+      "market-prediction": ["grok", "perplexity"],
+      "investor-communication": ["claude", "chatgpt"],
+      "research-synthesis": ["perplexity", "gemini", "claude"]
+    },
+    "loadBalancing": {
+      "strategy": "round-robin-with-priority",
+      "healthCheckInterval": 30000,
+      "retryAttempts": 3,
+      "retryDelay": 1000
+    }
+  },
+  "security": {
+    "authentication": {
+      "primary": "did_auth",
+      "fallback": "api_key",
+      "didMethods": ["did:ens", "did:web", "did:key"]
+    },
+    "encryption": {
+      "transport": "TLS1.3",
+      "atRest": "AES-256-GCM"
+    },
+    "rateLimit": {
+      "global": {
+        "requestsPerMinute": 1000,
+        "tokensPerMinute": 1000000
+      }
+    }
+  },
+  "logging": {
+    "level": "info",
+    "destinations": ["console", "file", "blockchain"],
+    "retention": "90d"
+  }
+}
