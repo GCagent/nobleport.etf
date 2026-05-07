@@ -1,0 +1,20 @@
+# NoblePort ETF - Replit Deployment Configuration
+# This file configures both development runs and production deployments
+
+run = "npm install && npm run build && npm start"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "npm run build && npm start"]
+deploymentTarget = "cloudrun"
+ignorePorts = false
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[env]
+PORT = "3000"
+NODE_ENV = "production"
