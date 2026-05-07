@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-noble-white text-noble-black font-body;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-block bg-noble-gold text-white font-bold text-lg px-8 py-4 rounded-md
+      hover:bg-amber-600 transition-colors duration-200 text-center;
+  }
+  .btn-secondary {
+    @apply inline-block border-2 border-noble-black text-noble-black font-bold text-lg px-8 py-4 rounded-md
+      hover:bg-noble-black hover:text-white transition-colors duration-200 text-center;
+  }
+  .btn-outline {
+    @apply inline-block border-2 border-noble-gold text-noble-gold font-bold text-lg px-8 py-4 rounded-md
+      hover:bg-noble-gold hover:text-white transition-colors duration-200 text-center;
+  }
+}
