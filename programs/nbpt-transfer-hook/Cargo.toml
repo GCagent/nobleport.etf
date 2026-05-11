@@ -1,0 +1,21 @@
+[package]
+name = "nbpt-transfer-hook"
+version = "0.1.0"
+edition = "2021"
+description = "Token-2022 transfer hook for NBPT KYC/jurisdiction enforcement"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "nbpt_transfer_hook"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = { workspace = true }
+anchor-spl = { workspace = true }
+spl-transfer-hook-interface = { workspace = true }

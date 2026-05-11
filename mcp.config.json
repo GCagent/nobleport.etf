@@ -390,5 +390,70 @@
     "level": "info",
     "destinations": ["console", "file", "blockchain"],
     "retention": "90d"
+  },
+  "agentFramework": {
+    "version": "1.0.0",
+    "description": "Microsoft Agent Framework hybrid integration via LangGraph",
+    "foundry": {
+      "projectEndpoint": "${AZURE_FOUNDRY_ENDPOINT}",
+      "tenantId": "${AZURE_TENANT_ID}",
+      "modelDeployment": "gpt-4.1",
+      "useManagedIdentity": true
+    },
+    "agents": {
+      "agiLearner": {
+        "name": "AGILearningAgent",
+        "type": "langgraph_node",
+        "model": "gpt-4.1",
+        "instructions": "Execute AGI learning cycles: RAG retrieval, knowledge synthesis, mastery assessment.",
+        "tools": ["rag_knowledge_lookup", "mastery_benchmark"],
+        "checkpointed": true,
+        "session": "durable"
+      },
+      "certMinter": {
+        "name": "CertMintAgent",
+        "type": "foundry_hosted",
+        "model": "gpt-4.1",
+        "instructions": "Run mastery benchmark, generate Manus proof, mint verifiable badge/diploma JSON.",
+        "tools": ["ssi_identity_resolve", "manus_delegate"],
+        "checkpointed": true,
+        "session": "durable"
+      },
+      "avatarVoice": {
+        "name": "AvatarVoiceAgent",
+        "type": "langgraph_node",
+        "model": "gpt-4.1",
+        "instructions": "Detect emotional tone, generate prosody parameters, build SSML for TTS rendering.",
+        "tools": [],
+        "checkpointed": false,
+        "session": "ephemeral"
+      },
+      "complianceReviewer": {
+        "name": "ComplianceReviewAgent",
+        "type": "langgraph_node",
+        "model": "gpt-4.1",
+        "instructions": "Review documents and transactions for regulatory compliance, KYC/AML, accreditation.",
+        "tools": ["compliance_review", "ssi_identity_resolve"],
+        "checkpointed": true,
+        "session": "durable"
+      }
+    },
+    "graph": {
+      "topology": "router -> {agi_learner, cert_minter, avatar_voice, compliance, manus_delegate, general} -> aggregator -> END",
+      "checkpointer": "memory_saver",
+      "entryPoint": "router"
+    },
+    "interoperability": {
+      "a2a": {
+        "enabled": true,
+        "protocol": "agent2agent",
+        "description": "Future-proof cross-framework agent communication"
+      },
+      "mcp": {
+        "enabled": true,
+        "bridgeMode": "bidirectional",
+        "description": "LangChain tools <-> Agent Framework tools via MCP"
+      }
+    }
   }
 }

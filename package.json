@@ -8,12 +8,24 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint src --ext .ts,.tsx",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "anchor:build": "anchor build",
+    "anchor:test": "anchor test",
+    "anchor:deploy:devnet": "anchor deploy --provider.cluster devnet",
+    "anchor:deploy:mainnet": "anchor deploy --provider.cluster mainnet",
+    "dist:init": "ts-node scripts/init_distributor.ts",
+    "dist:fund": "ts-node scripts/fund_vault.ts",
+    "dist:claim": "ts-node scripts/claim.ts"
   },
   "dependencies": {
+    "@coral-xyz/anchor": "^0.30.1",
+    "@noble/hashes": "^1.4.0",
+    "@solana/spl-token": "^0.4.6",
+    "@solana/web3.js": "^1.91.0",
     "did-resolver": "^4.1.0",
     "ens-did-resolver": "^1.0.0",
     "ethers": "^6.10.0",
+    "fireblocks-sdk": "^5.0.0",
     "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -27,6 +39,7 @@
     "eslint-config-next": "^14.0.0",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.4.0",
+    "ts-node": "^10.9.0",
     "typescript": "^5.0.0"
   },
   "keywords": [
@@ -37,7 +50,10 @@
     "ens",
     "did",
     "ssi",
-    "nobleport"
+    "nobleport",
+    "solana",
+    "token-2022",
+    "distribution"
   ],
   "author": "Noble Port Realty",
   "license": "UNLICENSED",
