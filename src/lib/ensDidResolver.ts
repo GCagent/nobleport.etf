@@ -162,6 +162,7 @@ export const NOBLEPORT_ENS = {
   ROOT_DID: 'did:ens:nobleport.eth',
   ETF: 'etf.nobleport.eth',
   ETF_DID: 'did:ens:etf.nobleport.eth',
+  CONTROLLER_ADDRESS: '0xb446af340df7f1d960037daecfa9de2fad42adca',
 } as const;
 
 /**

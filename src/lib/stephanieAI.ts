@@ -22,6 +22,9 @@ export const NOBLEPORT_MODULES = {
   STEPHANIE_ENS: 'stephanie.nobleport.eth',
   ETF_ENS: 'etf.nobleport.eth',
 
+  // Controller Address (Ethereum)
+  CONTROLLER_ADDRESS: '0xb446af340df7f1d960037daecfa9de2fad42adca',
+
   // DIDs
   ROOT_DID: 'did:ens:nobleport.eth',
   STEPHANIE_DID: 'did:ens:stephanie.nobleport.eth',

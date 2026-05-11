@@ -281,6 +281,7 @@ Stephanie.ai (stephanie.ai / stephanie.io) serves as the central AI orchestratio
 | DID | `did:ens:stephanie.nobleport.eth` |
 | Domains | stephanie.ai, stephanie.io |
 | Root Identity | nobleport.eth |
+| Controller Address | `0xb446af340df7f1d960037daecfa9de2fad42adca` |
 
 ### Connected AI Platforms (MCP)
 
@@ -563,11 +564,14 @@ NoblePort ETF leverages Self-Sovereign Identity (SSI) principles through ENS-bas
 
 ### ENS DID Architecture
 
+**Controller Address:** `0xb446af340df7f1d960037daecfa9de2fad42adca`
+
 ```
 NoblePort SSI Layer
 ├── Identity Resolution
 │   ├── did:ens:nobleport.eth (Root Identity)
 │   ├── did:ens:etf.nobleport.eth (ETF Identity)
+│   ├── Controller: 0xb446af340df7f1d960037daecfa9de2fad42adca
 │   └── Subname DIDs for properties/participants
 │
 ├── Resolution Stack
@@ -762,10 +766,11 @@ Leverage PitchBook data platform for:
 
 ## 📞 Contact & Resources
 
-**Website:** [nobleport.etf](https://nobleport.etf)  
-**Holdings Dashboard:** [holdings.nobleport.etf](https://holdings.nobleport.etf)  
-**Prospectus:** [prospectus.nobleport.etf](https://prospectus.nobleport.etf)  
+**Website:** [nobleport.etf](https://nobleport.etf)
+**Holdings Dashboard:** [holdings.nobleport.etf](https://holdings.nobleport.etf)
+**Prospectus:** [prospectus.nobleport.etf](https://prospectus.nobleport.etf)
 **Investor Relations:** [email protected]
+**Controller Address:** `0xb446af340df7f1d960037daecfa9de2fad42adca`
 
 **Authorized Participant Portal:** [ap.nobleport.etf](https://ap.nobleport.etf)  
 **Custodian:** [Institutional Custodian Name]  

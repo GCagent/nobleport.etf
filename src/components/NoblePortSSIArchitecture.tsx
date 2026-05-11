@@ -12,6 +12,7 @@ import {
   getEnsTextRecords,
   NOBLEPORT_ENS,
   ensNameToDid,
+  reverseResolveEns,
 } from '../lib/ensDidResolver';
 
 // Types
@@ -170,7 +171,7 @@ const NoblePortSSIArchitecture: React.FC = () => {
             </div>
           </SectionCard>
 
-          <SectionCard title="Integration Status">
+          <SectionCard title="Controller Identity">
             <div className="space-y-2 text-xs text-slate-400">
               <div className="flex justify-between">
                 <span>ETF Integration</span>
@@ -180,9 +181,11 @@ const NoblePortSSIArchitecture: React.FC = () => {
                 <span>Token Verification</span>
                 <StatusBadge status="active" />
               </div>
-              <div className="flex justify-between">
-                <span>Cross-chain</span>
-                <StatusBadge status="pending" />
+              <div>
+                <span className="text-slate-500">Controller</span>
+                <span className="text-cyan-400 font-mono block text-[10px] mt-0.5 break-all">
+                  {NOBLEPORT_ENS.CONTROLLER_ADDRESS}
+                </span>
               </div>
             </div>
           </SectionCard>
@@ -320,7 +323,7 @@ const NoblePortSSIArchitecture: React.FC = () => {
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-slate-600">
-          NoblePort SSI Architecture • did:ens:nobleport.eth • Powered by ENS &amp; Ethereum
+          NoblePort SSI Architecture • did:ens:nobleport.eth • Controller: {NOBLEPORT_ENS.CONTROLLER_ADDRESS} • Powered by ENS &amp; Ethereum
         </div>
       </div>
     </div>
