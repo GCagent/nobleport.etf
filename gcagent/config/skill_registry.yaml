@@ -84,6 +84,7 @@ skills:
       - cost_controls
       - fallback_strategies
       - safe_completion_handling
+      - nobleport_ai_guardrails_enforcement
     inputs: [tool_catalog, trust_boundaries, cost_budget, sla]
     outputs: [validation_schema, rate_limit_policy, fallback_playbook, incident_runbook]
     dependencies: [agent_architecture, tool_integration]
@@ -91,13 +92,17 @@ skills:
       - Validate at trust boundaries; trust internal contracts.
       - Gate destructive or externally visible actions behind explicit approval.
       - Prefer idempotent retries over best-effort re-invocation.
+      - Honor every binding NoblePort AI Guardrail (see ai_guardrails.yaml).
+      - Cite the relevant guardrail ID when refusing, escalating, or logging.
     success_criteria:
       - All external tool calls have declared error taxonomies and retry policies.
       - Cost and rate ceilings are enforced at the orchestrator, not per-tool.
+      - Every refusal references the binding guardrail ID it enforces.
     failure_modes:
       - retry_storm
       - silent_fallback_to_degraded_mode
       - unbounded_tool_recursion
+      - guardrail_violation_without_audit_log
 
   # --- execution ------------------------------------------------------------
 

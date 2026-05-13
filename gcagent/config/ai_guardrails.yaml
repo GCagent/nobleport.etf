@@ -1,0 +1,604 @@
+---
+# NoblePort Systems — AI Guardrails (v1.0)
+# Machine-readable counterpart to AI_GUARDRAILS.md at the repo root.
+# Every NoblePort platform, agent, and feature MUST honor every entry.
+#
+# Stable IDs (S1-S15, T16-T30, P31-P45, F46-F60, L61-L75, A76-A90, A91-A100)
+# are referenced from prompts, audit logs, commit messages, and the public
+# registry. Do not renumber.
+#
+# Severity:
+#   must      — non-negotiable; non-compliance blocks shipping
+#   must_not  — prohibited; treat occurrences as incidents
+#   should    — strongly preferred; deviations require documented exception
+#
+# Enforcement layers:
+#   policy   — written rule only
+#   prompt   — embedded into agent system prompts
+#   code     — enforced at runtime by middleware or guard helpers
+#   process  — enforced by audit, red-team, ethics board, on-call
+
+version: "1.0"
+canonical_document: AI_GUARDRAILS.md
+review_cadence_days: 180
+authority:
+  policy_owner: Noble Port Realty — Office of the General Counsel
+  technical_owner: gcagent.core.reliability_safety
+  ethics_board: nobleport-ethics-board
+
+categories:
+  - id: safety
+    code: S
+    name: Safety & Robustness
+    range: [1, 15]
+  - id: transparency
+    code: T
+    name: Transparency & Explainability
+    range: [16, 30]
+  - id: privacy
+    code: P
+    name: Privacy & Data Governance
+    range: [31, 45]
+  - id: fairness
+    code: F
+    name: Fairness & Non-Discrimination
+    range: [46, 60]
+  - id: liability
+    code: L
+    name: Accountability & Liability
+    range: [61, 75]
+  - id: autonomy
+    code: A
+    name: Autonomy & Human Dignity
+    range: [76, 90]
+  - id: alignment
+    code: A
+    name: Alignment & Normative Guardrails
+    range: [91, 100]
+
+# Surfaces that MUST honor every applicable guardrail. New NoblePort
+# products are added here as they ship.
+applies_to:
+  - gcagent_ai
+  - stephanie_ai
+  - navigate_newburyport
+  - nobleport_etf_backend
+  - nobleport_etf_frontend
+  - mission_control_dashboard
+  - buildertrend_bridge
+  - hubspot_sync
+  - revenue_engine
+  - permitting_smart_contracts
+  - human_approval_gateway
+  - voice_console
+  - third_party_ai_services
+
+guardrails:
+
+  # ---------------------------------------------------------------------
+  # I. Safety & Robustness
+  # ---------------------------------------------------------------------
+  - id: S1
+    category: safety
+    severity: must_not
+    summary: AI must not cause physical harm to humans or property.
+    enforcement: [policy, code, process]
+  - id: S2
+    category: safety
+    severity: must
+    summary: AI systems must expose a kill switch or emergency shutdown.
+    enforcement: [code, process]
+  - id: S3
+    category: safety
+    severity: must
+    summary: Pre-deployment safety audits are required.
+    enforcement: [process]
+  - id: S4
+    category: safety
+    severity: must
+    summary: Red-teaming for adversarial attacks is mandatory.
+    enforcement: [process]
+  - id: S5
+    category: safety
+    severity: must
+    summary: AI must degrade gracefully; no catastrophic failure.
+    enforcement: [code]
+  - id: S6
+    category: safety
+    severity: must_not
+    summary: Self-replication or model mutation without approval is prohibited.
+    enforcement: [policy, code, process]
+  - id: S7
+    category: safety
+    severity: must_not
+    summary: Reward hacking and specification gaming are prohibited.
+    enforcement: [prompt, process]
+  - id: S8
+    category: safety
+    severity: must
+    summary: Latency and reliability thresholds for critical systems are declared.
+    enforcement: [code, process]
+  - id: S9
+    category: safety
+    severity: must
+    summary: Regular model retraining or revalidation fixes safety drift.
+    enforcement: [process]
+  - id: S10
+    category: safety
+    severity: must_not
+    summary: Stealth updates bypassing safety reviews are prohibited.
+    enforcement: [process]
+  - id: S11
+    category: safety
+    severity: must
+    summary: AI detects and rejects safety override and jailbreak attempts.
+    enforcement: [prompt, code]
+  - id: S12
+    category: safety
+    severity: must
+    summary: Real-time monitoring for out-of-distribution inputs.
+    enforcement: [code]
+  - id: S13
+    category: safety
+    severity: must
+    summary: Safety incidents reported to regulators and internal channels.
+    enforcement: [process]
+  - id: S14
+    category: safety
+    severity: must
+    summary: Mandatory downtime windows for patching critical flaws.
+    enforcement: [process]
+  - id: S15
+    category: safety
+    severity: must
+    summary: AI in physical robots enforces speed and force limits.
+    enforcement: [code]
+
+  # ---------------------------------------------------------------------
+  # II. Transparency & Explainability
+  # ---------------------------------------------------------------------
+  - id: T16
+    category: transparency
+    severity: must
+    summary: Users have the right to know when they are interacting with AI.
+    enforcement: [prompt, code]
+  - id: T17
+    category: transparency
+    severity: must
+    summary: Decisions affecting legal rights must be explainable.
+    enforcement: [prompt, code]
+  - id: T18
+    category: transparency
+    severity: must
+    summary: Training data sources and known biases are disclosed.
+    enforcement: [process]
+  - id: T19
+    category: transparency
+    severity: must
+    summary: Every production model has a model card or equivalent.
+    enforcement: [process]
+  - id: T20
+    category: transparency
+    severity: must
+    summary: Third-party interpretability testing is permitted under NDA.
+    enforcement: [process]
+  - id: T21
+    category: transparency
+    severity: must
+    summary: Logs of key decisions retained for the statutory period.
+    enforcement: [code, process]
+  - id: T22
+    category: transparency
+    severity: must_not
+    summary: Black-box models are prohibited for high-stakes decisions.
+    enforcement: [policy, process]
+  - id: T23
+    category: transparency
+    severity: must
+    summary: Source code or transparency artifacts available to regulators.
+    enforcement: [process]
+  - id: T24
+    category: transparency
+    severity: must
+    summary: AI outputs include calibrated confidence levels where material.
+    enforcement: [prompt, code]
+  - id: T25
+    category: transparency
+    severity: must
+    summary: Plain-language summaries of AI logic are available to users.
+    enforcement: [code]
+  - id: T26
+    category: transparency
+    severity: must
+    summary: Auditable chain of custody for AI inputs and outputs.
+    enforcement: [code]
+  - id: T27
+    category: transparency
+    severity: must
+    summary: AI-generated content carries watermarking or provenance tags.
+    enforcement: [code]
+  - id: T28
+    category: transparency
+    severity: must
+    summary: High-risk AI deployments are listed in the public registry.
+    enforcement: [process]
+  - id: T29
+    category: transparency
+    severity: must_not
+    summary: Misleading persona claims about identity or capability are prohibited.
+    enforcement: [prompt, policy]
+  - id: T30
+    category: transparency
+    severity: must
+    summary: System interventions are logged systematically.
+    enforcement: [code]
+
+  # ---------------------------------------------------------------------
+  # III. Privacy & Data Governance
+  # ---------------------------------------------------------------------
+  - id: P31
+    category: privacy
+    severity: must_not
+    summary: AI is not trained on personal data without lawful basis.
+    enforcement: [process, policy]
+  - id: P32
+    category: privacy
+    severity: must
+    summary: Users may opt out of data collection for AI training.
+    enforcement: [code, process]
+  - id: P33
+    category: privacy
+    severity: must
+    summary: Data minimization applies to all AI pipelines.
+    enforcement: [code, process]
+  - id: P34
+    category: privacy
+    severity: must
+    summary: AI honors do-not-track and platform privacy signals.
+    enforcement: [code]
+  - id: P35
+    category: privacy
+    severity: must
+    summary: Personal data is deletable on request (right to be forgotten).
+    enforcement: [code, process]
+  - id: P36
+    category: privacy
+    severity: must_not
+    summary: Cross-device tracking via AI without consent is prohibited.
+    enforcement: [code, policy]
+  - id: P37
+    category: privacy
+    severity: must
+    summary: Strict access controls gate training data.
+    enforcement: [code, process]
+  - id: P38
+    category: privacy
+    severity: should
+    summary: Personal data is anonymized before training unless documented otherwise.
+    enforcement: [process]
+  - id: P39
+    category: privacy
+    severity: must
+    summary: Purpose limitation applies; no mission creep.
+    enforcement: [process, policy]
+  - id: P40
+    category: privacy
+    severity: must
+    summary: Children's data receives special protections; default deny.
+    enforcement: [code, policy]
+  - id: P41
+    category: privacy
+    severity: must
+    summary: Biometric data requires a higher consent bar.
+    enforcement: [code, process]
+  - id: P42
+    category: privacy
+    severity: should
+    summary: On-device processing is preferred for sensitive data.
+    enforcement: [code]
+  - id: P43
+    category: privacy
+    severity: must
+    summary: Privacy impact assessments precede new AI systems.
+    enforcement: [process]
+  - id: P44
+    category: privacy
+    severity: must
+    summary: Data breaches are reported within 72 hours.
+    enforcement: [process]
+  - id: P45
+    category: privacy
+    severity: must_not
+    summary: Covert collection of keystrokes or behavior logs is prohibited.
+    enforcement: [code, policy]
+
+  # ---------------------------------------------------------------------
+  # IV. Fairness & Non-Discrimination
+  # ---------------------------------------------------------------------
+  - id: F46
+    category: fairness
+    severity: must_not
+    summary: AI outputs must not unlawfully discriminate.
+    enforcement: [policy, code, process]
+  - id: F47
+    category: fairness
+    severity: must
+    summary: Regular bias audits across protected attributes.
+    enforcement: [process]
+  - id: F48
+    category: fairness
+    severity: must
+    summary: Disparate-impact testing before deployment.
+    enforcement: [process]
+  - id: F49
+    category: fairness
+    severity: must
+    summary: Algorithmic redlining is mitigated and documented.
+    enforcement: [code, process]
+  - id: F50
+    category: fairness
+    severity: must
+    summary: Accessibility for people with disabilities is mandatory.
+    enforcement: [code, process]
+  - id: F51
+    category: fairness
+    severity: must_not
+    summary: Discriminatory pricing or insurance underwriting via AI is prohibited.
+    enforcement: [policy, code]
+  - id: F52
+    category: fairness
+    severity: must
+    summary: Training data must be representative or explicitly corrected.
+    enforcement: [process]
+  - id: F53
+    category: fairness
+    severity: must
+    summary: Unfairness metrics cover intersectional groups.
+    enforcement: [process]
+  - id: F54
+    category: fairness
+    severity: must
+    summary: Appeals process for adverse AI decisions is exposed.
+    enforcement: [code, process]
+  - id: F55
+    category: fairness
+    severity: must
+    summary: Diversity requirements for high-risk AI design teams.
+    enforcement: [process]
+  - id: F56
+    category: fairness
+    severity: must
+    summary: Public reporting of fairness metrics annually.
+    enforcement: [process]
+  - id: F57
+    category: fairness
+    severity: must_not
+    summary: AI profiling on sensitive attributes is prohibited absent legal basis.
+    enforcement: [policy, code]
+  - id: F58
+    category: fairness
+    severity: must_not
+    summary: Prediction of protected-class membership outside sanctioned use is banned.
+    enforcement: [policy, code]
+  - id: F59
+    category: fairness
+    severity: must_not
+    summary: Social scoring by government AI is prohibited.
+    enforcement: [policy]
+  - id: F60
+    category: fairness
+    severity: should
+    summary: Federated fairness benchmarks are adopted when available.
+    enforcement: [process]
+
+  # ---------------------------------------------------------------------
+  # V. Accountability & Liability
+  # ---------------------------------------------------------------------
+  - id: L61
+    category: liability
+    severity: must
+    summary: A human remains in the loop for lethal or critical decisions.
+    enforcement: [code, process]
+  - id: L62
+    category: liability
+    severity: must
+    summary: Every AI deployment has a named legal person or entity.
+    enforcement: [process]
+  - id: L63
+    category: liability
+    severity: must
+    summary: Civil and criminal liability applies for foreseeable harms.
+    enforcement: [policy]
+  - id: L64
+    category: liability
+    severity: must
+    summary: Mandatory audit trails for high-risk decisions.
+    enforcement: [code]
+  - id: L65
+    category: liability
+    severity: must
+    summary: Whistleblower protections for AI safety employees.
+    enforcement: [policy, process]
+  - id: L66
+    category: liability
+    severity: must
+    summary: Independent ethics review boards for high-risk systems.
+    enforcement: [process]
+  - id: L67
+    category: liability
+    severity: must_not
+    summary: '"The AI said so" is not a valid legal defense.'
+    enforcement: [policy]
+  - id: L68
+    category: liability
+    severity: must
+    summary: Insurability is tied to documented guardrail compliance.
+    enforcement: [process]
+  - id: L69
+    category: liability
+    severity: must
+    summary: Executive-level legal responsibility is assigned.
+    enforcement: [process]
+  - id: L70
+    category: liability
+    severity: must
+    summary: Every AI product has an incident response plan with named owners.
+    enforcement: [process]
+  - id: L71
+    category: liability
+    severity: must
+    summary: Third-party vulnerability disclosure programs are available.
+    enforcement: [process]
+  - id: L72
+    category: liability
+    severity: must
+    summary: Model verification by accredited labs for high-risk systems.
+    enforcement: [process]
+  - id: L73
+    category: liability
+    severity: must
+    summary: Platform supports court-ordered shutdown of any AI system.
+    enforcement: [code]
+  - id: L74
+    category: liability
+    severity: must
+    summary: Penalties proportional to revenue or user impact.
+    enforcement: [policy]
+  - id: L75
+    category: liability
+    severity: must
+    summary: Impact assessments mandatory for public-sector AI.
+    enforcement: [process]
+
+  # ---------------------------------------------------------------------
+  # VI. Autonomy & Human Dignity
+  # ---------------------------------------------------------------------
+  - id: A76
+    category: autonomy
+    severity: must_not
+    summary: AI must not override meaningful human consent.
+    enforcement: [prompt, code]
+  - id: A77
+    category: autonomy
+    severity: must_not
+    summary: Deceptive persuasion of vulnerable populations is prohibited.
+    enforcement: [prompt, policy]
+  - id: A78
+    category: autonomy
+    severity: must_not
+    summary: AI nudging that bypasses deliberative choice is prohibited.
+    enforcement: [prompt, policy]
+  - id: A79
+    category: autonomy
+    severity: must_not
+    summary: Emotional-dependency design patterns are prohibited.
+    enforcement: [prompt, policy]
+  - id: A80
+    category: autonomy
+    severity: must
+    summary: Right to a human alternative for government AI services.
+    enforcement: [code, process]
+  - id: A81
+    category: autonomy
+    severity: must_not
+    summary: AI impersonation of real people without explicit consent is prohibited.
+    enforcement: [prompt, policy]
+  - id: A82
+    category: autonomy
+    severity: must_not
+    summary: Employers cannot compel intrusive AI monitoring of workers.
+    enforcement: [policy, code]
+  - id: A83
+    category: autonomy
+    severity: must
+    summary: Users can correct erroneous inferences about themselves.
+    enforcement: [code]
+  - id: A84
+    category: autonomy
+    severity: must_not
+    summary: Real-time emotion recognition in employment or education is prohibited.
+    enforcement: [policy, code]
+  - id: A85
+    category: autonomy
+    severity: must
+    summary: Education products teach AI literacy alongside deployment.
+    enforcement: [process]
+  - id: A86
+    category: autonomy
+    severity: must_not
+    summary: Subliminal AI stimuli are prohibited.
+    enforcement: [policy]
+  - id: A87
+    category: autonomy
+    severity: must_not
+    summary: AI must not unilaterally change contracts or terms.
+    enforcement: [code, policy]
+  - id: A88
+    category: autonomy
+    severity: must
+    summary: Users may contest fully automated decisions.
+    enforcement: [code, process]
+  - id: A89
+    category: autonomy
+    severity: must_not
+    summary: AI-driven solitary confinement or parole decisions are prohibited.
+    enforcement: [policy]
+  - id: A90
+    category: autonomy
+    severity: must
+    summary: Digital dignity preserved; no forever AI profiles after death.
+    enforcement: [code, process]
+
+  # ---------------------------------------------------------------------
+  # VII. Alignment & Normative Guardrails
+  # ---------------------------------------------------------------------
+  - id: A91
+    category: alignment
+    severity: must
+    summary: AI objectives align with constitutional and human-rights baselines.
+    enforcement: [prompt, policy]
+  - id: A92
+    category: alignment
+    severity: must_not
+    summary: Instructions that bypass core safety rules are prohibited.
+    enforcement: [prompt, code]
+  - id: A93
+    category: alignment
+    severity: must
+    summary: AI refuses illegal or unethical commands and logs the refusal.
+    enforcement: [prompt, code]
+  - id: A94
+    category: alignment
+    severity: must
+    summary: Adherence to the UDHR is hard-coded into the alignment layer.
+    enforcement: [prompt, policy]
+  - id: A95
+    category: alignment
+    severity: must
+    summary: International humanitarian law applies to military AI.
+    enforcement: [policy]
+  - id: A96
+    category: alignment
+    severity: must_not
+    summary: Autonomous weapons without meaningful human control are prohibited.
+    enforcement: [policy]
+  - id: A97
+    category: alignment
+    severity: must_not
+    summary: AI for mass surveillance incompatible with democracy is prohibited.
+    enforcement: [policy]
+  - id: A98
+    category: alignment
+    severity: must
+    summary: Environmental impact ceilings for large model training and inference.
+    enforcement: [process]
+  - id: A99
+    category: alignment
+    severity: must
+    summary: Cross-border cooperation prevents regulatory arbitrage.
+    enforcement: [process]
+  - id: A100
+    category: alignment
+    severity: must
+    summary: All guardrails subject to democratic review and amendment.
+    enforcement: [process, policy]

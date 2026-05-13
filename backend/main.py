@@ -29,6 +29,10 @@ from backend.config.database import init_db
 from backend.config.settings import settings
 from backend.services.sync_engine import SyncEngine
 from backend.services.hubspot_sync import HubSpotSyncService
+from backend.utils.ai_guardrails import (
+    AIGuardrailsMiddleware,
+    router as ai_guardrails_router,
+)
 import backend.models  # noqa: F401 - ensure all models registered with Base
 
 
@@ -78,8 +82,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# NoblePort AI Guardrails — disclosure (T16), version header, and
+# correlation ID for the audit chain (T26, T30, L64).
+app.add_middleware(AIGuardrailsMiddleware)
+
 # Register API routers
 app.include_router(health_router, prefix="/api", tags=["Health"])
+app.include_router(
+    ai_guardrails_router, prefix="/api/ai/guardrails", tags=["AI Guardrails"]
+)
 app.include_router(leads_router, prefix="/api/leads", tags=["Leads"])
 app.include_router(projects_router, prefix="/api/projects", tags=["Projects"])
 app.include_router(schedules_router, prefix="/api/schedules", tags=["Schedules"])

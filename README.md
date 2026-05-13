@@ -102,6 +102,45 @@ Noble Port Real Estate ETF (Ticker: NBPT)
 - Tech-savvy individuals bridging traditional and crypto
 - Diversification seekers with small capital
 
+## 🛡️ AI Guardrails
+
+Every NoblePort Systems platform, agent, and feature operates under the
+**NoblePort AI Guardrails** (v1.0) — 100 binding rules covering safety,
+transparency, privacy, fairness, accountability, autonomy, and
+alignment. The canonical policy lives at
+[`AI_GUARDRAILS.md`](./AI_GUARDRAILS.md). A machine-readable manifest
+lives at
+[`gcagent/config/ai_guardrails.yaml`](./gcagent/config/ai_guardrails.yaml).
+
+**What this means in practice:**
+
+- The Mission Control dashboard, StephanieAI, NavigateNewburyport,
+  GCagent.ai, and any future NoblePort surface disclose AI involvement
+  (T16), surface confidence levels for material predictions (T24), and
+  expose an appeals path (F54) for adverse automated decisions.
+- The FastAPI backend ships an `AIGuardrailsMiddleware` that sets the
+  `X-NoblePort-AI-Disclosure` and `X-NoblePort-AI-Guardrails-Version`
+  headers and assigns a correlation ID to every request (audit chain
+  under T26, T30, L64). The full manifest is served at
+  `GET /api/ai/guardrails`; individual rules at
+  `GET /api/ai/guardrails/{id}`.
+- The GCagent system prompt embeds the binding guardrails as Block 5;
+  refusals cite guardrail IDs (for example, "Refusing under A93").
+- Smart contract paths gated by `HumanApprovalGateway` enforce L61
+  (human-in-the-loop for critical decisions) on-chain.
+- Every binding guardrail has a stable ID (`S1`–`S15`, `T16`–`T30`,
+  `P31`–`P45`, `F46`–`F60`, `L61`–`L75`, `A76`–`A100`). IDs are
+  referenced in commit messages, audit logs, and incident reports.
+
+**Reporting violations.** File internally with the L70 incident owner;
+publicly via the L71 disclosure program; safety incidents to regulators
+under S13 within the statutory window; data breaches under P44 within
+72 hours.
+
+The guardrails are subject to democratic review and amendment (A100);
+amendments require an updated `ai_guardrails.yaml` and a logged
+approval from the ethics review board (L66).
+
 ## 🔐 Regulatory Compliance
 
 ### SEC Registration

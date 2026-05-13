@@ -275,34 +275,43 @@ def render_system_prompt(
     registry: SkillRegistry | None = None,
     *,
     include_modules: Iterable[str] = (),
+    include_guardrails: bool = True,
 ) -> str:
-    """Render the GCagent system prompt, optionally appending module detail.
+    """Render the GCagent system prompt.
 
-    The base prompt lives in `system_prompt.md`. Requested domain modules are
-    resolved against the registry and appended as a "Loaded modules" block.
+    The base prompt lives in `system_prompt.md`. When ``include_guardrails``
+    is true (default) the NoblePort AI Guardrails registry is appended as
+    Block 5's enumerated rules. Requested domain modules are resolved and
+    appended as a "Loaded modules" section.
     """
     registry = registry or load_registry()
     base = SYSTEM_PROMPT_PATH.read_text(encoding="utf-8")
+    parts: list[str] = [base.rstrip()]
+
+    if include_guardrails:
+        # Local import keeps the capabilities module dependency-light.
+        from .core.reliability_safety import render_prompt_section
+
+        parts.append(render_prompt_section().rstrip())
 
     modules = list(include_modules)
-    if not modules:
-        return base
+    if modules:
+        unknown = [m for m in modules if m not in registry.modules]
+        if unknown:
+            raise ValueError(f"Unknown domain modules: {unknown}")
+        lines = ["## Loaded modules", ""]
+        for module_id in modules:
+            module = registry.modules[module_id]
+            required = ", ".join(f"`{r}`" for r in module.required_skills)
+            lines.append(f"### {module.name} (`{module.id}`)")
+            lines.append("")
+            lines.append(module.purpose)
+            lines.append("")
+            lines.append(f"**Requires:** {required}")
+            lines.append("")
+        parts.append("\n".join(lines).rstrip())
 
-    unknown = [m for m in modules if m not in registry.modules]
-    if unknown:
-        raise ValueError(f"Unknown domain modules: {unknown}")
-
-    lines = ["", "## Loaded modules", ""]
-    for module_id in modules:
-        module = registry.modules[module_id]
-        required = ", ".join(f"`{r}`" for r in module.required_skills)
-        lines.append(f"### {module.name} (`{module.id}`)")
-        lines.append("")
-        lines.append(module.purpose)
-        lines.append("")
-        lines.append(f"**Requires:** {required}")
-        lines.append("")
-    return base.rstrip() + "\n" + "\n".join(lines).rstrip() + "\n"
+    return "\n\n".join(parts) + "\n"
 
 
 # ---------------------------------------------------------------------------
