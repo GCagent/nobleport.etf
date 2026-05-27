@@ -1,15 +1,21 @@
 """
-NoblePort Backend — Main Application Entry Point
+NoblePort Backend — Matter OS v2.0 (Layer 4: Backend Logic)
 
-FastAPI application serving as the Python/Linux backend for NoblePort Networks.
+FastAPI application serving as the backend service layer for the
+Stephanie.ai Production Stack.
 
-Architecture:
-  Stephanie.ai  → intake / orchestration interface
-  GCagent.ai    → construction execution agent
-  PermitStream.ai → permit intelligence (MA-focused)
-  This backend  → API gateway, data layer, integration bridge
+Architecture Layers:
+  Layer 1: Stephanie.ai     → Constitutional AI Executive
+  Layer 2: Agent Layer      → GCagent.ai, PermitStream.ai, TreasuryBotV3
+  Layer 3: Vercel           → Frontend Delivery (Next.js 15 + Edge)
+  Layer 4: This Backend     → FastAPI + LangGraph + PostgreSQL
+  Layer 5: Trust Infra      → AuditBeacon + IPFS + Arweave + Safe
+  Layer 6: Blockchain       → Solana Token-2022 + zkSBT
 
 Revenue spine: Lead → Intake → Estimate → Permit → Build → Invoice → Closeout
+
+Design principle: Backend-authoritative for all regulated calculations.
+Sovereignty mandate: US-based nodes only.
 """
 
 from contextlib import asynccontextmanager
@@ -31,8 +37,14 @@ from backend.api.payments import router as payments_router
 from backend.api.change_orders import router as change_orders_router
 from backend.api.revenue import router as revenue_router
 from backend.api.dashboard import router as dashboard_router
+from backend.api.mcp_gateway import router as mcp_router
+from backend.api.kpi import router as kpi_router
+from backend.api.audit_api import router as audit_router
 from backend.config.database import init_db
+from backend.config.module_registry import AGENT_DEFINITIONS
 from backend.config.settings import settings
+from backend.mcp.gateway import gateway as mcp_gateway
+from backend.services.kpi_worker import kpi_worker
 from backend.services.sync_engine import SyncEngine
 from backend.services.hubspot_sync import HubSpotSyncService
 import backend.models  # noqa: F401 - ensure all models registered with Base
@@ -42,6 +54,17 @@ import backend.models  # noqa: F401 - ensure all models registered with Base
 async def lifespan(app: FastAPI):
     """Application startup and shutdown lifecycle."""
     await init_db()
+
+    # Register MCP agents
+    for agent_def in AGENT_DEFINITIONS:
+        mcp_gateway.register_agent(
+            agent_name=agent_def["agent_name"],
+            endpoint=agent_def["endpoint"],
+            owner_domain=agent_def["owner_domain"],
+        )
+
+    # Initial KPI collection (all modules start BLOCKED)
+    await kpi_worker.collect_all()
 
     sync_engine = SyncEngine()
     app.state.sync_engine = sync_engine
@@ -64,13 +87,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="NoblePort Backend",
+    title="NoblePort Matter OS — Backend Service Layer",
     description=(
-        "Python/Linux backend for NoblePort Networks. "
-        "Provides construction project management APIs, Buildertrend integration bridge, "
-        "and data sync services connecting to the NoblePort ETF tokenization platform."
+        "Layer 4 of the Stephanie.ai Production Stack. "
+        "Provides construction project management APIs, multi-agent orchestration, "
+        "revenue spine enforcement, and integration bridge for the NoblePort ecosystem."
     ),
-    version="1.0.0",
+    version="2.0.0",
     lifespan=lifespan,
     docs_url="/api/docs",
     redoc_url="/api/redoc",
@@ -99,6 +122,9 @@ app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
 app.include_router(change_orders_router, prefix="/api/change-orders", tags=["Change Orders (AWO)"])
 app.include_router(revenue_router, prefix="/api/revenue", tags=["Revenue Engine"])
 app.include_router(dashboard_router, prefix="/api/v1/dashboard", tags=["Mission Control"])
+app.include_router(mcp_router, prefix="/api/mcp", tags=["MCP Gateway"])
+app.include_router(kpi_router, prefix="/api/kpi", tags=["KPI Dashboard"])
+app.include_router(audit_router, prefix="/api/audit", tags=["AuditBeacon"])
 
 
 if __name__ == "__main__":

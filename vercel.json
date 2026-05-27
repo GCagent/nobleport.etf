@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "crons": [],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, must-revalidate" }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/backend/:path*",
+      "destination": "https://api.nobleport.systems/api/:path*"
+    }
+  ]
+}

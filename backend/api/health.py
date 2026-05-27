@@ -1,5 +1,5 @@
 """
-NoblePort Health Check Endpoint
+NoblePort Health Check Endpoint — Matter OS v2.0
 """
 
 from datetime import datetime, timezone
@@ -7,8 +7,12 @@ from datetime import datetime, timezone
 from fastapi import APIRouter
 
 from backend.config.command_freeze import BLOCKED_COMMANDS
+from backend.config.module_registry import AGENT_DEFINITIONS, MODULE_DEFINITIONS
 from backend.config.operational_truth import OPERATIONAL_TRUTH, get_status_summary
 from backend.config.settings import settings
+from backend.mcp.audit import audit_beacon
+from backend.mcp.gateway import gateway as mcp_gateway
+from backend.services.kpi_worker import kpi_worker
 
 router = APIRouter()
 
@@ -19,7 +23,8 @@ async def health_check():
         "status": "healthy",
         "service": settings.app_name,
         "environment": settings.environment.value,
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "stack": "Matter OS v2.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "integrations": {
             "buildertrend": {
@@ -31,9 +36,27 @@ async def health_check():
                 "ens_domain": settings.nobleport_ens_domain,
                 "chain_id": settings.nobleport_chain_id,
             },
+            "solana": {
+                "rpc_url": settings.solana_rpc_url,
+                "token_mint_configured": settings.solana_token_mint is not None,
+            },
+            "voice": {
+                "elevenlabs_configured": settings.elevenlabs_api_key is not None,
+                "livekit_configured": settings.livekit_url is not None,
+            },
         },
+        "mcp_gateway": {
+            "registered_agents": len(mcp_gateway.get_registered_agents()),
+            "total_agents_defined": len(AGENT_DEFINITIONS),
+            "total_modules": len(MODULE_DEFINITIONS),
+            "call_stats": mcp_gateway.get_call_stats(),
+            "audit_chain_length": audit_beacon.chain_length,
+            "audit_chain_valid": audit_beacon.verify_chain(),
+        },
+        "kpi_truth": kpi_worker.get_truth_summary(),
         "operational_truth": get_status_summary(),
         "frozen_commands": len(BLOCKED_COMMANDS),
+        "jurisdiction": settings.jurisdiction,
     }
 
 

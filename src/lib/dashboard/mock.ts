@@ -26,7 +26,7 @@ import type {
   VoiceTranscriptTurn,
 } from './types';
 
-const NOW_ISO = '2026-05-09T14:35:00Z';
+const NOW_ISO = '2026-05-24T14:35:00Z';
 
 const minus = (mins: number) => new Date(Date.parse(NOW_ISO) - mins * 60_000).toISOString();
 const plus = (mins: number) => new Date(Date.parse(NOW_ISO) + mins * 60_000).toISOString();

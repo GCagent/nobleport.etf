@@ -15,9 +15,20 @@ const PRIMARY: NavItem[] = [
   { href: '/dashboard/jobs', label: 'Jobs', hint: 'GCagent · production' },
   { href: '/dashboard/permits', label: 'Permits', hint: 'PermitStream · AHJs' },
   { href: '/dashboard/agents', label: 'Agents', hint: 'AI mesh · queues' },
+  { href: '/dashboard/gateway', label: 'Gateway', hint: 'MCP · 6 agents · tools' },
+  { href: '/dashboard/modules', label: 'Modules', hint: '50 KPIs · truth ledger' },
   { href: '/dashboard/voice', label: 'Voice', hint: 'Stephanie console' },
+  { href: '/dashboard/stream', label: 'Stream', hint: 'Live avatar · LiveKit' },
   { href: '/dashboard/compliance', label: 'Compliance', hint: 'Cyborg · kill switches' },
   { href: '/dashboard/audit', label: 'Audit', hint: 'Hash-linked chain' },
+];
+
+const ADMIN: NavItem[] = [
+  { href: '/admin/scoreboard', label: 'Scoreboard', hint: 'Agent leaderboard' },
+  { href: '/admin/intake', label: 'Intake', hint: 'Stephanie queue' },
+  { href: '/admin/treasury', label: 'Treasury', hint: 'Safe · approvals' },
+  { href: '/admin/investors', label: 'Investors', hint: 'Whitelist · KYC' },
+  { href: '/admin/whitelist', label: 'Whitelist', hint: 'Token access' },
 ];
 
 const SECONDARY: NavItem[] = [
@@ -59,8 +70,13 @@ export function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
         {PRIMARY.map((item) => (
+          <NavLink key={item.href} item={item} active={isActive(item.href)} />
+        ))}
+        <div className="my-3 divider" />
+        <div className="panel-subtitle mb-1 px-3">Admin</div>
+        {ADMIN.map((item) => (
           <NavLink key={item.href} item={item} active={isActive(item.href)} />
         ))}
         <div className="my-3 divider" />
@@ -75,8 +91,12 @@ export function Sidebar() {
           <span className="pill-info">production</span>
         </div>
         <div className="mt-1 flex items-center justify-between">
-          <span>Region</span>
-          <span className="num">hetzner-fsn1</span>
+          <span>Edge</span>
+          <span className="num">vercel-iad1</span>
+        </div>
+        <div className="mt-1 flex items-center justify-between">
+          <span>Stack</span>
+          <span className="num">Matter OS v2.0</span>
         </div>
       </div>
     </aside>
