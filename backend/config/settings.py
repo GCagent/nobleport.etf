@@ -8,8 +8,12 @@ including Buildertrend integration parameters and database configuration.
 from enum import Enum
 from typing import Optional
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings
+
+# Dev-only fallback secret. Booting in production with this value is rejected
+# by the production-safety validator below.
+DEV_SECRET_KEY = "nobleport-dev-secret-change-in-production"
 
 
 class Environment(str, Enum):
@@ -32,7 +36,7 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8400
     log_level: str = "INFO"
-    secret_key: str = "nobleport-dev-secret-change-in-production"
+    secret_key: str = DEV_SECRET_KEY
 
     # Database
     database_url: str = "sqlite+aiosqlite:///./nobleport.db"
@@ -94,6 +98,37 @@ class Settings(BaseSettings):
         "env_prefix": "NOBLEPORT_",
         "case_sensitive": False,
     }
+
+    @model_validator(mode="after")
+    def _enforce_production_safety(self) -> "Settings":
+        """Fail fast on insecure configuration in production.
+
+        Only enforced when ``environment == PRODUCTION`` so local and CI
+        development are unaffected. Catches the common deployment mistakes of
+        shipping the dev signing key, leaving debug on, or exposing the API to
+        any origin with credentials enabled.
+        """
+        if self.environment is not Environment.PRODUCTION:
+            return self
+
+        problems: list[str] = []
+        if self.secret_key == DEV_SECRET_KEY:
+            problems.append(
+                "secret_key is still the development default — set "
+                "NOBLEPORT_SECRET_KEY to a unique random value"
+            )
+        if self.debug:
+            problems.append("debug must be False in production")
+        if "*" in self.cors_origins:
+            problems.append(
+                "cors_origins must not be a wildcard while credentials are allowed"
+            )
+
+        if problems:
+            raise ValueError(
+                "Insecure production configuration: " + "; ".join(problems)
+            )
+        return self
 
 
 settings = Settings()

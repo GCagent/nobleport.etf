@@ -25,9 +25,17 @@
     "autoprefixer": "^10.4.0",
     "eslint": "^8.0.0",
     "eslint-config-next": "^14.0.0",
-    "postcss": "^8.4.0",
+    "postcss": "^8.5.15",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.0.0"
+  },
+  "overrides": {
+    "ws": "^8.21.0",
+    "elliptic": "^6.6.1",
+    "postcss": "$postcss",
+    "@next/eslint-plugin-next": {
+      "glob": "^10.5.0"
+    }
   },
   "keywords": [
     "etf",
