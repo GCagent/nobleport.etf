@@ -62,6 +62,12 @@ OPERATIONAL_TRUTH: dict[str, dict[str, Any]] = {
         "dependencies": ["playwright", "postgres"],
         "geo_constraint": "Massachusetts",
     },
+    "avatar_control_plane": {
+        "status": DeploymentStatus.STAGED,
+        "surface": "Stephanie.ai",
+        "description": "Model emits validated avatar control packets; actions gated by command freeze",
+        "dependencies": ["openai", "fastapi"],
+    },
     "treasury_workflows": {
         "status": DeploymentStatus.STAGED,
         "surface": "Backend",

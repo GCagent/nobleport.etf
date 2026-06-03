@@ -84,6 +84,16 @@ class Settings(BaseSettings):
     stephanie_mcp_endpoint: str = "http://localhost:3100/mcp"
     stephanie_api_key: Optional[str] = None
 
+    # Stephanie.ai Avatar Control Plane (OpenAI model + TTS)
+    # The model produces a validated avatar control packet; it does not act.
+    openai_api_key: Optional[str] = None
+    avatar_model: str = "gpt-4o"  # set to your current production model (e.g. gpt-5.5)
+    avatar_tts_model: str = "gpt-4o-mini-tts"
+    avatar_tts_voice: str = "coral"
+    avatar_temperature: float = 0.4
+    avatar_max_output_tokens: int = 800
+    audit_log_path: str = "./nobleport_audit.jsonl"
+
     # CORS
     cors_origins: list[str] = Field(
         default=["http://localhost:3000", "http://localhost:8400"]
