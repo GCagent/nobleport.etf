@@ -1,0 +1,58 @@
+# NoblePort Systems — Fly.io deployment for the backend API + core agent layer.
+#
+# A small general contractor or real estate agent can launch their own private,
+# secure instance from their fork with two commands:
+#
+#   fly launch --copy-config --no-deploy   # creates the app from this file
+#   fly deploy                             # builds backend/Dockerfile and ships it
+#
+# Secrets (never commit these) are set with:
+#   fly secrets set NOBLEPORT_SECRET_KEY=... NOBLEPORT_DATABASE_URL=... \
+#                   NOBLEPORT_STRIPE_SECRET_KEY=... NOBLEPORT_NOBLEPORT_RPC_URL=...
+#
+# A managed Postgres can be attached with:
+#   fly postgres create && fly postgres attach <pg-app-name>
+# which injects DATABASE_URL — map it to NOBLEPORT_DATABASE_URL via secrets.
+
+app = "nobleport-systems"
+primary_region = "bos"   # Boston — closest to NoblePort's Newburyport, MA footprint
+
+[build]
+  dockerfile = "backend/Dockerfile"
+
+# Non-secret configuration. Secrets go through `fly secrets set` (see above).
+[env]
+  NOBLEPORT_ENVIRONMENT = "production"
+  NOBLEPORT_DEBUG = "false"
+  NOBLEPORT_HOST = "0.0.0.0"
+  NOBLEPORT_PORT = "8400"
+  NOBLEPORT_LOG_LEVEL = "INFO"
+  NOBLEPORT_BUILDERTREND_SYNC_MODE = "scheduled"
+  NOBLEPORT_NOBLEPORT_ENS_DOMAIN = "nobleport.eth"
+  NOBLEPORT_NOBLEPORT_CHAIN_ID = "1"
+
+[http_service]
+  internal_port = 8400
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0   # scale to zero when idle to keep small-business costs near zero
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+  # Fly health check hits the FastAPI health endpoint.
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/api/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpus = 1

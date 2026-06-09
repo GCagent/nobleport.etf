@@ -1,0 +1,51 @@
+# Keep the backend image lean: exclude the Next.js frontend, VCS, and local
+# artifacts from the Docker build context.
+
+# Node / Next.js frontend (deployed separately on Vercel)
+node_modules/
+.next/
+out/
+src/
+public/
+package.json
+package-lock.json
+next.config.js
+next-env.d.ts
+postcss.config.js
+tailwind.config.js
+tsconfig.json
+.eslintrc.json
+vercel.json
+.vercelignore
+
+# Smart contracts (deployed via their own toolchain)
+contracts/
+
+# Version control & CI
+.git/
+.github/
+
+# Python local artifacts
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Databases, logs, env
+*.db
+*.log
+.env
+.env.local
+.env.*.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Docs (not needed at runtime)
+docs/

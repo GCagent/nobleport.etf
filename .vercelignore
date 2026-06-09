@@ -7,3 +7,6 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 nobleport.db
+docker-compose.yml
+fly.toml
+.dockerignore

@@ -1,0 +1,78 @@
+# NoblePort Systems — one-click local / self-hosted deployment.
+#
+# Brings up the full backend stack so a non-technical owner does not need to
+# install Python, configure a database, or open a terminal beyond a single
+# command:
+#
+#   docker compose up -d
+#
+# Then open the API docs at http://localhost:8400/api/docs
+#
+# The Next.js no-code dashboard (src/) deploys separately on Vercel and points
+# at this backend via NEXT_PUBLIC_API_BASE_URL.
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: nobleport/backend:latest
+    restart: unless-stopped
+    ports:
+      - "8400:8400"
+    environment:
+      NOBLEPORT_ENVIRONMENT: production
+      NOBLEPORT_DEBUG: "false"
+      NOBLEPORT_LOG_LEVEL: INFO
+      NOBLEPORT_HOST: 0.0.0.0
+      NOBLEPORT_PORT: "8400"
+      # Postgres-backed persistence (asyncpg driver).
+      NOBLEPORT_DATABASE_URL: postgresql+asyncpg://nobleport:nobleport@postgres:5432/nobleport
+      NOBLEPORT_REDIS_URL: redis://redis:6379/0
+      # Override these via a .env file (see backend/.env.example).
+      NOBLEPORT_SECRET_KEY: ${NOBLEPORT_SECRET_KEY:-change-me-in-production}
+      NOBLEPORT_STRIPE_SECRET_KEY: ${NOBLEPORT_STRIPE_SECRET_KEY:-}
+      NOBLEPORT_NOBLEPORT_RPC_URL: ${NOBLEPORT_NOBLEPORT_RPC_URL:-https://mainnet.infura.io/v3/}
+      NOBLEPORT_CORS_ORIGINS: '["http://localhost:3000","http://localhost:8400"]'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8400/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nobleport
+      POSTGRES_PASSWORD: nobleport
+      POSTGRES_DB: nobleport
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nobleport"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
