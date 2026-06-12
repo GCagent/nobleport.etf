@@ -16,13 +16,18 @@ import {
   getInvoices as mockInvoices,
   getJobs as mockJobs,
   getKillSwitches as mockKillSwitches,
+  getGatewayStatus as mockGateway,
   getKpis as mockKpis,
+  getModuleCatalog as mockModules,
   getOverview as mockOverview,
   getPermitForecast as mockPermitForecast,
   getPermits as mockPermits,
   getPipeline as mockPipeline,
+  getProgramReport as mockProgram,
   getRevenueRules as mockRules,
+  getSalesIntelligence as mockSales,
   getStaleDeals as mockDeals,
+  getSystemsRegistry as mockSystems,
   getVoiceSession as mockVoiceSession,
   getVoiceTranscript as mockVoiceTranscript,
 } from './mock';
@@ -34,6 +39,11 @@ export const fetchCashPosition = async () => mockCash();
 export const fetchStaleDeals = async () => mockDeals();
 export const fetchInvoices = async () => mockInvoices();
 export const fetchRevenueRules = async () => mockRules();
+export const fetchSalesIntelligence = async () => mockSales();
+export const fetchProgramReport = async () => mockProgram();
+export const fetchSystemsRegistry = async () => mockSystems();
+export const fetchModuleCatalog = async () => mockModules();
+export const fetchGatewayStatus = async () => mockGateway();
 export const fetchJobs = async () => mockJobs();
 export const fetchPermits = async () => mockPermits();
 export const fetchPermitForecast = async () => mockPermitForecast();

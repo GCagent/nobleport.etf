@@ -20,5 +20,13 @@
     }
   },
   "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "backend", "gcagent", "contracts"]
+  "exclude": [
+    "node_modules",
+    "backend",
+    "gcagent",
+    "contracts",
+    "vitest.config.ts",
+    "src/**/__tests__/**",
+    "src/**/*.test.ts"
+  ]
 }

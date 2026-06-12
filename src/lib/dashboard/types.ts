@@ -204,6 +204,331 @@ export interface RevenueRule {
   violations: number;
 }
 
+// ---------------------------------------------------------------------------
+// Sales Intelligence (GPPI v2.0)
+// ---------------------------------------------------------------------------
+
+export type GppiKpiKey =
+  | 'gross_profit'
+  | 'revenue'
+  | 'avg_job_size'
+  | 'close_rate'
+  | 'lead_response_time'
+  | 'customer_satisfaction';
+
+export interface GppiRep {
+  repId: string;
+  name: string;
+  gppi: number; // 0..100
+  rank: number;
+  percentile: number; // 0..1
+  grossProfit: number;
+  revenue: number;
+  avgJobSize: number;
+  closeRate: number; // 0..1
+  leadResponseHours: number;
+  csat: number; // 0..5
+  topPerformer: boolean;
+}
+
+export interface SalesServiceLine {
+  key: string;
+  name: string;
+  tier: 1 | 2 | 3 | 4;
+  rank: number;
+  leadFeeder: boolean;
+  typicalJobMid: number;
+}
+
+export interface SalesMarketRow {
+  town: string;
+  leads: number;
+  premium: number;
+  standard: number;
+}
+
+export interface SalesRouting {
+  premium: number;
+  standard: number;
+  topPerformers: number;
+  developingStaff: number;
+}
+
+export interface SalesReadiness {
+  monthsOfRealData: number;
+  mode: 'simulation_primary' | 'blended' | 'data_primary';
+  realDataWeight: number; // 0..1
+  nextMilestone: string;
+}
+
+export type DataProvenance = 'SIMULATED' | 'BLENDED' | 'ACTUAL';
+
+export interface SalesCapture {
+  provenance: DataProvenance;
+  monthsOfRealData: number;
+  capturedOpportunities: number;
+  capturedCompletions: number;
+  realDataWeight: number; // 0..1
+  blockingGaps: string[];
+  nextAction: string;
+}
+
+export interface CloseRateLever {
+  key: string;
+  name: string;
+  owner: string;
+  lift: number; // relative, e.g. 0.18
+  runningRate: number; // 0..1
+}
+
+export interface CloseRateLoop {
+  baselineLow: number; // 0..1
+  baselineHigh: number; // 0..1
+  current: number; // 0..1
+  projected: number; // 0..1
+  ceiling: number; // 0..1
+  levers: CloseRateLever[];
+}
+
+export interface SalesGovernanceRow {
+  action: string;
+  gate: 'auto' | 'human';
+  truthTag: 'LIVE' | 'STAGED' | 'SIMULATED' | 'BLOCKED';
+  rationale: string;
+}
+
+export interface SalesHandoff {
+  trigger: string;
+  from: string;
+  to: string;
+  payload: string[];
+  humanGated: boolean;
+}
+
+export interface SalesIntelligence {
+  version: string;
+  truthTag: 'LIVE' | 'STAGED' | 'SIMULATED' | 'BLOCKED';
+  provenance: DataProvenance;
+  label: string;
+  neededNext: string;
+  decisionAuthority: string;
+  generatedAt: string;
+  weights: Record<GppiKpiKey, number>;
+  headline: {
+    grossProfit: number;
+    revenue: number;
+    grossMarginPct: number; // 0..1
+    averageJobSize: number;
+    avgCloseRate: number; // 0..1
+  };
+  leaderboard: GppiRep[];
+  hierarchy: SalesServiceLine[];
+  routing: SalesRouting;
+  markets: SalesMarketRow[];
+  readiness: SalesReadiness;
+  capture: SalesCapture;
+  closeRate: CloseRateLoop;
+  governance: SalesGovernanceRow[];
+  collaboration: SalesHandoff[];
+}
+
+// ---------------------------------------------------------------------------
+// Program Completion (portfolio view)
+// ---------------------------------------------------------------------------
+
+export type ProgramDimension = 'backend' | 'api' | 'ui' | 'tests' | 'docs' | 'contract';
+export type ProgramStatus = 'complete' | 'in_progress' | 'planned';
+
+export interface ProgramDeliverable {
+  dimension: ProgramDimension;
+  label: string;
+  satisfied: boolean;
+  path: string | null;
+}
+
+export interface ProjectCompletion {
+  key: string;
+  name: string;
+  summary: string;
+  category: string;
+  owner: string;
+  since: string;
+  completion: number; // 0..1
+  status: ProgramStatus;
+  delivered: number;
+  total: number;
+  coverage: ProgramDimension[];
+  deliverables: ProgramDeliverable[];
+}
+
+export interface ProgramCategoryRow {
+  category: string;
+  projects: number;
+  completion: number; // 0..1
+}
+
+export interface ProgramDimensionRow {
+  dimension: ProgramDimension;
+  projects: number;
+}
+
+export interface ProgramReport {
+  generatedAt: string;
+  generatedFrom: string;
+  summary: {
+    totalProjects: number;
+    complete: number;
+    inProgress: number;
+    planned: number;
+    overallCompletion: number; // 0..1
+  };
+  byCategory: ProgramCategoryRow[];
+  dimensionCoverage: ProgramDimensionRow[];
+  projects: ProjectCompletion[];
+}
+
+// ---------------------------------------------------------------------------
+// Systems Truth Registry
+// ---------------------------------------------------------------------------
+
+export type TruthBucketKey =
+  | 'verified'
+  | 'staged'
+  | 'claimed'
+  | 'demo'
+  | 'planned'
+  | 'blocked'
+  | 'legal_hold'
+  | 'reference';
+
+export interface SystemNodeRow {
+  key: string;
+  name: string;
+  category: string;
+  bucket: TruthBucketKey;
+  summary: string;
+  evidence: string[];
+  nextGate: string;
+  source: string;
+  humanApprovalRequired: boolean;
+  verifiedBy: string | null;
+}
+
+export interface TruthBucketRow {
+  bucket: TruthBucketKey;
+  definition: string;
+  promotionGate: string;
+  count: number;
+}
+
+export interface ExecutionPathStep {
+  step: string;
+  node: string;
+  why: string;
+}
+
+export interface ClaimedMetricRow {
+  claim: string;
+  source: string;
+  label: string;
+}
+
+export interface VerificationQueueRow {
+  key: string;
+  name: string;
+  declaredCompletionPct: number | null;
+  blocking: string;
+  evidenceNeeded: string;
+}
+
+export interface VerificationLogRow {
+  systemKey: string;
+  verifier: string;
+  method: string;
+  verifiedAt: string;
+  expiresAt: string;
+}
+
+export interface SystemsRegistry {
+  generatedAt: string;
+  hardTruth: string;
+  controlTruthFloor: string;
+  bankableCore: string[];
+  claimedMetrics: ClaimedMetricRow[];
+  verificationQueue: VerificationQueueRow[];
+  verificationLog: VerificationLogRow[];
+  summary: {
+    totalSystems: number;
+    verified: number;
+    humanGated: number;
+    byBucket: Record<TruthBucketKey, number>;
+  };
+  buckets: TruthBucketRow[];
+  executionPath: ExecutionPathStep[];
+  systems: SystemNodeRow[];
+}
+
+// ---------------------------------------------------------------------------
+// Stephanie.ai Module Framework
+// ---------------------------------------------------------------------------
+
+export type ModuleBuildState = 'executable' | 'bound' | 'scaffold';
+
+export interface StephanieModuleRow {
+  key: string;
+  name: string;
+  registerNum: number;
+  category: string;
+  function: string;
+  bucket: TruthBucketKey;
+  capabilities: string[];
+  existingBindings: string[];
+  bound: boolean;
+  buildState: ModuleBuildState;
+  humanGated: boolean;
+}
+
+export interface ModuleCatalog {
+  generatedAt: string;
+  totalModules: number;
+  executable: number;
+  bound: number;
+  scaffold: number;
+  humanGated: number;
+  modules: StephanieModuleRow[];
+}
+
+// ---------------------------------------------------------------------------
+// MCP Control Gateway
+// ---------------------------------------------------------------------------
+
+export interface GatewayToolRow {
+  server: string;
+  tool: string;
+  requiredScopes: string[];
+  risk: 'read' | 'write' | 'money' | 'deploy';
+  humanApproval: boolean;
+  bound: boolean;
+}
+
+export interface GatewayStageRow {
+  stage: string;
+  purpose: string;
+  failClosed: string;
+}
+
+export interface GatewayStatus {
+  generatedAt: string;
+  spine: string;
+  truthLabel: string;
+  auditChainIntact: boolean;
+  auditEntries: number;
+  pendingApprovals: number;
+  stages: GatewayStageRow[];
+  tools: GatewayToolRow[];
+  productionGates: string[];
+}
+
 export interface DashboardOverview {
   generatedAt: string;
   kpis: KpiTile[];

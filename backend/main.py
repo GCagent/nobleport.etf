@@ -30,6 +30,11 @@ from backend.api.jobs import router as jobs_router
 from backend.api.payments import router as payments_router
 from backend.api.change_orders import router as change_orders_router
 from backend.api.revenue import router as revenue_router
+from backend.api.sales import router as sales_router
+from backend.api.program import router as program_router
+from backend.api.systems import router as systems_router
+from backend.api.modules import router as modules_router
+from backend.api.gateway import router as gateway_router
 from backend.api.dashboard import router as dashboard_router
 from backend.api.trust import router as trust_router
 from backend.api.ops_brief import router as ops_brief_router
@@ -107,6 +112,11 @@ app.include_router(jobs_router, prefix="/api/jobs", tags=["Jobs"])
 app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
 app.include_router(change_orders_router, prefix="/api/change-orders", tags=["Change Orders (AWO)"])
 app.include_router(revenue_router, prefix="/api/revenue", tags=["Revenue Engine"])
+app.include_router(sales_router, prefix="/api/sales", tags=["Sales Intelligence (GPPI)"])
+app.include_router(program_router, prefix="/api/program", tags=["Program Completion"])
+app.include_router(systems_router, prefix="/api/systems", tags=["Systems Truth Registry"])
+app.include_router(modules_router, prefix="/api/modules", tags=["Stephanie.ai Modules"])
+app.include_router(gateway_router, prefix="/api/gateway", tags=["MCP Control Gateway"])
 app.include_router(dashboard_router, prefix="/api/v1/dashboard", tags=["Mission Control"])
 app.include_router(trust_router, prefix="/api/trust", tags=["Proof of Trust"])
 app.include_router(ops_brief_router, prefix="/api/ops-brief", tags=["Stephanie Ops Brief"])

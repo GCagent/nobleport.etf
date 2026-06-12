@@ -11,7 +11,12 @@ interface NavItem {
 
 const PRIMARY: NavItem[] = [
   { href: '/dashboard', label: 'Command', hint: 'Executive overview' },
+  { href: '/dashboard/program', label: 'Program', hint: 'Build completion · portfolio' },
+  { href: '/dashboard/systems', label: 'Systems', hint: 'Truth registry · gates' },
+  { href: '/dashboard/modules', label: 'Modules', hint: 'Stephanie.ai · 50-module mesh' },
+  { href: '/dashboard/gateway', label: 'Gateway', hint: 'MCP control spine · audit' },
   { href: '/dashboard/revenue', label: 'Revenue', hint: 'Warboard · cash · AR' },
+  { href: '/dashboard/sales', label: 'Sales', hint: 'GPPI · lead routing' },
   { href: '/dashboard/jobs', label: 'Jobs', hint: 'GCagent · production' },
   { href: '/dashboard/permits', label: 'Permits', hint: 'PermitStream · AHJs' },
   { href: '/dashboard/roofing', label: 'Roofing', hint: 'Fall protection · safety gates' },
