@@ -1,0 +1,96 @@
+---
+# Noble Port — Expert Lanes (v1.0)
+#
+# "Tier 2 — Domain Expert Training. Instead of generic AI, create expert lanes."
+#
+# A lane binds one agent to the specific skills it must master. Lanes compose
+# skills from skill_registry.yaml — the loader validates that every skill id
+# below exists. The same skill can appear in multiple lanes (e.g. estimating is
+# core to GCagent and referenced by PMagent costing); the registry is the single
+# definition, the lane is the assignment.
+
+version: "1.0"
+
+lane_contract:
+  required_fields:
+    - id
+    - agent
+    - name
+    - mandate
+    - skills          # skill ids from skill_registry.yaml
+    - golden_set       # where this lane's evaluation fixtures live
+    - owner
+
+lanes:
+
+  - id: gcagent_lane
+    agent: GCagent.ai
+    name: General Contractor Lane
+    mandate: >
+      Own the build economics — estimating, change orders, subcontractor
+      coordination, costing, and the sequencing that ties them together.
+    skills:
+      - estimate_generation
+      - subcontractor_coordination
+      - change_order_detection
+      - job_costing
+      - job_sequencing
+      - materials_takeoff
+      - scope_parsing
+    golden_set: skills/evaluation/golden/gcagent/
+    owner: gcagent-domain-lead
+
+  - id: pmagent_lane
+    agent: PMagent
+    name: Project Management Lane
+    mandate: >
+      Own delivery — critical path, budget, milestones, field reporting, and
+      closeout — keeping projects on time, on budget, and fully closed out.
+    skills:
+      - critical_path
+      - budget_tracking
+      - milestone_management
+      - field_reporting
+      - project_closeout
+      - scheduling
+    golden_set: skills/evaluation/golden/pmagent/
+    owner: pmagent-domain-lead
+
+  - id: permitstream_lane
+    agent: PermitStream
+    name: Permit Intelligence Lane
+    mandate: >
+      Own jurisdiction reality — zoning review, permit interpretation and
+      routing, inspections, and cross-jurisdiction differences.
+    skills:
+      - zoning_review
+      - permit_interpretation
+      - permit_routing
+      - inspection_management
+      - jurisdiction_differences
+    golden_set: skills/evaluation/golden/permitstream/
+    owner: permitstream-domain-lead
+
+  - id: stephanie_lane
+    agent: Stephanie.ai
+    name: Intake & Orchestration Lane
+    mandate: >
+      Own the front door and the routing — qualify leads, communicate with
+      clients, prioritize revenue, and hand work to the specialist lanes.
+    skills:
+      - lead_qualification
+      - client_communication
+      - proposal_generation
+      - revenue_prioritization
+      - risk_scoring
+    golden_set: skills/evaluation/golden/stephanie/
+    owner: stephanie-domain-lead
+
+# Reasoning foundations are not a lane — every agent inherits them.
+shared_foundations:
+  inherited_by_all_agents:
+    - multi_step_reasoning
+    - document_understanding
+    - evaluation
+    - memory
+    - decision_trees

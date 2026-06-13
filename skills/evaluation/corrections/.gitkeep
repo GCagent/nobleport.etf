@@ -1,0 +1,3 @@
+# Append-only JSONL corrections land here (corrections.jsonl).
+# Tracked dir, untracked data — corrections are environment-local until
+# promoted into a golden set. See skills/evaluation/store.py.

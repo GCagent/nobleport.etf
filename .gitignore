@@ -31,6 +31,9 @@ venv/
 # SQLite databases
 *.db
 
+# Skills layer — local correction data (the dir + .gitkeep stay tracked)
+skills/evaluation/corrections/*.jsonl
+
 # Logs
 *.log
 npm-debug.log*

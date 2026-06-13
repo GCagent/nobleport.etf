@@ -1,0 +1,104 @@
+---
+# Noble Port — Feedback Loop (v1.0)
+#
+# The reinforcement loop the screenshot points at:
+#
+#   Data -> Evals -> Feedback Loops -> Domain Expertise -> Better AI
+#
+# Concretely, every skill output flows through these stages:
+#
+#   INPUT -> Agent Response -> Score Against Rubric -> Human Review
+#         -> Store Corrections -> Retrain Workflow
+#
+# Each stage declares its inputs, outputs, owner, and the gate that must hold
+# before work advances. The loader validates that every gate references a real
+# rubric or store and that the stages form a closed loop (the last stage feeds
+# the first).
+
+version: "1.0"
+
+stage_contract:
+  required_fields:
+    - id
+    - name
+    - purpose
+    - inputs
+    - outputs
+    - owner
+    - gate            # the condition that must hold to advance
+    - artifacts        # durable records this stage writes
+
+stages:
+
+  - id: intake
+    name: Intake (INPUT)
+    purpose: Capture the task, its context, and the skill it targets.
+    inputs: [user_or_system_request, project_context, target_skill]
+    outputs: [evaluation_case]
+    owner: intake_pipeline
+    gate: target_skill resolves in skill_registry.yaml
+    artifacts: [skills/evaluation/cases/]
+    feeds: agent_response
+
+  - id: agent_response
+    name: Agent Response
+    purpose: The assigned lane's skill produces its output for the case.
+    inputs: [evaluation_case, lane_assignment]
+    outputs: [skill_output, reasoning_trace]
+    owner: lane_agent
+    gate: output conforms to the skill's declared `outputs`
+    artifacts: [skills/evaluation/responses/]
+    feeds: rubric_scoring
+
+  - id: rubric_scoring
+    name: Score Against Rubric
+    purpose: Automated scoring of the output against the skill's rubric.
+    inputs: [skill_output, rubric, golden_set]
+    outputs: [rubric_scores, pass_fail, review_flags]
+    owner: evaluation_harness   # skills/evaluation/harness.py
+    gate: rubric exists in evaluation_rubrics.yaml and all weights sum to 1.0
+    artifacts: [skills/evaluation/scores/]
+    feeds: human_review
+
+  - id: human_review
+    name: Human Review
+    purpose: >
+      Domain experts review cases the rubric's review_policy flagged (failures,
+      borderline, high-stakes, always-review skills) and record the truth.
+    inputs: [skill_output, rubric_scores, review_flags, reviewer]
+    outputs: [human_scores, correction, accept_or_reject]
+    owner: domain_expert
+    gate: every flagged case has a reviewer decision before it leaves the queue
+    artifacts: [skills/evaluation/reviews/]
+    feeds: store_corrections
+
+  - id: store_corrections
+    name: Store Corrections
+    purpose: Persist human corrections as durable, retrievable training signal.
+    inputs: [correction, skill_output, rubric_scores, human_scores]
+    outputs: [correction_record]
+    owner: correction_store        # skills/evaluation/store.py (JSONL by default)
+    gate: correction is linked to a skill id, a case id, and a reviewer
+    artifacts: [skills/evaluation/corrections/]
+    feeds: retrain_workflow
+
+  - id: retrain_workflow
+    name: Retrain Workflow
+    purpose: >
+      Fold accumulated corrections into the skill — as updated prompts, few-shot
+      exemplars, expanded golden sets, or fine-tunes — then re-evaluate.
+    inputs: [correction_records, current_skill_definition, golden_set]
+    outputs: [updated_skill_assets, expanded_golden_set, eval_delta]
+    owner: skill_owner
+    gate: re-evaluation shows no regression on the existing golden set
+    artifacts: [skills/evaluation/retrain/]
+    feeds: intake   # closes the loop — improved skill serves the next case
+
+loop:
+  closed: true
+  invariants:
+    - No skill ships to the intake pipeline without a passing golden-set run.
+    - Human corrections are never discarded; they expand the golden set.
+    - A retrain that regresses the golden set is rejected, not merged.
+    - Per-skill metrics tracked over time — pass_rate, human_agreement,
+      correction_rate, golden_set_size.

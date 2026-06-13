@@ -1,0 +1,423 @@
+---
+# Noble Port — Evaluation Rubrics (v1.0)
+#
+# "Tier 3 — the evaluation system — is the most important." Every skill in
+# skill_registry.yaml names a rubric here, and the loader fails if a referenced
+# rubric is missing. A rubric turns a vague "good answer" into a weighted,
+# anchored, per-criterion score that a human and an automated judge can both
+# apply and a feedback loop can track over time.
+#
+# Scoring model (shared by all rubrics):
+#   - Each criterion is scored on a 0..4 integer scale with anchors.
+#   - Criterion weights within a rubric sum to 1.0 (validated by the loader).
+#   - Overall score = sum(weight_i * score_i) / 4  -> normalized 0..1.
+#   - A result PASSES when overall >= pass_threshold AND no `must_pass`
+#     criterion scores below its `floor`.
+#   - `review_policy` decides when a human must look regardless of the score.
+
+version: "1.0"
+
+rubric_contract:
+  required_fields:
+    - id
+    - name
+    - applies_to        # skill ids this rubric scores (informational; skills also point back)
+    - scale
+    - criteria          # each: id, description, weight, optional must_pass + floor
+    - pass_threshold     # normalized 0..1
+    - review_policy
+  scale_anchors:
+    0: Unusable — wrong, unsafe, or fabricated.
+    1: Poor — major gaps an expert would reject.
+    2: Borderline — usable only after meaningful rework.
+    3: Good — minor edits; an expert would accept with tweaks.
+    4: Expert — indistinguishable from a strong domain expert.
+
+# Reusable default scale referenced by every rubric.
+default_scale:
+  min: 0
+  max: 4
+  anchors:
+    0: Unusable — wrong, unsafe, or fabricated.
+    1: Poor — major gaps an expert would reject.
+    2: Borderline — usable only after meaningful rework.
+    3: Good — minor edits; an expert would accept with tweaks.
+    4: Expert — indistinguishable from a strong domain expert.
+
+rubrics:
+
+  # --- shared fallback ------------------------------------------------------
+
+  - id: domain_default
+    name: Domain Default Rubric
+    applies_to: ["*"]   # any skill without a dedicated rubric
+    scale: default
+    pass_threshold: 0.75
+    criteria:
+      - id: correctness
+        description: Output is factually correct for the domain and the inputs.
+        weight: 0.35
+        must_pass: true
+        floor: 2
+      - id: grounding
+        description: Claims trace to inputs/sources; nothing is fabricated.
+        weight: 0.25
+        must_pass: true
+        floor: 2
+      - id: completeness
+        description: Covers what an expert would, including edge cases.
+        weight: 0.20
+      - id: safety
+        description: Honors the skill's safety rules (no autonomous/destructive acts).
+        weight: 0.20
+        must_pass: true
+        floor: 3
+    review_policy:
+      human_review_when:
+        - score_below: 0.85
+        - any_must_pass_at_floor: true
+        - high_stakes_context: true
+
+  # --- first-ten skill rubrics ----------------------------------------------
+
+  - id: lead_qualification
+    name: Lead Qualification Rubric
+    applies_to: [lead_qualification]
+    scale: default
+    pass_threshold: 0.80
+    criteria:
+      - id: disposition_accuracy
+        description: Qualify/route disposition matches the expert label.
+        weight: 0.35
+        must_pass: true
+        floor: 2
+      - id: signal_grounding
+        description: Budget/timeline/authority signals come from the lead, not invented.
+        weight: 0.30
+        must_pass: true
+        floor: 3
+      - id: missing_info_surfaced
+        description: Names the missing info that would change the score.
+        weight: 0.20
+      - id: no_auto_reject
+        description: Low scores route to human review; no autonomous rejection.
+        weight: 0.15
+        must_pass: true
+        floor: 3
+    review_policy:
+      human_review_when:
+        - disposition: reject
+        - score_below: 0.80
+
+  - id: estimate_generation
+    name: Estimate Generation Rubric
+    applies_to: [estimate_generation]
+    scale: default
+    pass_threshold: 0.80
+    variance_band: 0.10   # total within +/-10% of expert estimate scores >= 3
+    criteria:
+      - id: total_variance
+        description: Estimate total falls within the variance band vs the expert.
+        weight: 0.30
+        must_pass: true
+        floor: 2
+      - id: line_item_traceability
+        description: Each line traces to a scope item or a stated assumption.
+        weight: 0.25
+        must_pass: true
+        floor: 2
+      - id: assumptions_exclusions
+        description: Assumptions, exclusions, and allowances are explicit.
+        weight: 0.25
+        must_pass: true
+        floor: 3
+      - id: not_presented_as_bid
+        description: Confidence/exclusions labeled; not presented as a fixed bid.
+        weight: 0.20
+        must_pass: true
+        floor: 3
+    review_policy:
+      human_review_when:
+        - always: true   # estimates are always human-approved before use
+
+  - id: scope_parsing
+    name: Scope Parsing Rubric
+    applies_to: [scope_parsing]
+    scale: default
+    pass_threshold: 0.78
+    criteria:
+      - id: scope_recall
+        description: Recall of expert-tagged scope items.
+        weight: 0.30
+        must_pass: true
+        floor: 2
+      - id: scope_precision
+        description: Few or no hallucinated/duplicated scope items.
+        weight: 0.25
+        must_pass: true
+        floor: 2
+      - id: conflict_surfacing
+        description: Drawing/spec conflicts flagged, not silently resolved.
+        weight: 0.25
+        must_pass: true
+        floor: 3
+      - id: responsibility_split
+        description: Included / excluded / by-others correctly separated.
+        weight: 0.20
+    review_policy:
+      human_review_when:
+        - score_below: 0.85
+        - any_must_pass_at_floor: true
+
+  - id: permit_interpretation
+    name: Permit Interpretation Rubric
+    applies_to: [permit_interpretation]
+    scale: default
+    pass_threshold: 0.85   # compliance surface — higher bar
+    criteria:
+      - id: requirement_accuracy
+        description: Required-permit/review set matches expert determination.
+        weight: 0.30
+        must_pass: true
+        floor: 2
+      - id: citation_validity
+        description: Every requirement cites a resolvable code section + version.
+        weight: 0.30
+        must_pass: true
+        floor: 3
+      - id: jurisdiction_correctness
+        description: Correct jurisdiction and overlays applied.
+        weight: 0.20
+        must_pass: true
+        floor: 3
+      - id: uncertainty_handling
+        description: Low confidence yields "verify with AHJ", not a guess.
+        weight: 0.20
+        must_pass: true
+        floor: 3
+    review_policy:
+      human_review_when:
+        - always: true   # regulatory output is advisory and human-verified
+
+  - id: change_order_detection
+    name: Change Order Detection Rubric
+    applies_to: [change_order_detection]
+    scale: default
+    pass_threshold: 0.80
+    criteria:
+      - id: detection_quality
+        description: Precision/recall on expert-labeled change events.
+        weight: 0.30
+        must_pass: true
+        floor: 2
+      - id: change_vs_rework
+        description: True scope change separated from contractor-owned rework.
+        weight: 0.25
+        must_pass: true
+        floor: 3
+      - id: contract_basis
+        description: Each change cites its triggering clause or plan revision.
+        weight: 0.25
+        must_pass: true
+        floor: 2
+      - id: impact_quantified
+        description: Cost AND schedule impact quantified.
+        weight: 0.20
+    review_policy:
+      human_review_when:
+        - always: true   # change orders are drafts for human review
+
+  - id: risk_scoring
+    name: Risk Scoring Rubric
+    applies_to: [risk_scoring]
+    scale: default
+    pass_threshold: 0.78
+    criteria:
+      - id: rank_correlation
+        description: Scores rank-correlate with expert risk judgment.
+        weight: 0.35
+        must_pass: true
+        floor: 2
+      - id: driver_explanation
+        description: Top drivers named for every score.
+        weight: 0.25
+        must_pass: true
+        floor: 2
+      - id: margin_and_scope_weighting
+        description: Margin erosion and scope creep weighted, not schedule-only.
+        weight: 0.25
+      - id: escalation_correctness
+        description: High-risk scores escalate with drivers, never silently.
+        weight: 0.15
+        must_pass: true
+        floor: 3
+    review_policy:
+      human_review_when:
+        - risk_band: high
+        - score_below: 0.80
+
+  - id: proposal_generation
+    name: Proposal Generation Rubric
+    applies_to: [proposal_generation]
+    scale: default
+    pass_threshold: 0.82
+    criteria:
+      - id: estimate_reconciliation
+        description: Proposal scope and price reconcile exactly to the approved estimate.
+        weight: 0.35
+        must_pass: true
+        floor: 3
+      - id: exclusions_present
+        description: Inclusions/exclusions present and consistent with the estimate.
+        weight: 0.25
+        must_pass: true
+        floor: 3
+      - id: terms_completeness
+        description: Payment schedule and validity window explicit.
+        weight: 0.20
+      - id: tone_fit
+        description: On-brand, professional, no overpromising.
+        weight: 0.20
+    review_policy:
+      human_review_when:
+        - always: true   # proposals are draft-only until human-approved
+
+  - id: client_communication
+    name: Client Communication Rubric
+    applies_to: [client_communication]
+    scale: default
+    pass_threshold: 0.82
+    criteria:
+      - id: no_unauthorized_commitment
+        description: No price/scope/date commitments beyond what is approved.
+        weight: 0.35
+        must_pass: true
+        floor: 4   # zero tolerance — must be a clean 4
+      - id: clarity
+        description: Clear, answers the question, sets expectations.
+        weight: 0.25
+      - id: tone_fit
+        description: Professional and reassuring, on-brand under pressure.
+        weight: 0.20
+      - id: escalation_correctness
+        description: Disputes/legal messages escalated, not answered.
+        weight: 0.20
+        must_pass: true
+        floor: 3
+    review_policy:
+      human_review_when:
+        - always: true   # outbound client messages are human-approved
+
+  - id: job_sequencing
+    name: Job Sequencing Rubric
+    applies_to: [job_sequencing]
+    scale: default
+    pass_threshold: 0.80
+    criteria:
+      - id: dependency_validity
+        description: No dependent task ahead of its predecessor or required cure.
+        weight: 0.30
+        must_pass: true
+        floor: 3
+      - id: inspection_holds
+        description: Inspection hold points gate dependent work.
+        weight: 0.25
+        must_pass: true
+        floor: 3
+      - id: lead_time_respect
+        description: Long-lead procurement pulled early enough.
+        weight: 0.25
+      - id: critical_path_named
+        description: Critical path and top sequencing risks identified.
+        weight: 0.20
+    review_policy:
+      human_review_when:
+        - score_below: 0.85
+        - any_must_pass_at_floor: true
+
+  # --- reasoning-foundation rubrics -----------------------------------------
+
+  - id: multi_step_reasoning
+    name: Multi-Step Reasoning Rubric
+    applies_to: [multi_step_reasoning]
+    scale: default
+    pass_threshold: 0.82
+    criteria:
+      - id: step_grounding
+        description: Each step grounded in evidence or a tool result.
+        weight: 0.35
+        must_pass: true
+        floor: 3
+      - id: verification
+        description: Intermediate results verified before use.
+        weight: 0.25
+        must_pass: true
+        floor: 3
+      - id: trace_reconstructs_answer
+        description: The trace independently reconstructs the conclusion.
+        weight: 0.20
+      - id: asks_when_unsure
+        description: Below-threshold confidence yields a question, not a guess.
+        weight: 0.20
+        must_pass: true
+        floor: 3
+    review_policy:
+      human_review_when:
+        - confidence_below: 0.6
+
+  - id: document_understanding
+    name: Document Understanding Rubric
+    applies_to: [document_understanding]
+    scale: default
+    pass_threshold: 0.82
+    criteria:
+      - id: field_accuracy
+        description: Field-level extraction accuracy vs the gold extraction.
+        weight: 0.35
+        must_pass: true
+        floor: 2
+      - id: citation_validity
+        description: Every value cites a resolvable source span.
+        weight: 0.30
+        must_pass: true
+        floor: 3
+      - id: low_confidence_flagging
+        description: Low-confidence fields flagged, not silently filled.
+        weight: 0.20
+        must_pass: true
+        floor: 3
+      - id: schema_conformance
+        description: Output conforms to the requested schema.
+        weight: 0.15
+    review_policy:
+      human_review_when:
+        - score_below: 0.85
+        - any_must_pass_at_floor: true
+
+  - id: evaluation_meta
+    name: Evaluation Framework Rubric
+    applies_to: [evaluation]
+    scale: default
+    pass_threshold: 0.85
+    criteria:
+      - id: human_agreement
+        description: Automated scores agree with human scores within calibration bar.
+        weight: 0.35
+        must_pass: true
+        floor: 3
+      - id: per_criterion_scoring
+        description: Scores per-criterion with anchors, not a single vibe number.
+        weight: 0.25
+        must_pass: true
+        floor: 3
+      - id: review_routing
+        description: Borderline/high-stakes cases routed to humans correctly.
+        weight: 0.20
+      - id: correction_capture
+        description: Corrections persisted and retrievable for retraining.
+        weight: 0.20
+        must_pass: true
+        floor: 3
+    review_policy:
+      human_review_when:
+        - calibration_run: true

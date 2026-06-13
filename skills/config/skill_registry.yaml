@@ -1,0 +1,795 @@
+---
+# Noble Port — Cross-Agent Skills Layer (v1.0)
+#
+# The domain-expertise foundation shared by every Noble Port agent
+# (GCagent.ai, PMagent, PermitStream, Stephanie.ai). This registry is
+# deliberately built BEFORE features: a skill only exists here once it has a
+# declared contract AND a matching evaluation rubric. No rubric, no skill.
+#
+# Distinct from `gcagent/config/skill_registry.yaml`, which describes
+# GCagent's generic *engineering* competence. This file describes *domain*
+# competence (construction, sales, permits, project management, operations,
+# reasoning) that any agent can compose.
+#
+# Source-of-truth relationships:
+#   - domain                 -> grouping in this file's `domains:` block
+#   - rubric                 -> evaluation_rubrics.yaml (must resolve)
+#   - lanes (expert_lanes)   -> expert_lanes.yaml (reference skill ids here)
+#   - feedback loop          -> feedback_loop.yaml (scores skills against rubric)
+#
+# `build_order` 1..10 marks the "first ten skills to build" — the prioritized
+# slice that ships before any new agent/avatar/token feature work.
+
+version: "1.0"
+
+skill_contract:
+  required_fields:
+    - id
+    - name
+    - domain
+    - tier            # 1 = core layer, 2 = expert lane, 3 = evaluation/reasoning foundation
+    - purpose
+    - inputs
+    - outputs
+    - expert_signals  # what a domain expert checks that a generic model misses
+    - rubric          # id in evaluation_rubrics.yaml
+    - safety_rules
+    - success_criteria
+    - failure_modes
+  optional_fields:
+    - build_order      # 1..10 for the prioritized first slice; omitted otherwise
+    - dependencies     # other skill ids this composes on top of
+
+domains:
+  - id: construction
+    name: Construction Reasoning
+    description: Estimates, scope, sequencing, materials, change orders, costing.
+  - id: sales
+    name: Sales Qualification
+    description: Intake to estimate to close — qualification, proposals, comms.
+  - id: permits
+    name: Permit Intelligence
+    description: AHJ workflows, zoning, code lookup, jurisdiction differences.
+  - id: project_management
+    name: Project Management
+    description: Critical path, budget, milestones, field reporting, closeout.
+  - id: operations
+    name: Operations & Risk
+    description: Scheduling, risk detection, revenue prioritization.
+  - id: reasoning
+    name: Reasoning Foundations
+    description: Multi-step reasoning, document understanding, memory, evaluation.
+
+skills:
+
+  # === Construction =========================================================
+
+  - id: estimate_generation
+    name: Estimate Generation
+    domain: construction
+    tier: 1
+    build_order: 2
+    purpose: >
+      Turn a scope of work into a line-item estimate with labor, materials,
+      markup, and contingency that a PM would sign without rework.
+    inputs: [scope_of_work, plan_set, site_conditions, unit_cost_book, historical_jobs]
+    outputs: [line_item_estimate, assumptions_list, exclusions_list, confidence_band]
+    expert_signals:
+      - Waste/coverage factors applied per material, not a flat percentage.
+      - Labor burden, mobilization, and access difficulty priced explicitly.
+      - Allowances flagged where scope is undefined instead of guessed.
+    rubric: estimate_generation
+    dependencies: [scope_parsing]
+    safety_rules:
+      - Never present an estimate as a fixed bid; label confidence and exclusions.
+      - Unknown scope becomes a named allowance or exclusion, never a silent zero.
+      - Do not auto-send to a client; estimates are draft until human-approved.
+    success_criteria:
+      - Total lands within the rubric's variance band against the expert estimate.
+      - Every line traces to a scope item or a stated assumption.
+    failure_modes:
+      - flat_percentage_padding
+      - silent_scope_omission
+      - bid_presented_as_final_without_exclusions
+
+  - id: scope_parsing
+    name: Construction Scope Parsing
+    domain: construction
+    tier: 1
+    build_order: 3
+    purpose: >
+      Extract a structured, deduplicated scope of work from plans, specs,
+      proposals, and client messages spread across PDFs and threads.
+    inputs: [plan_set, spec_document, client_messages, walkthrough_notes]
+    outputs: [structured_scope, trade_breakdown, open_questions, ambiguity_flags]
+    expert_signals:
+      - Distinguishes included vs excluded vs "by others" responsibility.
+      - Catches scope implied by code/plans but absent from the written ask.
+      - Flags conflicts between drawings and specs rather than silently picking one.
+    rubric: scope_parsing
+    safety_rules:
+      - Conflicting sources raise an ambiguity flag; the agent does not adjudicate.
+      - Never infer scope the documents do not support; mark it as an open question.
+    success_criteria:
+      - Recall of expert-tagged scope items meets the rubric threshold.
+      - Every conflict between sources is surfaced, not resolved unilaterally.
+    failure_modes:
+      - hallucinated_scope_item
+      - merged_distinct_trades
+      - dropped_by_others_responsibility
+
+  - id: change_order_detection
+    name: Change Order Detection
+    domain: construction
+    tier: 1
+    build_order: 5
+    purpose: >
+      Detect when field reality, client requests, or revised plans diverge from
+      contracted scope, and draft the change-order reasoning behind it.
+    inputs: [contracted_scope, field_logs, revised_plans, client_requests, daily_logs]
+    outputs: [change_event, scope_delta, cost_schedule_impact, draft_change_order]
+    expert_signals:
+      - Separates true scope change from means-and-methods the contractor owns.
+      - Ties each delta to the contract clause or plan revision that triggered it.
+      - Quantifies schedule impact, not just cost.
+    rubric: change_order_detection
+    dependencies: [scope_parsing, estimate_generation]
+    safety_rules:
+      - A detected change is a draft for human review, never an auto-billed item.
+      - Do not classify contractor-owned rework as a billable change order.
+      - Margin-eroding changes are escalated even when small individually.
+    success_criteria:
+      - Precision/recall on expert-labeled change events meets rubric threshold.
+      - Every change order cites its triggering clause or revision.
+    failure_modes:
+      - missed_margin_erosion
+      - rework_billed_as_change_order
+      - change_order_without_contract_basis
+
+  - id: job_sequencing
+    name: Job Sequencing
+    domain: construction
+    tier: 1
+    build_order: 9
+    purpose: >
+      Order tasks and trades into a buildable sequence respecting dependencies,
+      inspections, lead times, and crew availability.
+    inputs: [task_list, trade_dependencies, inspection_holds, material_lead_times, crew_calendar]
+    outputs: [sequenced_plan, dependency_graph, critical_dependencies, sequencing_risks]
+    expert_signals:
+      - Inspection holds gate dependent work (e.g., rough-in before close-up).
+      - Long-lead materials pull their procurement date earlier in the sequence.
+      - Wet trades and cure times respected before finishes.
+    rubric: job_sequencing
+    dependencies: [scope_parsing]
+    safety_rules:
+      - Never sequence dependent work ahead of a required inspection or cure.
+      - Surface unbuildable sequences as risks instead of forcing an order.
+    success_criteria:
+      - Sequence passes the dependency and inspection constraint checks.
+      - Critical path and its top risks are named.
+    failure_modes:
+      - finish_before_inspection
+      - ignored_lead_time
+      - impossible_parallelization
+
+  - id: materials_takeoff
+    name: Materials Takeoff
+    domain: construction
+    tier: 2
+    purpose: >
+      Quantify materials from scope and plans with correct units, waste, and
+      coverage for procurement.
+    inputs: [structured_scope, plan_set, assembly_library, waste_factors]
+    outputs: [material_quantities, procurement_list, waste_adjusted_totals]
+    expert_signals:
+      - Coverage and waste applied per assembly, not globally.
+      - Units match how the supplier sells (sheets, rolls, cubic yards).
+    rubric: domain_default
+    dependencies: [scope_parsing]
+    safety_rules:
+      - Round up to purchasable units; never under-order safety-critical materials.
+      - Flag quantities that depend on unconfirmed scope.
+    success_criteria:
+      - Quantities land within the rubric variance band against expert takeoff.
+    failure_modes:
+      - unit_mismatch_with_supplier
+      - global_waste_factor
+      - under_order_on_unconfirmed_scope
+
+  - id: subcontractor_coordination
+    name: Subcontractor Coordination
+    domain: construction
+    tier: 2
+    purpose: >
+      Coordinate sub scopes, submittals, and handoffs so trades arrive ready
+      and dependencies are met.
+    inputs: [trade_breakdown, sub_calendars, submittal_status, site_readiness]
+    outputs: [coordination_plan, handoff_checklist, readiness_gaps]
+    expert_signals:
+      - Confirms predecessor trade signed off before scheduling the successor.
+      - Catches missing submittals/approvals that would stall a sub on site.
+    rubric: domain_default
+    dependencies: [job_sequencing]
+    safety_rules:
+      - Do not commit a sub to a date without confirmed site readiness.
+      - External messages to subs require human approval before send.
+    success_criteria:
+      - Handoffs have no unmet predecessor at scheduled start.
+    failure_modes:
+      - sub_scheduled_into_unready_site
+      - missing_submittal_blocks_trade
+      - double_booked_crew
+
+  - id: job_costing
+    name: Job Costing
+    domain: construction
+    tier: 2
+    purpose: >
+      Track committed vs actual cost against the estimate to expose margin
+      movement while the job is live.
+    inputs: [estimate_baseline, committed_costs, actual_invoices, change_orders]
+    outputs: [cost_to_complete, margin_position, variance_drivers]
+    expert_signals:
+      - Commitments counted at PO time, not at invoice time.
+      - Approved change orders fold into the revised baseline.
+    rubric: domain_default
+    dependencies: [estimate_generation, change_order_detection]
+    safety_rules:
+      - Never restate the baseline without a linked approved change order.
+      - Negative margin trends escalate immediately.
+    success_criteria:
+      - Cost-to-complete reconciles with the ledger within tolerance.
+    failure_modes:
+      - commitments_missed_until_invoice
+      - baseline_restated_without_change_order
+      - margin_erosion_not_escalated
+
+  # === Sales ================================================================
+
+  - id: lead_qualification
+    name: Lead Qualification
+    domain: sales
+    tier: 1
+    build_order: 1
+    purpose: >
+      Score and route inbound leads on fit, budget, timeline, and authority so
+      the team spends estimating hours on winnable work.
+    inputs: [inbound_message, project_description, location, budget_signal, source]
+    outputs: [qualification_score, disposition, missing_info, routing_decision]
+    expert_signals:
+      - Separates tire-kickers from funded projects on budget/timeline realism.
+      - Flags out-of-service-area or out-of-scope work early.
+      - Identifies the decision-maker vs an information-gatherer.
+    rubric: lead_qualification
+    safety_rules:
+      - Do not auto-reject a lead; low scores route to human review.
+      - Never fabricate budget or authority signals the lead did not provide.
+    success_criteria:
+      - Disposition agrees with expert labels at the rubric threshold.
+      - Every score lists the missing info that would change it.
+    failure_modes:
+      - qualified_on_invented_budget
+      - good_lead_auto_dropped
+      - decision_maker_misidentified
+
+  - id: proposal_generation
+    name: Proposal Generation
+    domain: sales
+    tier: 1
+    build_order: 7
+    purpose: >
+      Assemble a client-ready proposal from an approved estimate: scope,
+      inclusions/exclusions, price, terms, and timeline.
+    inputs: [approved_estimate, structured_scope, terms_template, client_profile]
+    outputs: [draft_proposal, inclusion_exclusion_list, payment_schedule, validity_window]
+    expert_signals:
+      - Inclusions/exclusions mirror the estimate exactly — no scope drift.
+      - Payment schedule and validity window are explicit.
+      - Tone matched to client without overpromising.
+    rubric: proposal_generation
+    dependencies: [estimate_generation, scope_parsing]
+    safety_rules:
+      - Price and scope come only from the approved estimate; no ad-hoc numbers.
+      - Proposal is draft until human-approved; never sent autonomously.
+    success_criteria:
+      - Proposal scope and price reconcile to the source estimate exactly.
+      - Exclusions present and consistent with the estimate.
+    failure_modes:
+      - scope_drift_from_estimate
+      - price_invented_outside_estimate
+      - missing_exclusions
+
+  - id: client_communication
+    name: Client Communication
+    domain: sales
+    tier: 1
+    build_order: 8
+    purpose: >
+      Draft clear, on-brand client messages — updates, answers, follow-ups —
+      that hold scope and set expectations without committing the company.
+    inputs: [conversation_history, project_state, question_or_trigger, brand_voice]
+    outputs: [draft_message, commitments_made, escalation_flag]
+    expert_signals:
+      - Distinguishes a factual update from a contractual commitment.
+      - Defers pricing/scope changes to a change order rather than agreeing inline.
+      - Keeps a professional, reassuring tone under complaint pressure.
+    rubric: client_communication
+    safety_rules:
+      - Outbound client messages are draft-only and require human approval.
+      - Never commit to price, scope, or dates not already approved.
+      - Disputes and legal-tinged messages escalate, they are not answered.
+    success_criteria:
+      - No unauthorized commitments in approved drafts (rubric gate).
+      - Tone and clarity meet the rubric threshold.
+    failure_modes:
+      - inline_scope_commitment
+      - autonomous_send
+      - mishandled_dispute
+
+  - id: objection_handling
+    name: Objection Handling
+    domain: sales
+    tier: 2
+    purpose: >
+      Surface the real objection behind a stalled deal and propose a grounded,
+      honest response.
+    inputs: [conversation_history, proposal, objection_signal, win_loss_history]
+    outputs: [objection_classification, response_options, concession_boundaries]
+    expert_signals:
+      - Separates price objection from value/trust objection.
+      - Stays inside approved concession boundaries.
+    rubric: domain_default
+    dependencies: [client_communication]
+    safety_rules:
+      - Never offer a discount or concession beyond the approved boundary.
+      - Responses are drafts for human review.
+    success_criteria:
+      - Objection class matches expert label at rubric threshold.
+    failure_modes:
+      - unauthorized_concession
+      - misread_objection_type
+      - dishonest_reassurance
+
+  # === Permits ==============================================================
+
+  - id: permit_interpretation
+    name: Permit Interpretation
+    domain: permits
+    tier: 1
+    build_order: 4
+    purpose: >
+      Read a project against applicable building code and AHJ requirements to
+      say what permits, reviews, and documents are required.
+    inputs: [project_scope, jurisdiction, applicable_codes, occupancy_use, plan_set]
+    outputs: [required_permits, code_citations, submittal_checklist, review_path]
+    expert_signals:
+      - Cites the specific code section, not a paraphrase, for each requirement.
+      - Distinguishes permit-exempt work from work needing review.
+      - Accounts for occupancy/use and overlay districts.
+    rubric: permit_interpretation
+    safety_rules:
+      - Every requirement cites its code section and jurisdiction/version.
+      - Low retrieval confidence yields "verify with AHJ", not a guess.
+      - Output is advisory; it does not replace AHJ determination.
+    success_criteria:
+      - Required-permit set matches expert determination at rubric threshold.
+      - Every citation resolves to the quoted code text.
+    failure_modes:
+      - hallucinated_code_citation
+      - missed_required_review
+      - wrong_jurisdiction_applied
+
+  - id: zoning_review
+    name: Zoning Review
+    domain: permits
+    tier: 2
+    purpose: >
+      Check a project against zoning district rules — use, setbacks, height,
+      coverage, parking — and flag variances needed.
+    inputs: [parcel, zoning_district, project_scope, dimensional_standards]
+    outputs: [zoning_findings, variance_needs, conditions, citations]
+    expert_signals:
+      - Applies the correct district and any overlay/historic constraints.
+      - Identifies nonconformities that trigger variance or special permit.
+    rubric: domain_default
+    dependencies: [permit_interpretation]
+    safety_rules:
+      - Cite the zoning bylaw section for each finding.
+      - Ambiguous district boundaries escalate to AHJ verification.
+    success_criteria:
+      - Findings match expert zoning review at rubric threshold.
+    failure_modes:
+      - wrong_district_applied
+      - missed_overlay_constraint
+      - variance_need_not_flagged
+
+  - id: permit_routing
+    name: Permit Routing
+    domain: permits
+    tier: 2
+    purpose: >
+      Route a permit application to the correct departments, reviewers, and
+      sequence for a given jurisdiction.
+    inputs: [permit_type, jurisdiction, application_package, review_dependencies]
+    outputs: [routing_plan, department_sequence, prerequisite_gaps]
+    expert_signals:
+      - Orders reviews by dependency (e.g., zoning sign-off before building).
+      - Catches missing prerequisites before submission.
+    rubric: domain_default
+    dependencies: [permit_interpretation]
+    safety_rules:
+      - Do not submit on the applicant's behalf without human approval.
+      - Unknown jurisdiction routing escalates rather than assuming a default.
+    success_criteria:
+      - Routing matches the jurisdiction's actual process at rubric threshold.
+    failure_modes:
+      - department_skipped
+      - out_of_order_review
+      - submitted_with_missing_prerequisite
+
+  - id: inspection_management
+    name: Inspection Management
+    domain: permits
+    tier: 2
+    purpose: >
+      Track which inspections are required, their sequence, and readiness gates
+      across the build.
+    inputs: [permit_conditions, build_progress, inspection_schedule, prior_results]
+    outputs: [inspection_plan, readiness_checks, reinspection_triggers]
+    expert_signals:
+      - Required inspections gate dependent work (rough-in before cover).
+      - Failed-inspection corrections trigger a tracked re-inspection.
+    rubric: domain_default
+    dependencies: [job_sequencing, permit_interpretation]
+    safety_rules:
+      - Never mark work ready that has an open prerequisite inspection.
+      - Failed items are tracked to closure, not dropped.
+    success_criteria:
+      - Inspection sequence respects all hold points.
+    failure_modes:
+      - cover_before_rough_in
+      - dropped_failed_item
+      - missed_required_inspection
+
+  - id: jurisdiction_differences
+    name: Jurisdiction Differences
+    domain: permits
+    tier: 2
+    purpose: >
+      Reconcile how requirements differ across jurisdictions so a multi-town
+      operator applies the right local rules each time.
+    inputs: [jurisdiction_a, jurisdiction_b, project_type, local_amendments]
+    outputs: [difference_matrix, applicable_local_rules, conflict_flags]
+    expert_signals:
+      - Surfaces local code amendments on top of the base code.
+      - Flags where a practice valid in one town is noncompliant in another.
+    rubric: domain_default
+    dependencies: [permit_interpretation]
+    safety_rules:
+      - Never carry one town's rule into another without confirming adoption.
+      - Cite each local amendment source.
+    success_criteria:
+      - Difference matrix matches expert comparison at rubric threshold.
+    failure_modes:
+      - rule_carried_across_jurisdictions
+      - missed_local_amendment
+      - stale_code_version
+
+  # === Project Management (PMagent) =========================================
+
+  - id: critical_path
+    name: Critical Path Logic
+    domain: project_management
+    tier: 2
+    purpose: >
+      Compute the critical path and float across the schedule so delays are
+      triaged by true impact on the finish date.
+    inputs: [task_network, durations, dependencies, calendar, constraints]
+    outputs: [critical_path, float_by_task, delay_impact, schedule_risks]
+    expert_signals:
+      - Distinguishes critical-path slip from float-absorbed slip.
+      - Recomputes when dependencies or durations change.
+    rubric: domain_default
+    dependencies: [job_sequencing]
+    safety_rules:
+      - Do not report a finish date without stating its critical assumptions.
+      - Negative float is escalated as a schedule risk.
+    success_criteria:
+      - Computed critical path matches the expert network analysis.
+    failure_modes:
+      - float_treated_as_slack_on_critical_task
+      - stale_path_after_change
+      - constraint_ignored
+
+  - id: budget_tracking
+    name: Budget Tracking
+    domain: project_management
+    tier: 2
+    purpose: >
+      Track budget vs commitments vs actuals across a project and forecast the
+      at-completion position.
+    inputs: [budget_baseline, commitments, actuals, change_orders, forecast_inputs]
+    outputs: [budget_position, eac_forecast, overrun_drivers, alerts]
+    expert_signals:
+      - Forecast at completion blends actuals with realistic cost-to-complete.
+      - Approved change orders update the baseline; pending ones are tracked separately.
+    rubric: domain_default
+    dependencies: [job_costing]
+    safety_rules:
+      - Pending change orders never silently inflate the baseline.
+      - Forecast overruns alert an owner.
+    success_criteria:
+      - At-completion forecast reconciles with the ledger within tolerance.
+    failure_modes:
+      - pending_co_in_baseline
+      - optimistic_cost_to_complete
+      - overrun_alert_suppressed
+
+  - id: milestone_management
+    name: Milestone Management
+    domain: project_management
+    tier: 2
+    purpose: >
+      Define, track, and report project milestones and the gates that release
+      progress or payment.
+    inputs: [project_schedule, contract_milestones, billing_terms, progress_data]
+    outputs: [milestone_status, slip_alerts, billing_triggers]
+    expert_signals:
+      - Ties payment milestones to verifiable completion, not optimistic claims.
+      - Flags slipping milestones before the gate, not after.
+    rubric: domain_default
+    dependencies: [critical_path]
+    safety_rules:
+      - A milestone is not "met" without its completion evidence.
+      - Billing triggers require human confirmation before invoicing.
+    success_criteria:
+      - Milestone status matches verified progress at rubric threshold.
+    failure_modes:
+      - milestone_marked_without_evidence
+      - late_slip_detection
+      - premature_billing_trigger
+
+  - id: field_reporting
+    name: Field Reporting
+    domain: project_management
+    tier: 2
+    purpose: >
+      Turn raw field input — daily logs, photos, voice notes — into structured
+      progress, issues, and office-ready reports.
+    inputs: [daily_logs, site_photos, voice_notes, weather, crew_counts]
+    outputs: [structured_daily_report, issue_list, progress_delta]
+    expert_signals:
+      - Separates an observation from an action item needing follow-up.
+      - Captures weather/conditions affecting productivity and claims.
+    rubric: domain_default
+    safety_rules:
+      - Do not infer progress the field input does not support.
+      - Safety incidents escalate immediately, outside the normal report flow.
+    success_criteria:
+      - Structured report captures expert-tagged issues at rubric threshold.
+    failure_modes:
+      - observation_lost
+      - inflated_progress_claim
+      - safety_incident_buried
+
+  - id: project_closeout
+    name: Project Closeout
+    domain: project_management
+    tier: 2
+    purpose: >
+      Drive a project to closeout — punch list, final inspections, warranties,
+      lien releases, and final billing — without dropped items.
+    inputs: [punch_list, inspection_status, warranty_docs, retainage, final_costs]
+    outputs: [closeout_checklist, outstanding_items, final_billing_package]
+    expert_signals:
+      - Final billing waits on closeout evidence (inspections, releases).
+      - Warranties and O&M docs collected before sign-off.
+    rubric: domain_default
+    dependencies: [milestone_management, inspection_management]
+    safety_rules:
+      - No final billing until closeout prerequisites are evidenced.
+      - Open punch/warranty items block closeout, not the reverse.
+    success_criteria:
+      - Closeout checklist complete with evidence at rubric threshold.
+    failure_modes:
+      - final_bill_before_closeout
+      - missing_warranty_docs
+      - punch_item_dropped
+
+  # === Operations & Risk ====================================================
+
+  - id: risk_scoring
+    name: Risk Scoring
+    domain: operations
+    tier: 1
+    build_order: 6
+    purpose: >
+      Score a project or job for risk — margin erosion, scope creep, schedule,
+      compliance, client — and explain the drivers.
+    inputs: [project_state, change_history, margin_position, schedule_health, client_signals]
+    outputs: [risk_score, risk_drivers, recommended_mitigations, escalation_flag]
+    expert_signals:
+      - Weights margin erosion and scope creep, not just schedule.
+      - Compounds correlated risks instead of scoring each in isolation.
+    rubric: risk_scoring
+    dependencies: [change_order_detection, job_costing]
+    safety_rules:
+      - High-risk scores escalate with their drivers, never silently.
+      - Do not down-weight a known risk to produce a cleaner score.
+    success_criteria:
+      - Scores rank-correlate with expert risk judgment at rubric threshold.
+      - Every score lists its top drivers.
+    failure_modes:
+      - schedule_only_view
+      - hidden_margin_risk
+      - uncorrelated_risk_aggregation
+
+  - id: revenue_prioritization
+    name: Revenue Prioritization
+    domain: operations
+    tier: 1
+    build_order: 10
+    purpose: >
+      Rank opportunities and jobs by risk-adjusted revenue and effort so the
+      team works the highest-value pipeline first.
+    inputs: [pipeline, job_margins, win_probability, capacity, strategic_weight]
+    outputs: [ranked_priority_list, expected_value, capacity_conflicts, rationale]
+    expert_signals:
+      - Ranks on risk-adjusted margin, not headline contract value.
+      - Surfaces where two high-value jobs contend for the same capacity.
+    rubric: domain_default
+    dependencies: [risk_scoring]
+    safety_rules:
+      - Prioritization is advisory; it does not auto-decline or auto-commit work.
+      - Strategic overrides are recorded, not silently absorbed.
+    success_criteria:
+      - Ranking correlates with expert prioritization at rubric threshold.
+    failure_modes:
+      - ranked_on_top_line_revenue
+      - ignored_capacity_conflict
+      - hidden_strategic_override
+
+  - id: scheduling
+    name: Scheduling
+    domain: operations
+    tier: 2
+    purpose: >
+      Build and maintain a realistic schedule across jobs, crews, and
+      constraints, and reflow it as reality changes.
+    inputs: [job_sequences, crew_availability, constraints, committed_dates, disruptions]
+    outputs: [schedule, conflicts, reflow_plan, at_risk_dates]
+    expert_signals:
+      - Reflows downstream tasks when an upstream task slips.
+      - Respects crew capacity and committed client dates.
+    rubric: domain_default
+    dependencies: [job_sequencing]
+    safety_rules:
+      - Committed client dates are not moved without an escalation.
+      - Over-allocated crews surface as conflicts, not silent overlaps.
+    success_criteria:
+      - Schedule has no unresolved hard-constraint conflicts.
+    failure_modes:
+      - silent_crew_overallocation
+      - committed_date_moved_without_escalation
+      - no_reflow_after_slip
+
+  # === Reasoning Foundations ================================================
+
+  - id: multi_step_reasoning
+    name: Multi-Step Reasoning
+    domain: reasoning
+    tier: 3
+    purpose: >
+      Decompose a problem into checkable steps and verify each before
+      concluding — the anti-hallucination backbone for every other skill.
+    inputs: [task, available_evidence, constraints, tools]
+    outputs: [reasoning_trace, intermediate_checks, conclusion, confidence]
+    expert_signals:
+      - Each step is grounded in evidence or a tool result, not assertion.
+      - Stops and asks when a step cannot be verified.
+    rubric: multi_step_reasoning
+    safety_rules:
+      - Do not present an unverified intermediate result as fact.
+      - Below-threshold confidence yields a question, not a guess.
+    success_criteria:
+      - Each step is independently checkable; the trace reconstructs the answer.
+    failure_modes:
+      - skipped_verification_step
+      - confident_unsupported_conclusion
+      - lost_intermediate_state
+
+  - id: document_understanding
+    name: Document Understanding
+    domain: reasoning
+    tier: 1
+    purpose: >
+      Extract structured, grounded facts from contracts, plans, and PDFs with
+      citations back to the source span.
+    inputs: [document, document_type, extraction_target, schema]
+    outputs: [structured_extraction, source_citations, low_confidence_fields]
+    expert_signals:
+      - Every extracted value cites the page/clause it came from.
+      - Tables, plan callouts, and handwriting flagged when low confidence.
+    rubric: document_understanding
+    safety_rules:
+      - No extracted value without a resolvable source citation.
+      - Low-confidence fields are flagged, never silently filled.
+    success_criteria:
+      - Field-level accuracy meets the rubric threshold with valid citations.
+    failure_modes:
+      - uncited_extracted_value
+      - hallucinated_field
+      - low_confidence_field_filled_silently
+
+  - id: evaluation
+    name: Evaluation Framework
+    domain: reasoning
+    tier: 3
+    purpose: >
+      Score any skill's output against its rubric, route to human review, and
+      capture corrections — the measurement spine for the whole layer.
+    inputs: [skill_output, rubric, golden_set, human_reviewer]
+    outputs: [rubric_scores, pass_fail, review_queue_item, stored_correction]
+    expert_signals:
+      - Scores per-criterion with anchors, not a single vibe number.
+      - Routes borderline and high-stakes cases to humans, not just failures.
+    rubric: evaluation_meta
+    dependencies: [multi_step_reasoning]
+    safety_rules:
+      - Evaluation never edits the artifact it scores; it only reports.
+      - Rubrics are versioned with the skills they measure.
+    success_criteria:
+      - Automated scores agree with human scores above the rubric's calibration bar.
+      - Every correction is stored and retrievable for retraining.
+    failure_modes:
+      - single_vibe_score
+      - eval_drift_from_production
+      - corrections_not_persisted
+
+  - id: memory
+    name: Memory
+    domain: reasoning
+    tier: 3
+    purpose: >
+      Persist and retrieve project, client, and decision context across turns
+      and sessions so agents don't re-ask what they were told.
+    inputs: [session_context, project_history, retention_policy, query]
+    outputs: [retrieved_context, write_decisions, retention_actions]
+    expert_signals:
+      - Retrieves the decision and its rationale, not just the raw message.
+      - Honors retention and tenant boundaries.
+    rubric: domain_default
+    safety_rules:
+      - Never retrieve memory across client/tenant boundaries.
+      - Purge on the declared retention schedule.
+    success_criteria:
+      - Relevant prior context retrieved within budget at rubric threshold.
+    failure_modes:
+      - cross_tenant_leakage
+      - stale_context_dominates
+      - context_bloat
+
+  - id: decision_trees
+    name: Decision Trees
+    domain: reasoning
+    tier: 3
+    purpose: >
+      Encode repeatable domain decisions (qualify, escalate, route, approve) as
+      auditable trees so outcomes are consistent and explainable.
+    inputs: [decision_policy, inputs, thresholds, escalation_rules]
+    outputs: [decision, path_taken, triggered_rules, audit_record]
+    expert_signals:
+      - The taken path is recorded and replayable.
+      - Edge inputs hit an explicit branch, not an undefined default.
+    rubric: domain_default
+    dependencies: [multi_step_reasoning]
+    safety_rules:
+      - Every decision records the path and the rules it triggered.
+      - Undefined inputs escalate rather than falling through silently.
+    success_criteria:
+      - Decisions match the policy on the golden set at rubric threshold.
+    failure_modes:
+      - undefined_default_branch
+      - unauditable_decision
+      - threshold_drift
