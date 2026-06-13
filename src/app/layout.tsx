@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { Web3Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'NoblePort Mission Control',
@@ -18,7 +19,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-ink-950 text-ink-100 antialiased">{children}</body>
+      <body className="min-h-screen bg-ink-950 text-ink-100 antialiased">
+        <Web3Providers>{children}</Web3Providers>
+      </body>
     </html>
   );
 }
