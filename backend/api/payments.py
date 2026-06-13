@@ -125,8 +125,18 @@ async def stripe_webhook(request: Request):
     payload = await request.body()
     signature = request.headers.get("stripe-signature", "")
 
-    # Verify webhook signature in production
-    if stripe_service.webhook_secret and signature:
+    # In live mode the signature is mandatory: a missing secret or signature is
+    # a hard 400, not a silent pass. Unsigned webhooks can never move real money.
+    if stripe_service.is_live:
+        if not stripe_service.webhook_secret or not signature:
+            raise HTTPException(
+                status_code=400,
+                detail="Signed webhook required in live mode",
+            )
+        if not stripe_service.verify_webhook_signature(payload, signature):
+            raise HTTPException(status_code=400, detail="Invalid webhook signature")
+    # In test mode, still verify whenever a secret + signature are present.
+    elif stripe_service.webhook_secret and signature:
         if not stripe_service.verify_webhook_signature(payload, signature):
             raise HTTPException(status_code=400, detail="Invalid webhook signature")
 

@@ -1,0 +1,40 @@
+name: Payment Node Guard
+
+# Enforces the hard wall between the construction payment node and the
+# NBPT / KUZO / liquidity layer, plus the live-mode pre-flight and webhook
+# hardening. See docs/payments/payment-token-separation.md.
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "backend/**"
+      - ".github/workflows/payment-node-guard.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/payment-node-guard.yml"
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Minimal set the guard + governance tests need (fast, deterministic).
+          pip install pytest pytest-asyncio pydantic pydantic-settings \
+            sqlalchemy aiosqlite stripe
+
+      - name: Payment node isolation + governance tests
+        run: |
+          python -m pytest \
+            backend/tests/test_payment_node_isolation.py \
+            backend/tests/test_governance.py \
+            -v

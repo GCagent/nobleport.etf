@@ -43,6 +43,8 @@ class StripeService:
         self.webhook_secret = settings.stripe_webhook_secret
         self.success_url = settings.stripe_success_url
         self.cancel_url = settings.stripe_cancel_url
+        self.is_live = settings.is_live_payments
+        self.webhook_tolerance_seconds = settings.stripe_webhook_tolerance_seconds
 
     # =========================================================================
     # CHECKOUT SESSION CREATION
@@ -260,11 +262,21 @@ class StripeService:
     # =========================================================================
 
     def verify_webhook_signature(
-        self, payload: bytes, signature: str
+        self, payload: bytes, signature: str, now: Optional[int] = None
     ) -> bool:
-        """Verify Stripe webhook signature using HMAC-SHA256."""
+        """Verify a Stripe webhook signature over the *raw* request body.
+
+        Stripe signs the exact bytes it sent, so `payload` must be the raw body
+        (never a re-serialized JSON object). Verification covers three things:
+          1. the secret is configured (fail closed if not),
+          2. the HMAC-SHA256 over `t.payload` matches the `v1` signature,
+          3. the signed timestamp is within the replay-protection window.
+        """
         if not self.webhook_secret:
             logger.warning("Stripe webhook secret not configured")
+            return False
+
+        if not signature:
             return False
 
         elements = signature.split(",")
@@ -272,6 +284,8 @@ class StripeService:
         sig_v1 = None
 
         for element in elements:
+            if "=" not in element:
+                continue
             key, value = element.split("=", 1)
             if key == "t":
                 timestamp = value
@@ -281,14 +295,28 @@ class StripeService:
         if not timestamp or not sig_v1:
             return False
 
-        signed_payload = f"{timestamp}.{payload.decode('utf-8')}"
+        signed_payload = b"%b.%b" % (timestamp.encode("utf-8"), payload)
         expected = hmac.new(
             self.webhook_secret.encode("utf-8"),
-            signed_payload.encode("utf-8"),
+            signed_payload,
             hashlib.sha256,
         ).hexdigest()
 
-        return hmac.compare_digest(expected, sig_v1)
+        if not hmac.compare_digest(expected, sig_v1):
+            return False
+
+        # Replay protection: reject events whose signed timestamp is stale.
+        if self.webhook_tolerance_seconds > 0:
+            try:
+                event_ts = int(timestamp)
+            except ValueError:
+                return False
+            current = now if now is not None else int(datetime.now(timezone.utc).timestamp())
+            if abs(current - event_ts) > self.webhook_tolerance_seconds:
+                logger.warning("Stripe webhook timestamp outside tolerance window")
+                return False
+
+        return True
 
     async def handle_webhook_event(
         self, event_type: str, event_data: dict[str, Any]

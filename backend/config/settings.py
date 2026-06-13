@@ -8,7 +8,7 @@ including Buildertrend integration parameters and database configuration.
 from enum import Enum
 from typing import Optional
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -22,6 +22,19 @@ class SyncMode(str, Enum):
     MANUAL = "manual"
     SCHEDULED = "scheduled"
     REALTIME = "realtime"
+
+
+class StripeMode(str, Enum):
+    """Live-vs-test gate for the construction payment node.
+
+    `live` is intentionally hard to enable: the after-validator below refuses
+    to construct settings in live mode unless every pre-flight control is in
+    place (live key, webhook secret, durable Postgres ledger, https return
+    URLs). This is the runtime half of the payment-node go-live checklist.
+    """
+
+    TEST = "test"
+    LIVE = "live"
 
 
 class Settings(BaseSettings):
@@ -41,12 +54,15 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     # Stripe Integration
+    stripe_mode: StripeMode = StripeMode.TEST
     stripe_secret_key: Optional[str] = None
     stripe_publishable_key: Optional[str] = None
     stripe_webhook_secret: Optional[str] = None
     stripe_success_url: str = "http://localhost:3000/payment/success"
     stripe_cancel_url: str = "http://localhost:3000/payment/cancel"
     stripe_default_deposit_percent: float = 30.0
+    # Replay-protection window for webhook signatures, in seconds (Stripe default).
+    stripe_webhook_tolerance_seconds: int = 300
 
     # HubSpot Integration
     hubspot_api_key: Optional[str] = None
@@ -94,6 +110,73 @@ class Settings(BaseSettings):
         "env_prefix": "NOBLEPORT_",
         "case_sensitive": False,
     }
+
+    @property
+    def is_live_payments(self) -> bool:
+        """True only when the Stripe node is configured to move real money."""
+        return self.stripe_mode == StripeMode.LIVE
+
+    @property
+    def has_durable_ledger(self) -> bool:
+        """A durable ledger means Postgres, not the SQLite/dev fallback.
+
+        Real customer deposits (MA c.142A consumer funds) must never settle
+        against an ephemeral SQLite file.
+        """
+        url = (self.postgres_url or self.database_url or "").lower()
+        return url.startswith("postgres://") or url.startswith("postgresql")
+
+    @model_validator(mode="after")
+    def _enforce_live_payment_preflight(self) -> "Settings":
+        """Fail closed: refuse to boot in live payment mode unless every
+        pre-cutover control from the go-live checklist is satisfied.
+
+        In test mode this is a no-op, so local development and the test matrix
+        run unchanged. The point is that flipping NOBLEPORT_STRIPE_MODE=live
+        cannot silently go live against a half-configured stack.
+        """
+        if self.stripe_mode != StripeMode.LIVE:
+            return self
+
+        problems: list[str] = []
+
+        key = self.stripe_secret_key or ""
+        if not key:
+            problems.append("stripe_secret_key is not set")
+        elif not key.startswith("sk_live_"):
+            problems.append(
+                "stripe_secret_key is not a live key (must start with 'sk_live_'); "
+                "a test key in live mode means payments silently fail"
+            )
+        elif key.startswith(("sk_live_EXAMPLE", "sk_live_REPLACE", "sk_live_xxx")):
+            problems.append("stripe_secret_key looks like a placeholder; rotate and set the real key")
+
+        if not self.stripe_webhook_secret:
+            problems.append(
+                "stripe_webhook_secret is not set; the webhook would accept "
+                "unsigned requests, which is unacceptable for live funds"
+            )
+
+        if not self.has_durable_ledger:
+            problems.append(
+                "live payments require a durable Postgres ledger "
+                "(set NOBLEPORT_POSTGRES_URL / NOBLEPORT_DATABASE_URL); "
+                "real deposits must not settle against SQLite"
+            )
+
+        for label, url in (
+            ("stripe_success_url", self.stripe_success_url),
+            ("stripe_cancel_url", self.stripe_cancel_url),
+        ):
+            if not url.startswith("https://"):
+                problems.append(f"{label} must be https in live mode (got {url!r})")
+
+        if problems:
+            raise ValueError(
+                "Stripe is in LIVE mode but the payment-node pre-flight failed:\n  - "
+                + "\n  - ".join(problems)
+            )
+        return self
 
 
 settings = Settings()
