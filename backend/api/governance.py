@@ -15,12 +15,21 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from backend.governance import (
+    ATTESTATION_REGISTRY,
     AUTHORITY_MATRIX,
     CREDENTIAL_REGISTER,
     ActionRequest,
+    AttestationCategory,
+    AttestationStatus,
     Lane,
     StephanieGate,
+    registry_summary,
     run_baseline,
+)
+from backend.governance.attestation_registry import (
+    REGISTRY_VERSION,
+    STATUS_DEFINITIONS,
+    AttestationRecord,
 )
 from backend.governance.truth_layer import TAG_DEFINITIONS
 
@@ -98,3 +107,47 @@ async def metrics():
     """
     _, m = run_baseline()
     return m.as_report()
+
+
+def _attestation_to_dict(r: AttestationRecord) -> dict:
+    return {
+        "attestation_id": r.attestation_id,
+        "name": r.name,
+        "category": r.category.value,
+        "issuer": r.issuer,
+        "status": r.status.value,
+        "verification_method": r.verification_method,
+        "evidence_source": r.evidence_source,
+        "blockchain_anchor": r.blockchain_anchor,
+        "expiration_date": r.expiration_date.isoformat() if r.expiration_date else None,
+        "claimed_expiration": r.claimed_expiration,
+        "revocation_status": r.revocation_status.value,
+        "notes": r.notes,
+    }
+
+
+@router.get("/attestations")
+async def attestations(
+    status: AttestationStatus | None = None,
+    category: AttestationCategory | None = None,
+):
+    """
+    Attestation Registry v1.0 — every attestation/credential class referenced
+    across NoblePort surfaces, mapped to its actual evidentiary state.
+    """
+    records = [
+        r for r in ATTESTATION_REGISTRY
+        if (status is None or r.status == status)
+        and (category is None or r.category == category)
+    ]
+    return {
+        "version": REGISTRY_VERSION,
+        "status_definitions": {k.value: v for k, v in STATUS_DEFINITIONS.items()},
+        "records": [_attestation_to_dict(r) for r in records],
+    }
+
+
+@router.get("/attestations/summary")
+async def attestations_summary():
+    """Registry roll-up: totals by status and category, verified/anchored counts."""
+    return registry_summary()

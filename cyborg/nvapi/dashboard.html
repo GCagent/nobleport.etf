@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CYBORG.IO — NVAPI Sandbox Control</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#050b18; --card:#0a1628; --card2:#0d1e38;
+      --border:rgba(0,212,255,.18); --border-dim:rgba(0,212,255,.07);
+      --cyan:#00d4ff; --cyan-dim:rgba(0,212,255,.12); --cyan-glow:rgba(0,212,255,.3);
+      --green:#00ff88; --red:#ff4455; --yellow:#ffc107; --purple:#a78bfa;
+      --text:#e8f4ff; --dim:#6b8cbe; --mid:#a8c8f0;
+      --mono:'JetBrains Mono',monospace;
+      --grid:rgba(30,80,140,.12);
+    }
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:36px 36px;pointer-events:none;z-index:0}
+
+    /* NAV */
+    nav{position:sticky;top:0;z-index:100;background:rgba(5,11,24,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo svg{width:28px;height:28px}
+    .logo-text{font-size:16px;font-weight:800;letter-spacing:.1em;background:linear-gradient(90deg,#fff,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .logo-sub{font-size:9px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;-webkit-text-fill-color:var(--dim)}
+    .nav-right{display:flex;align-items:center;gap:12px}
+    .env-badge{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);border-radius:4px;padding:4px 10px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--green);letter-spacing:.1em}
+    .api-url-input{background:var(--card2);border:1px solid var(--border-dim);border-radius:6px;padding:6px 10px;font-family:var(--mono);font-size:11px;color:var(--cyan);width:260px;outline:none}
+    .api-url-input:focus{border-color:var(--border)}
+
+    /* MAIN */
+    main{position:relative;z-index:1;padding:24px;max-width:1400px;margin:0 auto}
+
+    /* GRID */
+    .top-row{display:grid;grid-template-columns:repeat(7,1fr);gap:14px;margin-bottom:20px}
+    .mid-row{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:16px;margin-bottom:20px}
+    .bot-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+    /* CARDS */
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 16px;position:relative;overflow:hidden}
+    .card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+    .card.cyan::after{background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+    .card.green::after{background:linear-gradient(90deg,transparent,var(--green),transparent)}
+    .card.red::after{background:linear-gradient(90deg,transparent,var(--red),transparent)}
+    .card.yellow::after{background:linear-gradient(90deg,transparent,var(--yellow),transparent)}
+    .card.purple::after{background:linear-gradient(90deg,transparent,var(--purple),transparent)}
+
+    .card-label{font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
+    .card-value{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1}
+    .card-sub{font-size:11px;color:var(--dim);margin-top:5px}
+    .card.cyan .card-value{color:var(--cyan)}
+    .card.green .card-value{color:var(--green)}
+    .card.red .card-value{color:var(--red)}
+    .card.yellow .card-value{color:var(--yellow)}
+    .card.purple .card-value{color:var(--purple)}
+
+    /* KILL SWITCH */
+    .kill-card{background:var(--card);border:1px solid var(--border-dim);border-radius:12px;padding:20px}
+    .kill-title{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+    .kill-btn{width:100%;padding:14px;border-radius:10px;border:none;font-size:14px;font-weight:800;letter-spacing:.06em;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:10px}
+    .kill-btn.armed{background:linear-gradient(135deg,#ff4455,#cc0022);color:#fff;box-shadow:0 0 24px rgba(255,68,85,.3)}
+    .kill-btn.armed:hover{transform:translateY(-1px);box-shadow:0 4px 32px rgba(255,68,85,.5)}
+    .kill-btn.safe{background:linear-gradient(135deg,var(--green),#00cc66);color:#000;box-shadow:0 0 20px rgba(0,255,136,.2)}
+    .kill-btn.safe:hover{transform:translateY(-1px);box-shadow:0 4px 24px rgba(0,255,136,.35)}
+    .kill-status{margin-top:10px;font-family:var(--mono);font-size:11px;text-align:center;padding:6px 0}
+
+    /* CHAT TEST */
+    .chat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px}
+    .chat-card h3{font-size:13px;font-weight:700;color:var(--text);margin:0}
+    .chat-row{display:flex;gap:8px}
+    .chat-input{flex:1;background:var(--card2);border:1px solid var(--border-dim);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);outline:none;font-family:'Inter',sans-serif;resize:none;height:80px}
+    .chat-input:focus{border-color:var(--border)}
+    .chat-col{display:flex;flex-direction:column;gap:6px}
+    .model-select{background:var(--card2);border:1px solid var(--border-dim);border-radius:6px;padding:8px 10px;font-size:12px;color:var(--cyan);font-family:var(--mono);outline:none;cursor:pointer;width:100%}
+    .send-btn{padding:10px 18px;background:linear-gradient(135deg,var(--cyan),#1e90ff);border:none;border-radius:8px;color:#000;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .send-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--cyan-glow)}
+    .send-btn:disabled{opacity:.4;transform:none;cursor:not-allowed}
+    .chat-response{background:var(--card2);border:1px solid var(--border-dim);border-radius:8px;padding:14px;font-size:13px;color:var(--mid);min-height:80px;font-family:var(--mono);line-height:1.6;white-space:pre-wrap;word-break:break-word}
+    .chat-meta{display:flex;gap:16px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+    .chat-meta span{color:var(--cyan)}
+
+    /* ENDPOINT TESTER */
+    .endpoint-list{display:flex;flex-direction:column;gap:8px}
+    .ep-row{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border-dim);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .2s}
+    .ep-row:hover{border-color:var(--border);background:rgba(0,212,255,.04)}
+    .ep-method{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;min-width:36px;text-align:center}
+    .get{background:rgba(0,212,255,.1);color:var(--cyan)}
+    .post{background:rgba(0,255,136,.1);color:var(--green)}
+    .delete{background:rgba(255,68,85,.1);color:var(--red)}
+    .ep-path{font-family:var(--mono);font-size:12px;color:var(--text);flex:1}
+    .ep-desc{font-size:11px;color:var(--dim)}
+    .ep-status{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px}
+    .ep-status.ok{background:rgba(0,255,136,.1);color:var(--green)}
+    .ep-status.err{background:rgba(255,68,85,.1);color:var(--red)}
+    .ep-status.pending{background:rgba(255,193,7,.1);color:var(--yellow)}
+    .ep-status.idle{background:rgba(107,140,190,.1);color:var(--dim)}
+
+    /* LOG STREAM */
+    .log-stream{background:var(--card2);border:1px solid var(--border-dim);border-radius:8px;padding:12px;font-family:var(--mono);font-size:11px;line-height:1.7;height:220px;overflow-y:auto;display:flex;flex-direction:column-reverse}
+    .log-entry{display:flex;gap:10px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+    .log-ts{color:var(--dim);white-space:nowrap}
+    .log-ep{color:var(--cyan);min-width:120px}
+    .log-ok{color:var(--green)}
+    .log-err{color:var(--red)}
+    .log-tokens{color:var(--purple)}
+    .log-lat{color:var(--yellow)}
+
+    /* PROGRESS BAR */
+    .prog-track{width:100%;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:8px}
+    .prog-fill{height:100%;border-radius:2px;transition:width .6s ease}
+    .prog-cyan{background:linear-gradient(90deg,var(--cyan),#1e90ff)}
+    .prog-green{background:linear-gradient(90deg,var(--green),#00cc66)}
+
+    /* SECTION LABEL */
+    .section-label{font-size:10px;font-weight:700;color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px}
+
+    /* VAULT */
+    .vault-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:4px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+    .vault-badge.sealed{background:rgba(255,68,85,.1);border:1px solid rgba(255,68,85,.3);color:var(--red)}
+    .vault-badge.unsealed{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);color:var(--green)}
+    .vault-badge.unknown{background:rgba(107,140,190,.1);border:1px solid rgba(107,140,190,.2);color:var(--dim)}
+    .rotate-btn{width:100%;padding:10px;border-radius:8px;border:none;font-size:12px;font-weight:700;letter-spacing:.05em;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;box-shadow:0 0 16px rgba(167,139,250,.2)}
+    .rotate-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(167,139,250,.4)}
+    .rotate-btn:disabled{opacity:.4;transform:none;cursor:not-allowed}
+    .vault-info-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
+    .vault-info-row:last-child{border-bottom:none}
+    .vault-info-key{color:var(--dim)}
+    .vault-info-val{font-family:var(--mono);color:var(--mid)}
+
+    /* REFRESH INDICATOR */
+    .refresh-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite;margin-right:5px}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+    @media(max-width:1200px){.top-row{grid-template-columns:repeat(4,1fr)}.mid-row{grid-template-columns:1fr 1fr}.bot-row{grid-template-columns:1fr 1fr}}
+    @media(max-width:800px){.top-row{grid-template-columns:repeat(2,1fr)}.mid-row{grid-template-columns:1fr}.bot-row{grid-template-columns:1fr}}
+
+    /* QUANTUM PANEL */
+    .quantum-row{display:grid;grid-template-columns:260px 1fr;gap:16px;margin-bottom:20px}
+    .q-summary{display:flex;flex-direction:column;gap:10px}
+    .q-stat{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--card2);border:1px solid var(--border-dim);border-radius:7px;font-size:12px}
+    .q-stat-label{color:var(--dim)}
+    .q-stat-val{font-family:var(--mono);font-weight:700}
+    .q-overall{padding:12px;border-radius:8px;text-align:center;font-family:var(--mono);font-size:14px;font-weight:800;letter-spacing:.08em;margin-bottom:4px}
+    .q-overall.critical{background:rgba(255,68,85,.12);border:1px solid rgba(255,68,85,.4);color:var(--red);box-shadow:0 0 16px rgba(255,68,85,.15)}
+    .q-overall.review{background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.35);color:var(--yellow)}
+    .q-overall.secure{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.35);color:var(--green)}
+    .threat-table{width:100%;border-collapse:collapse;font-size:11px}
+    .threat-table th{text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);color:var(--dim);font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:10px}
+    .threat-table td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top;line-height:1.5}
+    .threat-table tr:hover td{background:rgba(0,212,255,.03)}
+    .risk-bar{display:inline-block;width:60px;height:6px;background:rgba(255,255,255,.06);border-radius:3px;vertical-align:middle;margin-left:6px;overflow:hidden}
+    .risk-fill{height:100%;border-radius:3px}
+    .badge-vuln{background:rgba(255,68,85,.12);border:1px solid rgba(255,68,85,.35);color:var(--red);padding:2px 7px;border-radius:4px;font-family:var(--mono);font-size:9px;font-weight:700;white-space:nowrap}
+    .badge-review{background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.3);color:var(--yellow);padding:2px 7px;border-radius:4px;font-family:var(--mono);font-size:9px;font-weight:700;white-space:nowrap}
+    .badge-secure{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);color:var(--green);padding:2px 7px;border-radius:4px;font-family:var(--mono);font-size:9px;font-weight:700;white-space:nowrap}
+    .q-scroll{max-height:320px;overflow-y:auto}
+    @media(max-width:900px){.quantum-row{grid-template-columns:1fr}}
+
+    /* ASR VOICE PANEL */
+    .asr-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px}
+    .mic-btn{width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto}
+    .mic-btn.idle{background:rgba(0,212,255,.1);border:2px solid rgba(0,212,255,.3);color:var(--cyan)}
+    .mic-btn.idle:hover{background:rgba(0,212,255,.2);box-shadow:0 0 20px var(--cyan-glow)}
+    .mic-btn.recording{background:rgba(255,68,85,.15);border:2px solid var(--red);color:var(--red);animation:micPulse 1s ease-in-out infinite}
+    .mic-btn.processing{background:rgba(167,139,250,.1);border:2px solid var(--purple);color:var(--purple)}
+    @keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,68,85,.4)}50%{box-shadow:0 0 0 12px rgba(255,68,85,0)}}
+    .asr-waveform{height:32px;background:var(--card2);border:1px solid var(--border-dim);border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:2px;padding:0 8px}
+    .asr-bar{width:3px;background:var(--cyan);border-radius:2px;transition:height .1s;height:4px}
+    .asr-transcript{background:var(--card2);border:1px solid var(--border-dim);border-radius:8px;padding:12px;font-size:13px;color:var(--text);min-height:60px;line-height:1.6;font-family:'Inter',sans-serif}
+    .asr-status{font-family:var(--mono);font-size:11px;text-align:center;color:var(--dim)}
+    .asr-url-input{background:var(--card2);border:1px solid var(--border-dim);border-radius:6px;padding:5px 9px;font-family:var(--mono);font-size:11px;color:var(--cyan);width:100%;outline:none}
+    .asr-url-input:focus{border-color:var(--border)}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <svg viewBox="0 0 28 28" fill="none">
+      <circle cx="14" cy="14" r="12" stroke="#00d4ff" stroke-width="1.5" opacity=".4"/>
+      <circle cx="14" cy="14" r="8" stroke="#00d4ff" stroke-width="1.5" opacity=".7"/>
+      <circle cx="14" cy="14" r="3" fill="#00d4ff"/>
+      <line x1="14" y1="2" x2="14" y2="7" stroke="#00d4ff" stroke-width="2"/>
+      <line x1="14" y1="21" x2="14" y2="26" stroke="#00d4ff" stroke-width="2"/>
+      <line x1="2" y1="14" x2="7" y2="14" stroke="#00d4ff" stroke-width="2"/>
+      <line x1="21" y1="14" x2="26" y2="14" stroke="#00d4ff" stroke-width="2"/>
+    </svg>
+    <div>
+      <div class="logo-text">CYBORG.IO</div>
+      <div class="logo-sub">NVAPI Sandbox Control</div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="env-badge">TESTING</div>
+    <input class="api-url-input" id="apiUrl" value="http://localhost:8080" placeholder="http://localhost:8080">
+    <span style="font-size:11px;color:var(--dim);white-space:nowrap"><span class="refresh-dot"></span>Auto-refresh 5s</span>
+  </div>
+</nav>
+
+<main>
+
+  <!-- KPI ROW -->
+  <div class="top-row">
+    <div class="card cyan">
+      <div class="card-label">Total Calls</div>
+      <div class="card-value" id="kpi-total">0</div>
+      <div class="card-sub" id="kpi-since">since boot</div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Successful</div>
+      <div class="card-value" id="kpi-ok">0</div>
+      <div class="card-sub" id="kpi-rate">success rate</div>
+      <div class="prog-track"><div class="prog-fill prog-green" id="kpi-ok-bar" style="width:0%"></div></div>
+    </div>
+    <div class="card red">
+      <div class="card-label">Failed</div>
+      <div class="card-value" id="kpi-fail">0</div>
+      <div class="card-sub">errors logged</div>
+    </div>
+    <div class="card purple">
+      <div class="card-label">Tokens Used</div>
+      <div class="card-value" id="kpi-tokens">0</div>
+      <div class="card-sub">cumulative</div>
+    </div>
+    <div class="card cyan">
+      <div class="card-label">Key Status</div>
+      <div class="card-value" id="kpi-key" style="font-size:18px;padding-top:4px">PENDING</div>
+      <div class="card-sub" id="kpi-key-src">checking source…</div>
+    </div>
+    <div class="card" id="vault-kpi-card">
+      <div class="card-label">Vault</div>
+      <div id="vault-badge-kpi" class="vault-badge unknown" style="margin-bottom:4px">⬡ CHECKING</div>
+      <div class="card-sub" id="vault-kpi-sub">hashicorp vault 1.16</div>
+    </div>
+    <div class="card" id="ks-kpi-card">
+      <div class="card-label">Kill Switch</div>
+      <div class="card-value" id="kpi-ks" style="font-size:18px;padding-top:4px">—</div>
+      <div class="card-sub" id="kpi-ks-sub">system state</div>
+    </div>
+  </div>
+
+  <!-- MID ROW -->
+  <div class="mid-row">
+
+    <!-- KILL SWITCH CONTROL -->
+    <div class="kill-card">
+      <div class="kill-title">⚡ Kill Switch — Emergency Halt</div>
+      <button class="kill-btn safe" id="killBtn" onclick="toggleKillSwitch()">
+        <span id="killIcon">🛡️</span>
+        <span id="killText">SYSTEM ARMED — ALL CLEAR</span>
+      </button>
+      <div class="kill-status" id="killStatus" style="color:var(--green)">All NVAPI calls active</div>
+
+      <div style="margin-top:16px">
+        <div class="section-label">Quick Test Endpoints</div>
+        <div class="endpoint-list">
+          <div class="ep-row" onclick="runEndpoint('GET','/health')">
+            <span class="ep-method get">GET</span>
+            <span class="ep-path">/health</span>
+            <span class="ep-desc">Gateway status</span>
+            <span class="ep-status idle" id="ep-health">IDLE</span>
+          </div>
+          <div class="ep-row" onclick="runEndpoint('GET','/nv/health')">
+            <span class="ep-method get">GET</span>
+            <span class="ep-path">/nv/health</span>
+            <span class="ep-desc">Ping NVIDIA API</span>
+            <span class="ep-status idle" id="ep-nv-health">IDLE</span>
+          </div>
+          <div class="ep-row" onclick="runEndpoint('GET','/nv/models')">
+            <span class="ep-method get">GET</span>
+            <span class="ep-path">/nv/models</span>
+            <span class="ep-desc">List NIM models</span>
+            <span class="ep-status idle" id="ep-nv-models">IDLE</span>
+          </div>
+          <div class="ep-row" onclick="runEndpoint('GET','/telemetry/stats')">
+            <span class="ep-method get">GET</span>
+            <span class="ep-path">/telemetry/stats</span>
+            <span class="ep-desc">Usage stats</span>
+            <span class="ep-status idle" id="ep-telemetry">IDLE</span>
+          </div>
+          <div class="ep-row" onclick="runEndpoint('DELETE','/telemetry/reset')">
+            <span class="ep-method delete">DEL</span>
+            <span class="ep-path">/telemetry/reset</span>
+            <span class="ep-desc">Reset counters</span>
+            <span class="ep-status idle" id="ep-reset">IDLE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEPHANIE.AI CHAT TEST -->
+    <div class="chat-card">
+      <div class="section-label">Stephanie.ai Inference Test</div>
+      <textarea class="chat-input" id="chatPrompt" placeholder="Enter a prompt for Stephanie.ai / NVIDIA NIM...
+e.g. What is the current quantum threat level for NoblePort?"></textarea>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select class="model-select" id="modelSelect">
+          <option value="nvidia/nemotron-3-nano-30b-a3b">nemotron-3-nano-30b ⚡ reasoning</option>
+          <option value="meta/llama-3.1-70b-instruct">meta/llama-3.1-70b-instruct</option>
+          <option value="nvidia/nemotron-4-340b-instruct">nvidia/nemotron-4-340b-instruct</option>
+          <option value="mistralai/mixtral-8x22b-instruct">mistralai/mixtral-8x22b-instruct</option>
+          <option value="google/gemma-2-27b-it">google/gemma-2-27b-it</option>
+          <option value="meta/llama-3.1-8b-instruct">meta/llama-3.1-8b-instruct (fast)</option>
+        </select>
+        <select class="model-select" id="endpointSelect" style="max-width:160px">
+          <option value="/nv/stephanie/stream">Stephanie.ai ⚡</option>
+          <option value="/nv/stream">Raw Stream ⚡</option>
+          <option value="/nv/stephanie">Stephanie.ai (full)</option>
+          <option value="/nv/chat">Raw Chat (full)</option>
+        </select>
+        <button class="send-btn" id="sendBtn" onclick="sendChat()">Send →</button>
+      </div>
+      <!-- Reasoning trace panel (Nemotron thinking models) -->
+      <div id="reasoningPanel" style="display:none;margin-top:8px">
+        <div style="font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">⚙ Reasoning Trace</div>
+        <div id="reasoningOutput" style="background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);border-radius:6px;padding:10px;font-family:var(--mono);font-size:10px;color:var(--purple);line-height:1.6;max-height:140px;overflow-y:auto;white-space:pre-wrap;word-break:break-word"></div>
+      </div>
+      <div class="chat-response" id="chatResponse">Waiting for prompt…</div>
+      <div class="chat-meta">
+        <div>Model: <span id="metaModel">—</span></div>
+        <div>Tokens: <span id="metaTokens">—</span></div>
+        <div>Latency: <span id="metaLatency">—</span></div>
+      </div>
+    </div>
+
+
+    <!-- NEMOTRON ASR VOICE INPUT -->
+    <div class="asr-card">
+      <div class="section-label">🎙 Nemotron ASR — Voice Input</div>
+
+      <!-- ASR proxy URL -->
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:10px;color:var(--dim);white-space:nowrap">ASR</span>
+        <input class="asr-url-input" id="asrUrl" value="http://localhost:8007" placeholder="http://localhost:8007">
+        <div id="asrDot" style="width:7px;height:7px;border-radius:50%;background:var(--dim);flex-shrink:0"></div>
+      </div>
+
+      <!-- Mic button -->
+      <button class="mic-btn idle" id="micBtn" onclick="toggleMic()">🎙</button>
+      <div class="asr-status" id="asrStatus">Click mic to record — releases on click or silence</div>
+
+      <!-- Waveform visualizer -->
+      <div class="asr-waveform" id="asrWaveform">
+        <div class="asr-bar" id="b1"></div><div class="asr-bar" id="b2"></div>
+        <div class="asr-bar" id="b3"></div><div class="asr-bar" id="b4"></div>
+        <div class="asr-bar" id="b5"></div><div class="asr-bar" id="b6"></div>
+        <div class="asr-bar" id="b7"></div><div class="asr-bar" id="b8"></div>
+      </div>
+
+      <!-- Transcript output -->
+      <div class="asr-transcript" id="asrTranscript">Transcript will appear here…</div>
+
+      <!-- Action buttons -->
+      <div style="display:flex;gap:8px">
+        <button onclick="copyTranscript()" style="flex:1;padding:7px;border-radius:7px;border:1px solid var(--border-dim);background:transparent;color:var(--dim);font-size:12px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='var(--border-dim)'">Copy</button>
+        <button onclick="sendToStephanie()" style="flex:2;padding:7px;border-radius:7px;border:none;background:linear-gradient(135deg,var(--cyan),#1e90ff);color:#000;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s">→ Send to Stephanie</button>
+        <button onclick="clearTranscript()" style="flex:1;padding:7px;border-radius:7px;border:1px solid rgba(255,68,85,.25);background:transparent;color:var(--red);font-size:12px;cursor:pointer">Clear</button>
+      </div>
+
+      <!-- File upload fallback -->
+      <div style="border-top:1px solid var(--border-dim);padding-top:10px">
+        <div style="font-size:10px;color:var(--dim);margin-bottom:6px">OR UPLOAD AUDIO FILE (any format)</div>
+        <input type="file" id="audioFile" accept="audio/*" style="display:none" onchange="uploadAudio(this)">
+        <button onclick="document.getElementById('audioFile').click()" style="width:100%;padding:8px;border-radius:7px;border:1px solid var(--border-dim);background:var(--card2);color:var(--mid);font-size:12px;cursor:pointer">📂 Upload MP3 / WAV / M4A / OGG</button>
+      </div>
+    </div>
+
+    <!-- LOG STREAM -->
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="section-label" style="margin:0">Live Call Log</div>
+        <button onclick="clearLog()" style="background:rgba(255,68,85,.1);border:1px solid rgba(255,68,85,.25);border-radius:5px;padding:4px 10px;font-size:11px;color:var(--red);cursor:pointer">Clear</button>
+      </div>
+      <div class="log-stream" id="logStream">
+        <div class="log-entry"><span class="log-ts">—</span><span class="log-ep" style="color:var(--dim)">Waiting for API calls...</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- QUANTUM THREAT INTELLIGENCE PANEL -->
+  <div class="quantum-row">
+
+    <!-- LEFT: Summary KPIs -->
+    <div class="card purple" style="padding:18px">
+      <div class="section-label">⚛ Quantum Threat Posture</div>
+      <div class="q-overall critical" id="q-overall-badge">⟳ LOADING…</div>
+      <div class="q-summary" id="q-summary">
+        <div class="q-stat"><span class="q-stat-label">Vectors Analyzed</span><span class="q-stat-val" id="q-total">10</span></div>
+        <div class="q-stat"><span class="q-stat-label">Vulnerable</span><span class="q-stat-val" style="color:var(--red)" id="q-vuln">—</span></div>
+        <div class="q-stat"><span class="q-stat-label">Needs Review</span><span class="q-stat-val" style="color:var(--yellow)" id="q-review">—</span></div>
+        <div class="q-stat"><span class="q-stat-label">Secure</span><span class="q-stat-val" style="color:var(--green)" id="q-secure">—</span></div>
+        <div class="q-stat"><span class="q-stat-label">Avg Risk Score</span><span class="q-stat-val" style="color:var(--cyan)" id="q-avg">—</span></div>
+        <div class="q-stat"><span class="q-stat-label">Max Risk Score</span><span class="q-stat-val" style="color:var(--red)" id="q-max">—</span></div>
+        <div class="q-stat"><span class="q-stat-label">Action Items</span><span class="q-stat-val" style="color:var(--yellow)" id="q-actions">—</span></div>
+      </div>
+      <button onclick="loadQuantumMatrix()" style="margin-top:12px;width:100%;padding:8px;border-radius:7px;border:1px solid var(--border-dim);background:rgba(167,139,250,.08);color:var(--purple);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border-dim)'">↻ Refresh Threat Matrix</button>
+    </div>
+
+    <!-- RIGHT: Threat Table -->
+    <div class="card" style="padding:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="section-label" style="margin:0">⚛ Quantum Attack Matrix — NoblePort Exposure (2025)</div>
+        <div style="font-size:10px;color:var(--dim)">Source: NIST / IETF / Gidney 2025</div>
+      </div>
+      <div class="q-scroll">
+        <table class="threat-table" id="q-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Attack Vector</th>
+              <th>Risk</th>
+              <th>Platform Exposure</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="q-tbody">
+            <tr><td colspan="5" style="color:var(--dim);text-align:center;padding:20px">Loading threat matrix…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ENDPOINT RESPONSE / RAW OUTPUT -->
+  <div class="bot-row" style="grid-template-columns:1fr 1fr 1fr;">
+    <div class="card cyan">
+      <div class="section-label">Last API Response</div>
+      <pre id="rawOutput" style="font-family:var(--mono);font-size:11px;color:var(--mid);overflow-x:auto;white-space:pre-wrap;max-height:220px;overflow-y:auto">Click any endpoint above to see raw response…</pre>
+    </div>
+
+    <!-- VAULT STATUS PANEL -->
+    <div class="card purple">
+      <div class="section-label">🔐 HashiCorp Vault</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div id="vault-status-badge" class="vault-badge unknown">⬡ CHECKING</div>
+          <button onclick="checkVaultStatus()" style="background:transparent;border:1px solid var(--border-dim);border-radius:5px;padding:3px 10px;font-size:11px;color:var(--dim);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='var(--border-dim)'">↻ Refresh</button>
+        </div>
+        <div style="background:var(--card2);border:1px solid var(--border-dim);border-radius:8px;padding:10px">
+          <div class="vault-info-row">
+            <span class="vault-info-key">Address</span>
+            <span class="vault-info-val" id="vault-addr">:8200</span>
+          </div>
+          <div class="vault-info-row">
+            <span class="vault-info-key">Key Source</span>
+            <span class="vault-info-val" id="vault-key-source">—</span>
+          </div>
+          <div class="vault-info-row">
+            <span class="vault-info-key">KV Path</span>
+            <span class="vault-info-val" style="font-size:10px">secret/nobleport/nvapi/keys</span>
+          </div>
+          <div class="vault-info-row">
+            <span class="vault-info-key">Policy</span>
+            <span class="vault-info-val">nvapi-read-only</span>
+          </div>
+          <div class="vault-info-row">
+            <span class="vault-info-key">Last Rotated</span>
+            <span class="vault-info-val" id="vault-last-rotate">—</span>
+          </div>
+        </div>
+        <div>
+          <button class="rotate-btn" id="rotateBtn" onclick="rotateKey()">
+            ⟳ &nbsp;Rotate NVAPI Key (Zero-Downtime)
+          </button>
+          <div id="rotate-status" style="margin-top:7px;font-family:var(--mono);font-size:11px;color:var(--dim);text-align:center;min-height:16px"></div>
+        </div>
+        <div style="padding:8px;background:var(--card2);border:1px solid rgba(255,193,7,.15);border-radius:6px;font-size:10px;color:var(--yellow);line-height:1.6">
+          ⚠ Rotate fetches new key from Vault KV-v2. Old key is invalidated in-process. No downtime — in-flight requests complete first.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">Setup Checklist</div>
+      <div style="display:flex;flex-direction:column;gap:9px;font-size:13px">
+        <div class="check-item" id="check-api">⬜ API gateway reachable at <span style="font-family:var(--mono);color:var(--cyan)" id="checkUrl">localhost:8080</span></div>
+        <div class="check-item" id="check-key">⬜ NVAPI_KEY configured in .env</div>
+        <div class="check-item" id="check-env">⬜ ENV=testing confirmed</div>
+        <div class="check-item" id="check-kill">⬜ Kill switch disarmed</div>
+        <div class="check-item" id="check-nv">⬜ NVIDIA endpoint reachable</div>
+        <div style="margin-top:10px;padding:12px;background:var(--card2);border:1px solid var(--border-dim);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.8">
+          <div style="color:var(--cyan);margin-bottom:6px">Quick Start:</div>
+          <div>1. cp .env.template .env</div>
+          <div>2. edit .env → add NVAPI_KEY</div>
+          <div>3. docker compose up --build</div>
+          <div>4. open dashboard → run /health</div>
+          <div>5. test /nv/health → verify key</div>
+          <div style="color:var(--purple);margin-top:4px">6. POST /admin/rotate-key → Vault pull</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const API = () => document.getElementById('apiUrl').value.replace(/\/$/, '');
+  let killActive = false;
+  let logEntries = [];
+
+  // ── FETCH HELPERS ──────────────────────────────────────
+  async function apiFetch(method, path, body = null) {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(API() + path, opts);
+    const data = await res.json().catch(() => ({ error: 'non-JSON response', status: res.status }));
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  // ── KILL SWITCH ────────────────────────────────────────
+  async function toggleKillSwitch() {
+    const btn = document.getElementById('killBtn');
+    btn.disabled = true;
+    const next = !killActive;
+    try {
+      const { ok, data } = await apiFetch('POST', '/admin/kill-switch', {
+        active: next,
+        reason: next ? 'Operator halt via dashboard' : 'Operator resume via dashboard'
+      });
+      if (ok) {
+        killActive = next;
+        updateKillBtn();
+        addLog({ ts: new Date().toISOString(), endpoint: '/admin/kill-switch', status: ok ? 'ok' : 'error', model: '', tokens: 0, latency_ms: 0 });
+      }
+      document.getElementById('rawOutput').textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+      document.getElementById('killStatus').textContent = 'Gateway unreachable — is Docker running?';
+      document.getElementById('killStatus').style.color = 'var(--red)';
+    }
+    btn.disabled = false;
+  }
+
+  function updateKillBtn() {
+    const btn = document.getElementById('killBtn');
+    const txt = document.getElementById('killText');
+    const ico = document.getElementById('killIcon');
+    const sts = document.getElementById('killStatus');
+    const kpiKs = document.getElementById('kpi-ks');
+    const kpiKsSub = document.getElementById('kpi-ks-sub');
+    const ksCard = document.getElementById('ks-kpi-card');
+    if (killActive) {
+      btn.className = 'kill-btn armed';
+      ico.textContent = '🔴';
+      txt.textContent = 'KILL SWITCH ACTIVE — TAP TO RESUME';
+      sts.textContent = 'ALL NVAPI calls halted';
+      sts.style.color = 'var(--red)';
+      kpiKs.textContent = '🔴 HALT';
+      kpiKs.style.color = 'var(--red)';
+      kpiKsSub.textContent = 'all calls blocked';
+      ksCard.className = 'card red';
+    } else {
+      btn.className = 'kill-btn safe';
+      ico.textContent = '🛡️';
+      txt.textContent = 'SYSTEM ARMED — ALL CLEAR';
+      sts.textContent = 'All NVAPI calls active';
+      sts.style.color = 'var(--green)';
+      kpiKs.textContent = '🟢 LIVE';
+      kpiKs.style.color = 'var(--green)';
+      kpiKsSub.textContent = 'calls allowed';
+      ksCard.className = 'card green';
+    }
+  }
+
+  // ── ENDPOINT TESTER ────────────────────────────────────
+  const epIdMap = {
+    '/health': 'ep-health',
+    '/nv/health': 'ep-nv-health',
+    '/nv/models': 'ep-nv-models',
+    '/telemetry/stats': 'ep-telemetry',
+    '/telemetry/reset': 'ep-reset',
+  };
+
+  async function runEndpoint(method, path) {
+    const id = epIdMap[path];
+    const el = document.getElementById(id);
+    if (el) { el.className = 'ep-status pending'; el.textContent = '...'; }
+    try {
+      const t0 = performance.now();
+      const { ok, status, data } = await apiFetch(method, path);
+      const lat = Math.round(performance.now() - t0);
+      if (el) {
+        el.className = ok ? 'ep-status ok' : 'ep-status err';
+        el.textContent = ok ? `${status} ${lat}ms` : `${status} ERR`;
+      }
+      document.getElementById('rawOutput').textContent = JSON.stringify(data, null, 2);
+      addLog({ ts: new Date().toISOString(), endpoint: path, status: ok ? 'ok' : 'error', model: '', tokens: 0, latency_ms: lat });
+      // run checklist updates
+      if (path === '/health' && ok) {
+        checkItem('check-api', true);
+        if (data.key_configured) checkItem('check-key', true);
+        if (data.env === 'testing') checkItem('check-env', true);
+        if (!data.kill_switch) checkItem('check-kill', true);
+      }
+      if (path === '/nv/health' && ok && data.nv_reachable) checkItem('check-nv', true);
+    } catch (e) {
+      if (el) { el.className = 'ep-status err'; el.textContent = 'ERR'; }
+      document.getElementById('rawOutput').textContent = `Error: ${e.message}\n\nIs the Docker container running?\ndocker compose up --build`;
+    }
+  }
+
+  // ── CHAT (streaming + non-streaming) ───────────────────────────
+  const REASONING_MODELS = new Set(['nvidia/nemotron-3-nano-30b-a3b','nvidia/nemotron-3-8b-qa-4k']);
+
+  async function sendChat() {
+    const prompt = document.getElementById('chatPrompt').value.trim();
+    if (!prompt) return;
+    const model = document.getElementById('modelSelect').value;
+    const endpoint = document.getElementById('endpointSelect').value;
+    const btn = document.getElementById('sendBtn');
+    const resp = document.getElementById('chatResponse');
+    const reasoningPanel = document.getElementById('reasoningPanel');
+    const reasoningOutput = document.getElementById('reasoningOutput');
+    const isStream = endpoint.includes('/stream');
+
+    btn.disabled = true;
+    resp.textContent = '';
+    resp.style.color = 'var(--mid)';
+    reasoningOutput.textContent = '';
+
+    if (isStream) {
+      const isReasoning = REASONING_MODELS.has(model);
+      reasoningPanel.style.display = isReasoning ? 'block' : 'none';
+      if (isReasoning) reasoningOutput.textContent = '⟳ Thinking…';
+      resp.textContent = '⟳ Streaming…';
+
+      const t0 = performance.now();
+      let contentBuffer = '', reasonBuffer = '', tokenCount = 0;
+
+      try {
+        const response = await fetch(API() + endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, model, temperature: 1.0, top_p: 1.0, max_tokens: 16384, reasoning_budget: 16384 }),
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          resp.textContent = 'Error ' + response.status + ': ' + (err.detail || response.statusText);
+          resp.style.color = 'var(--red)';
+          btn.disabled = false;
+          return;
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let leftover = '';
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          const text = leftover + decoder.decode(value, { stream: true });
+          const lines = text.split('\n');
+          leftover = lines.pop();
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const raw = line.slice(6).trim();
+            if (!raw) continue;
+            try {
+              const chunk = JSON.parse(raw);
+              if (chunk.type === 'reasoning') {
+                if (reasoningOutput.textContent === '⟳ Thinking…') reasoningOutput.textContent = '';
+                reasonBuffer += chunk.text;
+                reasoningOutput.textContent = reasonBuffer;
+                reasoningOutput.scrollTop = reasoningOutput.scrollHeight;
+              } else if (chunk.type === 'content') {
+                contentBuffer += chunk.text;
+                resp.textContent = contentBuffer;
+                tokenCount++;
+              } else if (chunk.type === 'error') {
+                resp.textContent = 'Stream error: ' + chunk.text;
+                resp.style.color = 'var(--red)';
+              }
+            } catch (_) {}
+          }
+        }
+
+        const lat = Math.round(performance.now() - t0);
+        document.getElementById('metaModel').textContent = model;
+        document.getElementById('metaTokens').textContent = tokenCount + ' chunks';
+        document.getElementById('metaLatency').textContent = lat + 'ms';
+        addLog({ ts: new Date().toISOString(), endpoint, status: 'ok', model, tokens: tokenCount, latency_ms: lat });
+
+      } catch (e) {
+        resp.textContent = 'Stream failed: ' + e.message;
+        resp.style.color = 'var(--red)';
+      }
+
+    } else {
+      reasoningPanel.style.display = 'none';
+      resp.textContent = '⟳ Calling NVIDIA NIM…';
+      resp.style.color = 'var(--dim)';
+      try {
+        const t0 = performance.now();
+        const { ok, data } = await apiFetch('POST', endpoint, { prompt, model });
+        const lat = Math.round(performance.now() - t0);
+        if (ok) {
+          resp.textContent = data.reply || JSON.stringify(data, null, 2);
+          resp.style.color = 'var(--mid)';
+          document.getElementById('metaModel').textContent = data.model || model;
+          document.getElementById('metaTokens').textContent = data.tokens_used != null ? data.tokens_used : '—';
+          document.getElementById('metaLatency').textContent = (data.latency_ms || lat) + 'ms';
+          addLog({ ts: new Date().toISOString(), endpoint, status: 'ok', model: data.model || model, tokens: data.tokens_used || 0, latency_ms: data.latency_ms || lat });
+        } else {
+          resp.textContent = 'Error: ' + (data.detail || JSON.stringify(data));
+          resp.style.color = 'var(--red)';
+          addLog({ ts: new Date().toISOString(), endpoint, status: 'error', model, tokens: 0, latency_ms: lat });
+        }
+      } catch (e) {
+        resp.textContent = 'Gateway unreachable: ' + e.message;
+        resp.style.color = 'var(--red)';
+      }
+    }
+
+    btn.disabled = false;
+  }
+
+  document.getElementById('chatPrompt').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendChat();
+  });
+
+  // ── LOG ───────────────────────────────────────────────
+  function addLog(entry) {
+    logEntries.unshift(entry);
+    if (logEntries.length > 200) logEntries.pop();
+    renderLog();
+  }
+
+  function renderLog() {
+    const el = document.getElementById('logStream');
+    if (logEntries.length === 0) {
+      el.innerHTML = '<div class="log-entry"><span class="log-ts">—</span><span class="log-ep" style="color:var(--dim)">No calls yet…</span></div>';
+      return;
+    }
+    el.innerHTML = logEntries.slice(0, 80).map(e => {
+      const ts = e.ts ? e.ts.slice(11, 19) : '—';
+      const okClass = e.status === 'ok' ? 'log-ok' : 'log-err';
+      const statusTxt = e.status === 'ok' ? '✓ OK' : '✗ ERR';
+      const tokens = e.tokens ? `<span class="log-tokens">${e.tokens}tk</span>` : '';
+      const lat = e.latency_ms ? `<span class="log-lat">${e.latency_ms}ms</span>` : '';
+      const model = e.model ? `<span style="color:var(--purple);font-size:10px">${e.model.split('/').pop()}</span>` : '';
+      return `<div class="log-entry">
+        <span class="log-ts">${ts}</span>
+        <span class="log-ep">${e.endpoint}</span>
+        <span class="${okClass}">${statusTxt}</span>
+        ${tokens}${lat}${model}
+      </div>`;
+    }).join('');
+  }
+
+  function clearLog() {
+    logEntries = [];
+    renderLog();
+  }
+
+  // ── CHECKLIST ─────────────────────────────────────────
+  function checkItem(id, pass) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const txt = el.textContent.replace(/^[✅⬜❌] /, '');
+    el.textContent = (pass ? '✅ ' : '❌ ') + txt;
+    el.style.color = pass ? 'var(--green)' : 'var(--red)';
+  }
+
+  // ── VAULT ──────────────────────────────────────────────
+  let lastRotateTs = null;
+
+  function setVaultBadge(state) {
+    // state: 'unsealed' | 'sealed' | 'unknown'
+    const labels = { unsealed: '✓ UNSEALED', sealed: '✗ SEALED', unknown: '⬡ UNKNOWN' };
+    ['vault-status-badge', 'vault-badge-kpi'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = 'vault-badge ' + state;
+      el.textContent = labels[state] || '⬡ UNKNOWN';
+    });
+    const vaultCard = document.getElementById('vault-kpi-card');
+    if (vaultCard) {
+      vaultCard.className = state === 'unsealed' ? 'card green' : state === 'sealed' ? 'card red' : 'card';
+    }
+    document.getElementById('vault-kpi-sub').textContent =
+      state === 'unsealed' ? 'kv-v2 active' : state === 'sealed' ? 'vault sealed!' : 'vault unreachable';
+  }
+
+  async function checkVaultStatus() {
+    try {
+      const { ok, data } = await apiFetch('GET', '/health');
+      if (ok) {
+        const src = data.key_source || 'env';
+        document.getElementById('vault-key-source').textContent = src;
+        document.getElementById('kpi-key-src').textContent = src === 'vault' ? 'from vault kv-v2' : 'from env var';
+        // If health says vault is the source, assume unsealed
+        setVaultBadge(src === 'vault' ? 'unsealed' : 'unknown');
+      } else {
+        setVaultBadge('unknown');
+      }
+    } catch (_) {
+      setVaultBadge('unknown');
+    }
+  }
+
+  async function rotateKey() {
+    const btn = document.getElementById('rotateBtn');
+    const statusEl = document.getElementById('rotate-status');
+    btn.disabled = true;
+    statusEl.textContent = '⟳ Requesting key rotation…';
+    statusEl.style.color = 'var(--dim)';
+    try {
+      const t0 = performance.now();
+      const { ok, data } = await apiFetch('POST', '/admin/rotate-key');
+      const lat = Math.round(performance.now() - t0);
+      if (ok) {
+        lastRotateTs = new Date().toISOString();
+        document.getElementById('vault-last-rotate').textContent = lastRotateTs.slice(11, 19) + ' UTC';
+        statusEl.textContent = `✓ Key rotated in ${lat}ms — new key active`;
+        statusEl.style.color = 'var(--green)';
+        addLog({ ts: new Date().toISOString(), endpoint: '/admin/rotate-key', status: 'ok', model: '', tokens: 0, latency_ms: lat });
+        document.getElementById('rawOutput').textContent = JSON.stringify(data, null, 2);
+        await checkVaultStatus();
+      } else {
+        statusEl.textContent = `✗ Rotation failed: ${data.detail || JSON.stringify(data)}`;
+        statusEl.style.color = 'var(--red)';
+        document.getElementById('rawOutput').textContent = JSON.stringify(data, null, 2);
+      }
+    } catch (e) {
+      statusEl.textContent = `✗ Gateway unreachable: ${e.message}`;
+      statusEl.style.color = 'var(--red)';
+    }
+    btn.disabled = false;
+  }
+
+  // ── AUTO REFRESH STATS ────────────────────────────────
+  async function refreshStats() {
+    try {
+      const { ok, data } = await apiFetch('GET', '/telemetry/stats');
+      if (!ok) return;
+      document.getElementById('kpi-total').textContent = data.total_calls ?? '—';
+      document.getElementById('kpi-ok').textContent = data.successful_calls ?? '—';
+      document.getElementById('kpi-fail').textContent = data.failed_calls ?? '—';
+      document.getElementById('kpi-tokens').textContent = (data.total_tokens ?? 0).toLocaleString();
+      const rate = data.total_calls > 0
+        ? Math.round((data.successful_calls / data.total_calls) * 100) : 0;
+      document.getElementById('kpi-rate').textContent = `${rate}% success rate`;
+      document.getElementById('kpi-ok-bar').style.width = rate + '%';
+      document.getElementById('kpi-key').textContent = data.key_configured ? '✓ SET' : '✗ MISSING';
+      document.getElementById('kpi-key').style.color = data.key_configured ? 'var(--green)' : 'var(--red)';
+      // Vault / key source
+      if (data.key_source) {
+        document.getElementById('vault-key-source').textContent = data.key_source;
+        document.getElementById('kpi-key-src').textContent = data.key_source === 'vault' ? 'from vault kv-v2' : 'from env var';
+        setVaultBadge(data.key_source === 'vault' ? 'unsealed' : 'unknown');
+      }
+      if (data.started_at) {
+        document.getElementById('kpi-since').textContent = 'since ' + data.started_at.slice(11, 19) + ' UTC';
+      }
+      killActive = data.kill_switch;
+      updateKillBtn();
+      checkItem('check-api', true);
+      if (data.key_configured) checkItem('check-key', true);
+      if (data.env === 'testing') checkItem('check-env', true);
+      if (!data.kill_switch) checkItem('check-kill', true);
+
+      // Sync log from API
+      const logRes = await apiFetch('GET', '/telemetry/log?limit=80');
+      if (logRes.ok && logRes.data.entries) {
+        logEntries = logRes.data.entries;
+        renderLog();
+      }
+    } catch (_) {}
+  }
+
+  // Update checklist URL label
+  document.getElementById('apiUrl').addEventListener('input', () => {
+    document.getElementById('checkUrl').textContent = document.getElementById('apiUrl').value;
+  });
+
+  // ── QUANTUM THREAT MATRIX ─────────────────────────────────────
+  const RISK_COLORS = {
+    9: '#ff4455', 8: '#ff4455', 7: '#ffc107',
+    6: '#ffc107', 5: '#ffc107', 4: '#6b8cbe',
+    3: '#6b8cbe', 2: '#00ff88', 1: '#00ff88'
+  };
+
+  function riskBar(score) {
+    const pct = (score / 10) * 100;
+    const color = RISK_COLORS[score] || '#6b8cbe';
+    return `<span style="font-family:var(--mono);font-weight:700;color:${color}">${score}/10</span>
+      <span class="risk-bar"><span class="risk-fill" style="width:${pct}%;background:${color}"></span></span>`;
+  }
+
+  function statusBadge(status) {
+    if (status === 'VULNERABLE') return `<span class="badge-vuln">VULNERABLE</span>`;
+    if (status === 'REVIEW') return `<span class="badge-review">REVIEW</span>`;
+    return `<span class="badge-secure">SECURE</span>`;
+  }
+
+  async function loadQuantumMatrix() {
+    try {
+      // Load summary
+      const sumRes = await apiFetch('GET', '/quantum/threat-level');
+      if (sumRes.ok) {
+        const s = sumRes.data;
+        const cls = s.overall_status === 'CRITICAL' ? 'critical'
+          : s.overall_status === 'REVIEW' ? 'review' : 'secure';
+        const badge = document.getElementById('q-overall-badge');
+        badge.className = 'q-overall ' + cls;
+        badge.textContent = `⚛ ${s.overall_status} — ${s.critical_action_items} PRIORITY ITEMS`;
+        document.getElementById('q-vuln').textContent = s.vulnerable;
+        document.getElementById('q-review').textContent = s.review_required;
+        document.getElementById('q-secure').textContent = s.secure;
+        document.getElementById('q-avg').textContent = `${s.average_risk_score}/10`;
+        document.getElementById('q-max').textContent = `${s.max_risk_score}/10`;
+        document.getElementById('q-actions').textContent = s.critical_action_items;
+      }
+
+      // Load matrix
+      const matRes = await apiFetch('GET', '/quantum/matrix');
+      if (matRes.ok) {
+        const threats = matRes.data.threats;
+        const tbody = document.getElementById('q-tbody');
+        tbody.innerHTML = threats.map(t => {
+          const exposure = Array.isArray(t.platform_exposure)
+            ? t.platform_exposure.slice(0, 2).join(', ') + (t.platform_exposure.length > 2 ? ` +${t.platform_exposure.length - 2}` : '')
+            : '';
+          return `<tr>
+            <td style="font-family:var(--mono);color:var(--dim)">${t.id}</td>
+            <td style="color:var(--text);max-width:200px">${t.attack}</td>
+            <td style="white-space:nowrap">${riskBar(t.risk_score)}</td>
+            <td style="color:var(--dim);max-width:200px">${exposure}</td>
+            <td>${statusBadge(t.nobleport_status)}</td>
+          </tr>`;
+        }).join('');
+      }
+    } catch(e) {
+      document.getElementById('q-overall-badge').textContent = 'Gateway offline — start Docker';
+    }
+  }
+
+  // Initial load + poll
+  refreshStats();
+  checkVaultStatus();
+  loadQuantumMatrix();
+  setInterval(refreshStats, 5000);
+  setInterval(loadQuantumMatrix, 30000);
+  updateKillBtn();
+  // ── NEMOTRON ASR ──────────────────────────────────────────────────────────
+  const ASR_URL = () => document.getElementById('asrUrl').value.replace(/\/$/, '');
+  let mediaRecorder = null, audioChunks = [], asrStream = null, animFrame = null, wsConn = null;
+
+  // Probe ASR proxy health on load
+  async function probeASR() {
+    const dot = document.getElementById('asrDot');
+    try {
+      const r = await fetch(ASR_URL() + '/health', { signal: AbortSignal.timeout(3000) });
+      dot.style.background = r.ok ? 'var(--green)' : 'var(--yellow)';
+    } catch { dot.style.background = 'var(--red)'; }
+  }
+  probeASR();
+  setInterval(probeASR, 15000);
+
+  // Waveform animation
+  const bars = ['b1','b2','b3','b4','b5','b6','b7','b8'];
+  function animateWaveform(analyser) {
+    const data = new Uint8Array(analyser.fftSize);
+    function draw() {
+      animFrame = requestAnimationFrame(draw);
+      analyser.getByteTimeDomainData(data);
+      bars.forEach((id, i) => {
+        const idx = Math.floor(i * data.length / bars.length);
+        const val = Math.abs(data[idx] - 128) / 128;
+        document.getElementById(id).style.height = Math.max(4, val * 28) + 'px';
+      });
+    }
+    draw();
+  }
+  function stopWaveform() {
+    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+    bars.forEach(id => { document.getElementById(id).style.height = '4px'; });
+  }
+
+  async function toggleMic() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  }
+
+  async function startRecording() {
+    try {
+      asrStream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1 } });
+      const ctx = new AudioContext({ sampleRate: 16000 });
+      const src = ctx.createMediaStreamSource(asrStream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      src.connect(analyser);
+
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(asrStream, { mimeType: 'audio/webm;codecs=opus' });
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = () => processRecording();
+      mediaRecorder.start(100);
+
+      document.getElementById('micBtn').className = 'mic-btn recording';
+      document.getElementById('micBtn').textContent = '⏹';
+      document.getElementById('asrStatus').textContent = '● Recording… click again to stop';
+      document.getElementById('asrStatus').style.color = 'var(--red)';
+      animateWaveform(analyser);
+    } catch(e) {
+      document.getElementById('asrStatus').textContent = 'Mic error: ' + e.message;
+      document.getElementById('asrStatus').style.color = 'var(--red)';
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorder) mediaRecorder.stop();
+    if (asrStream) asrStream.getTracks().forEach(t => t.stop());
+    stopWaveform();
+    document.getElementById('micBtn').className = 'mic-btn processing';
+    document.getElementById('micBtn').textContent = '⟳';
+    document.getElementById('asrStatus').textContent = '⟳ Processing…';
+    document.getElementById('asrStatus').style.color = 'var(--purple)';
+  }
+
+  async function processRecording() {
+    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+    await sendAudioBlob(blob, 'recording.webm');
+  }
+
+  async function uploadAudio(input) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById('asrStatus').textContent = '⟳ Uploading ' + file.name + '…';
+    document.getElementById('asrStatus').style.color = 'var(--dim)';
+    await sendAudioBlob(file, file.name);
+  }
+
+  async function sendAudioBlob(blob, filename) {
+    document.getElementById('micBtn').className = 'mic-btn processing';
+    document.getElementById('micBtn').textContent = '⟳';
+
+    const formData = new FormData();
+    formData.append('file', blob, filename);
+    formData.append('model', 'nemotron-asr-streaming');
+
+    try {
+      const r = await fetch(ASR_URL() + '/v1/audio/transcriptions', {
+        method: 'POST', body: formData, signal: AbortSignal.timeout(60000)
+      });
+      const data = await r.json();
+      if (r.ok && data.text !== undefined) {
+        const t = data.text || '(empty transcript)';
+        document.getElementById('asrTranscript').textContent = t;
+        document.getElementById('asrStatus').textContent = '✓ Transcribed (' + blob.size + ' bytes)';
+        document.getElementById('asrStatus').style.color = 'var(--green)';
+        addLog({ ts: new Date().toISOString(), endpoint: '/v1/audio/transcriptions', status: 'ok', model: 'nemotron-asr', tokens: 0, latency_ms: 0 });
+      } else {
+        document.getElementById('asrStatus').textContent = '✗ Error: ' + (data.detail || r.status);
+        document.getElementById('asrStatus').style.color = 'var(--red)';
+      }
+    } catch(e) {
+      document.getElementById('asrStatus').textContent = '✗ ASR proxy unreachable — is it running on port 8007?';
+      document.getElementById('asrStatus').style.color = 'var(--red)';
+    }
+
+    document.getElementById('micBtn').className = 'mic-btn idle';
+    document.getElementById('micBtn').textContent = '🎙';
+    mediaRecorder = null;
+  }
+
+  function copyTranscript() {
+    const t = document.getElementById('asrTranscript').textContent;
+    navigator.clipboard.writeText(t).then(() => {
+      document.getElementById('asrStatus').textContent = '✓ Copied to clipboard';
+    });
+  }
+
+  function clearTranscript() {
+    document.getElementById('asrTranscript').textContent = 'Transcript will appear here…';
+    document.getElementById('asrStatus').textContent = 'Click mic to record';
+    document.getElementById('asrStatus').style.color = 'var(--dim)';
+  }
+
+  function sendToStephanie() {
+    const t = document.getElementById('asrTranscript').textContent;
+    if (!t || t === 'Transcript will appear here…') return;
+    document.getElementById('chatPrompt').value = t;
+    // Auto-select Stephanie streaming endpoint
+    document.getElementById('endpointSelect').value = '/nv/stephanie/stream';
+    sendChat();
+  }
+
+
+</script>
+<script data-pplx-inline-edit>
+(function(){
+  if(window===window.top)return;
+  function inlineAll(orig,clone){
+    if(orig.nodeType!==1)return;
+    try{
+      var cs=getComputedStyle(orig);
+      var t='';
+      for(var i=0;i<cs.length;i++){t+=cs[i]+':'+cs.getPropertyValue(cs[i])+';';}
+      clone.style.cssText=t;
+    }catch(e){}
+    var oc=orig.children,cc=clone.children;
+    for(var j=0;j<oc.length&&j<cc.length;j++){inlineAll(oc[j],cc[j]);}
+  }
+  function stripExternal(clone){
+    var imgs=clone.querySelectorAll('img');
+    for(var i=0;i<imgs.length;i++){
+      var s=imgs[i].getAttribute('src');
+      if(s&&!s.startsWith('data:'))imgs[i].removeAttribute('src');
+    }
+    var all=clone.querySelectorAll('*');
+    for(var i=0;i<all.length;i++){
+      var st=all[i].style.cssText;
+      if(st&&st.indexOf('url(')>=0){
+        all[i].style.cssText=st.replace(/url\(["']?(?!data:)[^)"']*["']?\)/gi,'none');
+      }
+    }
+  }
+  window.addEventListener('message',function(e){
+    if(!e.data||e.data.type!=='INLINE_EDIT_CAPTURE_REQUEST')return;
+    var scrollX=window.scrollX||window.pageXOffset||0;
+    var scrollY=window.scrollY||window.pageYOffset||0;
+    var w=window.innerWidth,h=window.innerHeight;
+    try{
+      var clone=document.documentElement.cloneNode(true);
+      var rm=clone.querySelectorAll('script,link[rel="stylesheet"],style');
+      for(var i=0;i<rm.length;i++){rm[i].remove();}
+      inlineAll(document.documentElement,clone);
+      stripExternal(clone);
+      var html=new XMLSerializer().serializeToString(clone);
+      var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'">'
+        +'<foreignObject width="100%" height="100%">'
+        +'<div xmlns="http://www.w3.org/1999/xhtml" style="width:'+w+'px;height:'+h+'px;overflow:hidden">'
+        +'<div style="transform:translate(-'+scrollX+'px,-'+scrollY+'px);transform-origin:top left">'
+        +html+'</div></div></foreignObject></svg>';
+      var svgUrl='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+      var img=new Image();
+      img.onload=function(){
+        var c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0);
+        window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:c.toDataURL('image/png'),scrollX:scrollX,scrollY:scrollY},'*');
+      };
+      img.onerror=function(){
+        window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:null,scrollX:scrollX,scrollY:scrollY},'*');
+      };
+      img.src=svgUrl;
+    }catch(err){
+      window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:null,scrollX:scrollX,scrollY:scrollY},'*');
+    }
+  });
+})();
+</script></body>
+</html>

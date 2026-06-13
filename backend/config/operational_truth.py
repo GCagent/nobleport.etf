@@ -86,6 +86,19 @@ OPERATIONAL_TRUTH: dict[str, dict[str, Any]] = {
         "description": "Stalled deal detection, deposit reminders, margin alerts",
         "dependencies": ["fastapi", "postgres"],
     },
+    "nvapi_gateway": {
+        "status": DeploymentStatus.STAGED,
+        "surface": "Cyborg.ai",
+        "description": "NVIDIA NIM inference gateway: Vault key custody, "
+                       "kill switch, telemetry, Stephanie endpoints (cyborg/nvapi)",
+        "dependencies": ["fastapi", "vault", "nvidia-nim", "docker"],
+    },
+    "asr_streaming_proxy": {
+        "status": DeploymentStatus.STAGED,
+        "surface": "Cyborg.ai",
+        "description": "Riva/Nemotron ASR HTTP+WebSocket transcription proxy (cyborg/asr)",
+        "dependencies": ["riva", "fastapi", "ffmpeg", "docker"],
+    },
 
     # ── MODELED ───────────────────────────────────────────────────────
     "permit_forecast": {
@@ -110,6 +123,13 @@ OPERATIONAL_TRUTH: dict[str, dict[str, Any]] = {
         "status": DeploymentStatus.MODELED,
         "surface": "GCagent.ai",
         "description": "GP floor enforcement and cost variance prediction",
+        "dependencies": [],
+    },
+    "quantum_threat_matrix": {
+        "status": DeploymentStatus.MODELED,
+        "surface": "Cyborg.ai",
+        "description": "Static 10-vector quantum threat assessment dataset "
+                       "(2025 NIST/IETF research) served by cyborg/nvapi — not a live scanner",
         "dependencies": [],
     },
 

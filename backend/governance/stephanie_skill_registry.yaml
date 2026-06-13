@@ -1,0 +1,153 @@
+---
+# Stephanie.ai — Skill Registry (v1.0)
+# Companion to gcagent/config/skill_registry.yaml, with one structural
+# difference: every skill carries a truth_tag (LIVE / STAGED / MODELED /
+# INTERNAL_R&D) consistent with backend/config/operational_truth.py, and a
+# `surfaces` list citing the code that makes the skill real.
+#
+# Source note: distilled from the "Stephanie.ai Complete Credentials
+# Portfolio (135+)" narrative document (archived at
+# docs/strategy/archive/stephanie-credentials-narrative-2026-06-13-RETIRED.md).
+# Skills below are the subset of that document that corresponds to actual
+# code in this repository. Excluded claims are listed at the bottom and
+# must never be promoted into this registry without evidence.
+
+version: 1.0
+
+# Hard policy, mirrored from backend/governance/authority_matrix.py:
+# Stephanie holds no office and may claim NO professional credentials.
+# All 7 credential-register entries are can_claim = False. Final decision
+# authority: Michael F. O'Rourke, Managing Member. The "CEO" framing in the
+# source document is rejected.
+credential_policy:
+  can_claim_credentials: false
+  holds_office: false
+  final_authority: "Michael F. O'Rourke, Managing Member"
+  enforced_by: backend/governance/authority_matrix.py
+
+skills:
+
+  - id: voice_intake
+    name: Homeowner Voice Intake
+    purpose: Conversational intake of homeowner requests into the lead pipeline.
+    truth_tag: LIVE
+    surfaces: [livekit, elevenlabs, backend/api/leads.py]
+    boundaries:
+      - Intake only — no commitments, pricing promises, or contract terms.
+
+  - id: construction_ops_orchestration
+    name: Construction Operations Orchestration
+    purpose: Route crew and subcontractor tasks from intake through production.
+    truth_tag: LIVE
+    surfaces: [backend/agents/orchestrator.py, langgraph, redis]
+    boundaries:
+      - Task routing only; scope/price changes go through the decision gate.
+
+  - id: revenue_pipeline_support
+    name: Lead & Estimate Pipeline Support
+    purpose: Lead capture, CRM sync, estimate creation and tracking.
+    truth_tag: LIVE
+    surfaces: [backend/api/leads.py, backend/api/estimates.py, hubspot]
+    boundaries:
+      - Estimates are drafts until human-approved (Deposit Gate discipline).
+
+  - id: governance_gating
+    name: Decision Gate & HITL Enforcement
+    purpose: Classify every action LIVE/STAGED/SIMULATED/BLOCKED; fail closed;
+      escalate regulated actions to a licensed human.
+    truth_tag: STAGED   # enforced + tested in code; not yet wired to all traffic
+    surfaces: [backend/governance/stephanie_gate.py, backend/governance/truth_layer.py]
+    boundaries:
+      - Unknown action types are BLOCKED, never defaulted to LIVE.
+      - ">$5,000, external stakeholder, architectural, or regulated → escalate."
+
+  - id: audit_trail_integrity
+    name: Tamper-Evident Audit Trail
+    purpose: SHA-256 hash-chain every gate decision; verify_chain() detects tampering.
+    truth_tag: STAGED
+    surfaces: [backend/governance/stephanie_gate.py, backend/tests/test_governance.py]
+    boundaries:
+      - Off-chain only today; on-chain anchoring is ROADMAP (attestation registry).
+
+  - id: executive_briefing
+    name: Operator Ops Brief
+    purpose: Morning brief of stale leads, deposits due, permit blockers, risks.
+    truth_tag: STAGED
+    surfaces: [backend/api/ops_brief.py, src/lib/nobleport-os]
+    boundaries:
+      - Surfaces suggested actions; never executes them autonomously.
+
+  - id: permit_workflow_support
+    name: Permit Workflow Support (PermitStream)
+    purpose: Track MA municipal permit status; draft permit checklists.
+    truth_tag: STAGED
+    surfaces: [backend (permit scraping), src/app/dashboard/permits, contracts/MassachusettsBuildingPermits.sol (source only)]
+    boundaries:
+      - Drafts only — CSL/HIC licensed contractor reviews everything filed.
+
+  - id: treasury_payments_support
+    name: Treasury & Payments Support
+    purpose: Stripe invoicing, deposit logging, payment tracking drafts.
+    truth_tag: STAGED
+    surfaces: [backend/api/payments.py, stripe, quickbooks]
+    boundaries:
+      - Payment approval is a BLOCKED action class — human approves every release.
+
+  - id: inference_gateway_ops
+    name: Inference Gateway Operations (Cyborg.ai)
+    purpose: NVIDIA NIM inference with Vault key custody, kill switch, telemetry.
+    truth_tag: STAGED
+    surfaces: [cyborg/nvapi, cyborg/asr]
+    boundaries:
+      - Gateway inference does not bypass the decision gate for executed actions.
+
+  - id: compliance_drafting
+    name: Regulated-Domain Drafting (credential-gated)
+    purpose: Prepare CRE analysis, securities research, legal templates, and
+      financial memos as STAGED drafts for licensed reviewers.
+    truth_tag: STAGED
+    surfaces: [backend/governance/authority_matrix.py (credential register)]
+    boundaries:
+      - Never claims CCIM / Series 7 / Series 63 / CSL-HIC / PE / attorney /
+        financial advisor status. Licensed reviewer named per the register.
+
+  - id: tokenization_engineering_support
+    name: Tokenization Engineering Support
+    purpose: Maintain ERC-1400 white-label config, dual-token/hybrid-exchange
+      specs, and the attestation registry discipline.
+    truth_tag: INTERNAL_R&D
+    surfaces: [contracts/NBPTSecurityToken1400.sol, docs/tokenization/, backend/governance/attestation_registry.py]
+    boundaries:
+      - Cooley gate — no mainnet deployment or offering activity before counsel.
+
+  - id: threat_posture_reporting
+    name: Quantum Threat Posture Reporting
+    purpose: Serve the 10-vector quantum threat matrix with platform exposure notes.
+    truth_tag: MODELED
+    surfaces: [cyborg/nvapi/app/quantum.py, cyborg/nvapi/docs/quantum-attack-tests-2025.md]
+    boundaries:
+      - Static research dataset — never presented as live scanning.
+
+# Claims from the source portfolio that are EXCLUDED from this registry.
+# They are tracked, not endorsed. Promotion requires evidence per the
+# attestation registry's VERIFIED bar.
+excluded_claims:
+  - claim: "CEO of NoblePort Systems / CEO status ratified on-chain (NBPT-CEO-RATIFY-EPOCHVII)"
+    reason: Contradicts authority_matrix.py; no on-chain anything exists (0 deployed contracts).
+  - claim: "Command IQ 131,004 / 15.1B tasks/sec / 2.1ms latency / 621.78B CUDA ops"
+    reason: No benchmark or telemetry produces these (retired with the 2026-06-08 snapshot).
+  - claim: "112 AI agents / 44 at 100% operational / 3,212 processing nodes"
+    reason: Agent mesh is MODELED; no such fleet exists.
+  - claim: "82,000 zk-SBT verified voters / zkSBT Level 5 / Snapshot DAO live"
+    reason: No SBT contract source exists; DAO governance is INTERNAL_R&D.
+  - claim: "$154.2M TVL / 33,912 zoning NFTs / $18.6M market cap / 12,547 wallets / $2.45M volume"
+    reason: 0 contracts deployed — no token, NFTs, TVL, or holders.
+  - claim: "Austin/Denver/Miami municipal projects ($16.9M) / $2.4B track record"
+    reason: No municipal contracts exist anywhere in the ecosystem's records.
+  - claim: "99.95% compliance simulation success / 9.2 governance score"
+    reason: Same class as the flagged 5,000-tx simulation narrative; measured
+      governance metrics live in backend/governance/metrics.py instead.
+  - claim: "Cross-chain deployment on Arbitrum, Base, zkEVM; Chainlink/Uniswap/Aave/Curve/EigenLayer/Lido integrations"
+    reason: No deployment and no integration code for any of these exists in the repo.
+  - claim: "EU AI Act / MiCA / SEC Reg D compliance"
+    reason: Aspirational alignment targets, not assessed compliance; counsel-gated.

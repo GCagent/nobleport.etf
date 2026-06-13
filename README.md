@@ -4,6 +4,13 @@
 
 This repository contains the infrastructure for integrating Noble Port Realty's tokenized real estate assets with traditional Exchange-Traded Fund (ETF) structures, bridging decentralized finance with institutional investment vehicles.
 
+> **Status — target architecture.** The ETF described below is a design
+> objective, not an operating fund: no SEC registration exists, no fund holds
+> any property, and 0 contracts are deployed on-chain. Component-by-component
+> build state: [NBPT ETF Structure — Build-State Map](docs/tokenization/nbpt-etf-structure.md).
+> What is actually live today is tracked in `backend/config/operational_truth.py`.
+> Not an offer of securities.
+
 ## 🎯 Overview
 
 Noble Port ETF enables institutional investors to gain exposure to tokenized real estate through familiar ETF structures while maintaining the transparency and compliance benefits of blockchain technology.
@@ -18,7 +25,7 @@ Noble Port ETF enables institutional investors to gain exposure to tokenized rea
 **Institutional Access**
 - Standard brokerage account compatibility
 - Traditional settlement processes (T+2)
-- SEC-registered investment vehicle
+- SEC-registered investment vehicle (planned — no registration filed)
 - Professional custodian services
 
 **Blockchain Benefits**
@@ -134,7 +141,10 @@ Noble Port Real Estate ETF (Ticker: NBPT)
 
 ## 📊 Portfolio Composition
 
-### Initial Holdings
+### Initial Holdings (model portfolio — illustrative only)
+
+No fund exists and no property below is held. These are modeling targets for
+the structure above, not assets.
 
 | Property | Location | Type | Value | Weight |
 |----------|----------|------|-------|--------|

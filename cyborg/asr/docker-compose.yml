@@ -1,0 +1,81 @@
+version: "3.9"
+
+# ── Nemotron ASR Streaming Stack ──────────────────────────────────────────────
+# Prerequisites:
+#   - NVIDIA GPU with driver >= 525
+#   - nvidia-container-toolkit installed
+#   - NGC_API_KEY set in .env
+#
+# Startup time: 10–30 minutes (model download on first run)
+# Model cache: mounted at /opt/nim/.cache to avoid re-download on restart
+#
+# Ports:
+#   8007  → ASR proxy (HTTP + WebSocket) — connect CYBORG.AI dashboard here
+#   9000  → Nemotron ASR NIM HTTP API    — health check only
+#   50051 → Riva gRPC (internal)
+
+services:
+
+  # ── Nemotron ASR NIM ────────────────────────────────────────────────────────
+  nemotron-asr:
+    image: nvcr.io/nim/nvidia/nemotron-asr-streaming:latest
+    container_name: nemotron-asr-streaming
+    runtime: nvidia
+    shm_size: 8gb
+    ports:
+      - "9000:9000"
+      - "50051:50051"
+    environment:
+      - NGC_API_KEY=${NGC_API_KEY}
+      - NIM_HTTP_API_PORT=9000
+      - NIM_GRPC_API_PORT=50051
+      - NIM_TAGS_SELECTOR=mode=str
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+    volumes:
+      # Cache model weights — prevents 20min re-download on every restart
+      - asr_model_cache:/opt/nim/.cache
+    restart: unless-stopped
+    networks:
+      - asr-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/v1/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 600s  # 10 min grace — first boot downloads the model
+
+  # ── ASR Proxy ────────────────────────────────────────────────────────────────
+  # Bridges HTTP/WebSocket → Riva gRPC
+  # Handles audio format conversion (MP3/M4A/OGG → 16kHz PCM WAV)
+  asr-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cyborg-asr-proxy
+    ports:
+      - "8007:8007"
+    environment:
+      - RIVA_URI=nemotron-asr:50051
+      - RIVA_SSL=false
+      - ASR_LANGUAGE=en-US
+      - MAX_AUDIO_MB=50
+    depends_on:
+      nemotron-asr:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - asr-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+networks:
+  asr-net:
+    driver: bridge
+
+volumes:
+  asr_model_cache:
+    driver: local

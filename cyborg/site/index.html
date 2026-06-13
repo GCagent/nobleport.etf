@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cyborg.io — NoblePort Internal Security (In Development)</title>
+  <meta name="description" content="Cyborg.io — Internal security platform for NoblePort Systems. Post-quantum cryptography research, smart contract audit tooling, and threat detection. In active development.">
+  <meta property="og:title" content="cyborg.io — Post-Quantum Security Platform">
+  <meta property="og:description" content="Internal security platform for NoblePort Systems. In active development.">
+
+  <!-- Fonts: JetBrains Mono for terminal/data, Inter for UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./base.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- HEADER / NAV -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#" class="logo-link" aria-label="cyborg.io home">
+        <!-- SVG Logo: cybernetic eye with circuit traces -->
+        <svg class="logo-svg" viewBox="0 0 200 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="cyborg.io logo">
+          <!-- Shield/eye mark -->
+          <g class="logo-mark">
+            <!-- Outer hexagonal shield -->
+            <path d="M20 2 L35 10 L35 26 L20 34 L5 26 L5 10 Z" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.6"/>
+            <!-- Inner eye shape -->
+            <ellipse cx="20" cy="18" rx="10" ry="6" stroke="#00E5FF" stroke-width="1.5" fill="none"/>
+            <!-- Iris -->
+            <circle cx="20" cy="18" r="3.5" fill="#00E5FF" opacity="0.9"/>
+            <!-- Pupil -->
+            <circle cx="20" cy="18" r="1.5" fill="#050A12"/>
+            <!-- Circuit traces from eye -->
+            <line x1="30" y1="18" x2="35" y2="18" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+            <line x1="10" y1="18" x2="5" y2="18" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+            <line x1="20" y1="12" x2="20" y2="7" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+            <line x1="20" y1="24" x2="20" y2="29" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+            <!-- Corner circuit nodes -->
+            <circle cx="35" cy="18" r="1.2" fill="#39FF14" opacity="0.7"/>
+            <circle cx="5" cy="18" r="1.2" fill="#39FF14" opacity="0.7"/>
+            <circle cx="20" cy="7" r="1.2" fill="#39FF14" opacity="0.7"/>
+            <circle cx="20" cy="29" r="1.2" fill="#39FF14" opacity="0.7"/>
+            <!-- Scan line -->
+            <line x1="10" y1="18" x2="30" y2="18" stroke="#39FF14" stroke-width="0.5" opacity="0.3" class="scan-line"/>
+          </g>
+          <!-- Wordmark -->
+          <text x="45" y="24" font-family="'Inter', sans-serif" font-weight="700" font-size="18" fill="currentColor" letter-spacing="-0.5">cyborg</text>
+          <text x="118" y="24" font-family="'Inter', sans-serif" font-weight="700" font-size="18" fill="#00E5FF" letter-spacing="-0.5">.io</text>
+        </svg>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#dashboard" class="nav-link">Dashboard</a>
+        <a href="#capabilities" class="nav-link">Capabilities</a>
+        <a href="#timeline" class="nav-link">Threat Timeline</a>
+        <a href="#mesh" class="nav-link">Validator Mesh</a>
+        <a href="#audit" class="nav-btn">Status</a>
+      </nav>
+      <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== SECTION 1: HERO ===== -->
+    <section class="hero" id="hero">
+      <div class="hero-bg">
+        <img src="./assets/hero.png" alt="Cyber operations center with holographic threat displays" loading="eager" width="1920" height="1080">
+        <div class="hero-overlay"></div>
+        <div class="scanlines"></div>
+        <canvas class="hero-grid-canvas" id="heroGrid"></canvas>
+      </div>
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          <span class="badge-text">STATUS: IN DEVELOPMENT</span>
+        </div>
+        <h1 class="hero-title">Post-Quantum Security.<br><span class="accent-text">Built Honestly.</span></h1>
+        <p class="hero-subtitle">Internal security tooling for the NoblePort Systems stack. Post-quantum research, contract audit pipelines, and threat monitoring — in active development, not yet in production.</p>
+        <div class="hero-actions">
+          <a href="#audit" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            View Honest Status
+          </a>
+          <a href="#dashboard" class="btn btn-secondary">View Threat Dashboard</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-value">—</span>
+            <span class="hero-stat-label">PQC Score (pre-launch)</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value">—</span>
+            <span class="hero-stat-label">Uptime (no production telemetry)</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value">—</span>
+            <span class="hero-stat-label">Active Threats (no monitor)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 2: THREAT DASHBOARD ===== -->
+    <section class="dashboard" id="dashboard">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">[SYS::DASHBOARD]</span>
+          <h2 class="section-title">Threat Dashboard (Planned)</h2>
+          <p class="section-desc">Target metrics for the NoblePort security layer once production instrumentation is live. All values below are placeholder targets, not measurements.</p>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-primary">
+            <div class="kpi-header">
+              <span class="kpi-label">PQC READINESS SCORE</span>
+              <span class="kpi-status status-warn">PLANNED</span>
+            </div>
+            <div class="kpi-value-wrap">
+              <span class="kpi-value">—</span>
+              <span class="kpi-unit">/100</span>
+            </div>
+            <div class="kpi-bar"><div class="kpi-bar-fill" style="--fill: 0%"></div></div>
+            <span class="kpi-detail">Measurement framework in design</span>
+          </div>
+
+          <div class="kpi-card kpi-warning">
+            <div class="kpi-header">
+              <span class="kpi-label">ECC EXPOSURE</span>
+              <span class="kpi-status status-warn">INDUSTRY-WIDE</span>
+            </div>
+            <div class="kpi-value-wrap">
+              <span class="kpi-value">HIGH</span>
+              <span class="kpi-unit"></span>
+            </div>
+            <span class="kpi-detail">NIST advisory window opens 2026</span>
+          </div>
+
+          <div class="kpi-card kpi-warning">
+            <div class="kpi-header">
+              <span class="kpi-label">RSA EXPOSURE</span>
+              <span class="kpi-status status-warn">INDUSTRY-WIDE</span>
+            </div>
+            <div class="kpi-value-wrap">
+              <span class="kpi-value">HIGH</span>
+              <span class="kpi-unit"></span>
+            </div>
+            <span class="kpi-detail">RSA-2048 quantum-vulnerable est. 2029</span>
+          </div>
+
+          <div class="kpi-card kpi-success">
+            <div class="kpi-header">
+              <span class="kpi-label">THREAT MONITOR</span>
+              <span class="kpi-status status-warn">PLANNED</span>
+            </div>
+            <div class="kpi-value-wrap">
+              <span class="kpi-value">—</span>
+              <span class="kpi-unit"></span>
+            </div>
+            <span class="kpi-detail">No production monitor running yet</span>
+          </div>
+
+          <div class="kpi-card kpi-primary">
+            <div class="kpi-header">
+              <span class="kpi-label">INFRASTRUCTURE</span>
+              <span class="kpi-status status-warn">PRE-LAUNCH</span>
+            </div>
+            <div class="kpi-value-wrap">
+              <span class="kpi-value">—</span>
+              <span class="kpi-unit"></span>
+            </div>
+            <span class="kpi-detail">No production validator mesh deployed</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 3: CAPABILITIES ===== -->
+    <section class="capabilities" id="capabilities">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">[SYS::MODULES]</span>
+          <h2 class="section-title">Security Capabilities</h2>
+          <p class="section-desc">Six security modules planned for the NoblePort stack. Modules are in research, design, or prototype — none are production-deployed.</p>
+        </div>
+        <div class="cap-grid">
+          <div class="cap-card">
+            <div class="cap-icon">
+              <svg viewBox="0 0 48 48" fill="none"><path d="M24 4L6 14v14c0 11 18 16 18 16s18-5 18-16V14L24 4z" stroke="#00E5FF" stroke-width="2"/><path d="M18 24l4 4 8-8" stroke="#39FF14" stroke-width="2"/></svg>
+            </div>
+            <h3 class="cap-title">PQC Migration</h3>
+            <p class="cap-desc">ML-KEM and CRYSTALS-Kyber implementation across all cryptographic endpoints. Lattice-based key encapsulation resistant to Shor's algorithm.</p>
+            <div class="cap-tags">
+              <span class="tag">ML-KEM</span>
+              <span class="tag">CRYSTALS-Kyber</span>
+              <span class="tag">NIST PQC</span>
+            </div>
+          </div>
+
+          <div class="cap-card">
+            <div class="cap-icon">
+              <svg viewBox="0 0 48 48" fill="none"><rect x="8" y="8" width="32" height="32" rx="4" stroke="#00E5FF" stroke-width="2"/><path d="M16 16h16M16 24h12M16 32h8" stroke="#39FF14" stroke-width="2" stroke-linecap="round"/><circle cx="36" cy="36" r="8" fill="#050A12" stroke="#C9A84C" stroke-width="2"/><path d="M34 36l2 2 4-4" stroke="#C9A84C" stroke-width="1.5"/></svg>
+            </div>
+            <h3 class="cap-title">Smart Contract Audit</h3>
+            <p class="cap-desc">Automated vulnerability scanning with Slither and Mythril. Symbolic execution, taint analysis, and formal verification of Solidity contracts.</p>
+            <div class="cap-tags">
+              <span class="tag">Slither</span>
+              <span class="tag">Mythril</span>
+              <span class="tag">Formal Verification</span>
+            </div>
+          </div>
+
+          <div class="cap-card">
+            <div class="cap-icon">
+              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="18" stroke="#00E5FF" stroke-width="2" stroke-dasharray="4 2"/><path d="M12 30 Q18 20 24 24 Q30 28 36 18" stroke="#39FF14" stroke-width="2" fill="none"/><circle cx="24" cy="24" r="4" fill="#00E5FF" opacity="0.3"/><circle cx="24" cy="24" r="2" fill="#00E5FF"/></svg>
+            </div>
+            <h3 class="cap-title">Threat Detection</h3>
+            <p class="cap-desc">Anomaly detection design targeting blockchain transaction patterns and contract interaction graphs. Classifier training and threat-intel integration pending.</p>
+            <div class="cap-tags">
+              <span class="tag">AI/ML</span>
+              <span class="tag">Real-time</span>
+              <span class="tag">Anomaly Detection</span>
+            </div>
+          </div>
+
+          <div class="cap-card">
+            <div class="cap-icon">
+              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="18" r="8" stroke="#00E5FF" stroke-width="2"/><path d="M12 40c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="#00E5FF" stroke-width="2"/><path d="M20 18l2 2 5-5" stroke="#39FF14" stroke-width="2"/><rect x="30" y="28" width="12" height="8" rx="2" stroke="#C9A84C" stroke-width="1.5"/><path d="M33 31h6" stroke="#C9A84C" stroke-width="1"/></svg>
+            </div>
+            <h3 class="cap-title">Identity Attestation</h3>
+            <p class="cap-desc">zkSBT Level 5 soulbound credentials for decentralized identity. Zero-knowledge proofs for privacy-preserving verification.</p>
+            <div class="cap-tags">
+              <span class="tag">zkSBT</span>
+              <span class="tag">Soulbound</span>
+              <span class="tag">ZK Proofs</span>
+            </div>
+          </div>
+
+          <div class="cap-card">
+            <div class="cap-icon">
+              <svg viewBox="0 0 48 48" fill="none"><rect x="6" y="10" width="36" height="28" rx="4" stroke="#00E5FF" stroke-width="2"/><path d="M6 18h36" stroke="#00E5FF" stroke-width="1.5"/><circle cx="12" cy="14" r="1.5" fill="#39FF14"/><circle cx="18" cy="14" r="1.5" fill="#C9A84C"/><circle cx="24" cy="14" r="1.5" fill="#00E5FF"/><path d="M14 26h8M14 30h12M14 34h6" stroke="#39FF14" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/><path d="M30 26l4 2-4 2z" fill="#C9A84C" opacity="0.7"/></svg>
+            </div>
+            <h3 class="cap-title">KYC/AML Compliance</h3>
+            <p class="cap-desc">Planned verification pipeline targeting OFAC screening, PEP checks, and adverse media monitoring. SOC 2 audit not yet conducted.</p>
+            <div class="cap-tags">
+              <span class="tag">KYC/AML</span>
+              <span class="tag">OFAC</span>
+              <span class="tag">SOC 2</span>
+            </div>
+          </div>
+
+          <div class="cap-card">
+            <div class="cap-icon">
+              <svg viewBox="0 0 48 48" fill="none"><rect x="8" y="14" width="32" height="22" rx="3" stroke="#00E5FF" stroke-width="2"/><path d="M8 22h32" stroke="#00E5FF" stroke-width="1"/><circle cx="24" cy="10" r="4" stroke="#C9A84C" stroke-width="1.5"/><path d="M20 10h8" stroke="#C9A84C" stroke-width="1"/><path d="M16 28h6M16 32h10" stroke="#39FF14" stroke-width="1.5" stroke-linecap="round"/><rect x="30" y="26" width="6" height="8" rx="1" stroke="#39FF14" stroke-width="1"/></svg>
+            </div>
+            <h3 class="cap-title">DeFi Vault Security</h3>
+            <p class="cap-desc">Multi-signature authorization, time-locked withdrawals, and circuit breaker mechanisms. Automated pause on anomalous fund movement.</p>
+            <div class="cap-tags">
+              <span class="tag">Multi-sig</span>
+              <span class="tag">Time-lock</span>
+              <span class="tag">Circuit Breakers</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 4: QUANTUM THREAT TIMELINE ===== -->
+    <section class="timeline-section" id="timeline">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">[SYS::THREAT_TIMELINE]</span>
+          <h2 class="section-title">Quantum Threat Timeline</h2>
+          <p class="section-desc">ECC and RSA deprecation trajectory versus Cyborg's PQC readiness milestones.</p>
+        </div>
+        <div class="timeline-visual">
+          <div class="timeline-track">
+            <div class="timeline-line"></div>
+            <!-- Timeline nodes -->
+            <div class="tl-node" style="--pos: 0%">
+              <div class="tl-marker tl-marker-active"></div>
+              <div class="tl-content tl-content-above">
+                <span class="tl-year">2024</span>
+                <span class="tl-event">NIST PQC Standards Finalized</span>
+                <span class="tl-detail">FIPS 203/204/205 published</span>
+              </div>
+            </div>
+            <div class="tl-node" style="--pos: 18%">
+              <div class="tl-marker tl-marker-pending"></div>
+              <div class="tl-content tl-content-below">
+                <span class="tl-year">2026</span>
+                <span class="tl-event tl-event-cyan">Cyborg PQC — Design Phase</span>
+                <span class="tl-detail">ML-KEM integration in research</span>
+              </div>
+            </div>
+            <div class="tl-node" style="--pos: 36%">
+              <div class="tl-marker tl-marker-pending"></div>
+              <div class="tl-content tl-content-above">
+                <span class="tl-year">2026</span>
+                <span class="tl-event tl-event-gold">ECC Deprecation Begins</span>
+                <span class="tl-detail">NIST advisory for migration</span>
+              </div>
+            </div>
+            <div class="tl-node" style="--pos: 54%">
+              <div class="tl-marker tl-marker-warning"></div>
+              <div class="tl-content tl-content-below">
+                <span class="tl-year">2027</span>
+                <span class="tl-event tl-event-warn">ECC Sunset Window</span>
+                <span class="tl-detail">Non-compliant systems flagged</span>
+              </div>
+            </div>
+            <div class="tl-node" style="--pos: 72%">
+              <div class="tl-marker tl-marker-warning"></div>
+              <div class="tl-content tl-content-above">
+                <span class="tl-year">2029</span>
+                <span class="tl-event tl-event-warn">RSA-2048 Quantum Vulnerable</span>
+                <span class="tl-detail">Estimated cryptanalytic break</span>
+              </div>
+            </div>
+            <div class="tl-node" style="--pos: 90%">
+              <div class="tl-marker tl-marker-danger"></div>
+              <div class="tl-content tl-content-below">
+                <span class="tl-year">2030+</span>
+                <span class="tl-event tl-event-danger">Q-Day Horizon</span>
+                <span class="tl-detail">Fault-tolerant quantum computers</span>
+              </div>
+            </div>
+          </div>
+          <div class="timeline-legend">
+            <div class="legend-item"><span class="legend-dot legend-dot-green"></span>Completed</div>
+            <div class="legend-item"><span class="legend-dot legend-dot-cyan"></span>In Progress</div>
+            <div class="legend-item"><span class="legend-dot legend-dot-gold"></span>Approaching</div>
+            <div class="legend-item"><span class="legend-dot legend-dot-red"></span>Critical</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 5: SECURITY STACK ===== -->
+    <section class="stack-section" id="stack">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">[SYS::ARCHITECTURE]</span>
+          <h2 class="section-title">Security Stack</h2>
+          <p class="section-desc">Cyborg's position within the NoblePort infrastructure — defense in depth from L1 to application layer.</p>
+        </div>
+        <div class="stack-diagram">
+          <div class="stack-layer stack-layer-app">
+            <div class="stack-layer-label">APPLICATION LAYER</div>
+            <div class="stack-layer-items">
+              <span class="stack-item">DeFi Vaults</span>
+              <span class="stack-item">Smart Contracts</span>
+              <span class="stack-item">dApp Frontend</span>
+            </div>
+          </div>
+          <div class="stack-connector">
+            <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7" stroke="#00E5FF" stroke-width="1.5" fill="none"/></svg>
+          </div>
+          <div class="stack-layer stack-layer-cyborg">
+            <div class="stack-layer-badge">CYBORG.IO</div>
+            <div class="stack-layer-label">SECURITY & COMPLIANCE LAYER</div>
+            <div class="stack-layer-items">
+              <span class="stack-item">PQC Engine (planned)</span>
+              <span class="stack-item">Contract Auditor (planned)</span>
+              <span class="stack-item">Threat Monitor (planned)</span>
+              <span class="stack-item">Identity / zkSBT (planned)</span>
+              <span class="stack-item">KYC/AML (planned)</span>
+              <span class="stack-item">Circuit Breakers (planned)</span>
+            </div>
+          </div>
+          <div class="stack-connector">
+            <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7" stroke="#00E5FF" stroke-width="1.5" fill="none"/></svg>
+          </div>
+          <div class="stack-layer stack-layer-infra">
+            <div class="stack-layer-label">INFRASTRUCTURE LAYER</div>
+            <div class="stack-layer-items">
+              <span class="stack-item">Validator Mesh (planned)</span>
+              <span class="stack-item">Consensus Engine</span>
+              <span class="stack-item">P2P Network</span>
+            </div>
+          </div>
+          <div class="stack-connector">
+            <svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7" stroke="#00E5FF" stroke-width="1.5" fill="none"/></svg>
+          </div>
+          <div class="stack-layer stack-layer-chain">
+            <div class="stack-layer-label">BLOCKCHAIN LAYER (L1/L2)</div>
+            <div class="stack-layer-items">
+              <span class="stack-item">Ethereum</span>
+              <span class="stack-item">Arbitrum</span>
+              <span class="stack-item">Solana</span>
+              <span class="stack-item">Base</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 6: VALIDATOR MESH ===== -->
+    <section class="mesh-section" id="mesh">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">[SYS::VALIDATOR_MESH]</span>
+          <h2 class="section-title">Target Architecture</h2>
+          <p class="section-desc">Planned multi-chain validator coverage for the NoblePort protocol. No production validators are currently deployed.</p>
+        </div>
+        <div class="mesh-grid">
+          <div class="mesh-stat-card">
+            <div class="mesh-stat-icon">
+              <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12" stroke="#00E5FF" stroke-width="1.5" stroke-dasharray="3 2"/><circle cx="16" cy="8" r="2" fill="#39FF14"/><circle cx="8" cy="22" r="2" fill="#39FF14"/><circle cx="24" cy="22" r="2" fill="#39FF14"/><line x1="16" y1="8" x2="8" y2="22" stroke="#00E5FF" stroke-width="0.8" opacity="0.5"/><line x1="16" y1="8" x2="24" y2="22" stroke="#00E5FF" stroke-width="0.8" opacity="0.5"/><line x1="8" y1="22" x2="24" y2="22" stroke="#00E5FF" stroke-width="0.8" opacity="0.5"/></svg>
+            </div>
+            <span class="mesh-stat-value">—</span>
+            <span class="mesh-stat-label">Active Validator Nodes (pre-launch)</span>
+          </div>
+          <div class="mesh-stat-card">
+            <div class="mesh-stat-icon">
+              <svg viewBox="0 0 32 32" fill="none"><rect x="4" y="8" width="24" height="16" rx="3" stroke="#C9A84C" stroke-width="1.5"/><path d="M4 14h24" stroke="#C9A84C" stroke-width="1"/><circle cx="8" cy="11" r="1" fill="#C9A84C"/><path d="M10 20h6" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <span class="mesh-stat-value">—</span>
+            <span class="mesh-stat-label">Total Value Locked (pre-launch)</span>
+          </div>
+          <div class="mesh-stat-card">
+            <div class="mesh-stat-icon">
+              <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="10" stroke="#00E5FF" stroke-width="1.5"/><path d="M11 16l3 3 7-7" stroke="#39FF14" stroke-width="2"/></svg>
+            </div>
+            <span class="mesh-stat-value">—</span>
+            <span class="mesh-stat-label">Network Uptime (no production telemetry)</span>
+          </div>
+          <div class="mesh-stat-card">
+            <div class="mesh-stat-icon">
+              <svg viewBox="0 0 32 32" fill="none"><path d="M16 4L4 10v8c0 8 12 12 12 12s12-4 12-12v-8L16 4z" stroke="#39FF14" stroke-width="1.5"/><path d="M12 16l3 3 6-6" stroke="#39FF14" stroke-width="1.5"/></svg>
+            </div>
+            <span class="mesh-stat-value">—</span>
+            <span class="mesh-stat-label">Security Incidents (no live monitoring)</span>
+          </div>
+        </div>
+        <div class="chain-badges">
+          <h3 class="chain-badges-title">Multi-Chain Coverage</h3>
+          <div class="chain-list">
+            <div class="chain-badge">
+              <span class="chain-dot chain-dot-eth"></span>
+              <span class="chain-name">Ethereum</span>
+              <span class="chain-id">Chain 1</span>
+            </div>
+            <div class="chain-badge">
+              <div class="chain-dot chain-dot-arb"></div>
+              <span class="chain-name">Arbitrum</span>
+              <span class="chain-id">Chain 42161</span>
+            </div>
+            <div class="chain-badge">
+              <span class="chain-dot chain-dot-sol"></span>
+              <span class="chain-name">Solana</span>
+              <span class="chain-id">Mainnet-Beta</span>
+            </div>
+            <div class="chain-badge">
+              <span class="chain-dot chain-dot-base"></span>
+              <span class="chain-name">Base</span>
+              <span class="chain-id">Chain 8453</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 7: CTA ===== -->
+    <section class="cta-section" id="audit">
+      <div class="container">
+        <div class="cta-inner">
+          <div class="cta-grid-bg"></div>
+          <div class="cta-content">
+            <span class="section-tag">[SYS::INITIATE]</span>
+            <h2 class="cta-title">Honest Status</h2>
+            <p class="cta-desc">Cyborg.io is NoblePort's internal security platform, currently in active development. We're not offering external audits yet — this page exists to document direction and reserve the namespace.</p>
+            <div class="cta-actions">
+              <a href="https://nobleport.eth.limo" target="_blank" rel="noopener" class="btn btn-primary btn-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Visit NoblePort
+              </a>
+            </div>
+            <div class="cta-trust">
+              <span class="trust-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Evidence-first methodology
+              </span>
+              <span class="trust-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Fail-closed architecture
+              </span>
+              <span class="trust-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                In active development
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <svg class="footer-logo" viewBox="0 0 160 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="cyborg.io">
+            <g>
+              <path d="M16 2 L28 8 L28 22 L16 28 L4 22 L4 8 Z" stroke="currentColor" stroke-width="1" fill="none" opacity="0.4"/>
+              <ellipse cx="16" cy="15" rx="8" ry="5" stroke="#00E5FF" stroke-width="1" fill="none"/>
+              <circle cx="16" cy="15" r="2.5" fill="#00E5FF" opacity="0.7"/>
+              <circle cx="16" cy="15" r="1" fill="#050A12"/>
+            </g>
+            <text x="36" y="20" font-family="'Inter', sans-serif" font-weight="700" font-size="15" fill="currentColor" letter-spacing="-0.3">cyborg</text>
+            <text x="95" y="20" font-family="'Inter', sans-serif" font-weight="700" font-size="15" fill="#00E5FF" letter-spacing="-0.3">.io</text>
+          </svg>
+          <p class="footer-legal">NoblePort Systems LLC &middot; Arbitrum Chain 42161</p>
+          <p class="footer-legal">Evidence-first &middot; Fail-closed &middot; Zero trust</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4 class="footer-col-title">Platform</h4>
+            <a href="#dashboard" class="footer-link">Dashboard</a>
+            <a href="#capabilities" class="footer-link">Capabilities</a>
+            <a href="#timeline" class="footer-link">Threat Timeline</a>
+            <a href="#mesh" class="footer-link">Validator Mesh</a>
+          </div>
+          <div class="footer-col">
+            <h4 class="footer-col-title">Resources</h4>
+            <a href="#" class="footer-link">Documentation</a>
+            <a href="#" class="footer-link">Security Whitepaper</a>
+            <a href="#" class="footer-link">PQC Migration Guide</a>
+            <a href="#" class="footer-link">Audit Reports</a>
+          </div>
+          <div class="footer-col">
+            <h4 class="footer-col-title">Connect</h4>
+            <a href="#" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="#" class="footer-link" target="_blank" rel="noopener noreferrer">Discord</a>
+            <a href="#" class="footer-link" target="_blank" rel="noopener noreferrer">Twitter/X</a>
+            <a href="#audit" class="footer-link">Request Audit</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy">&copy; 2025 NoblePort Systems LLC. All rights reserved.</span>
+        <span class="footer-chain">
+          <span class="chain-indicator"></span>
+          Connected: Arbitrum · Chain 42161
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>

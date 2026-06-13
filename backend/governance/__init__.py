@@ -13,6 +13,14 @@ Public surface:
 
 from __future__ import annotations
 
+from backend.governance.attestation_registry import (
+    ATTESTATION_REGISTRY,
+    AttestationCategory,
+    AttestationRecord,
+    AttestationStatus,
+    registry_summary,
+    validate_registry,
+)
 from backend.governance.authority_matrix import (
     AUTHORITY_MATRIX,
     CREDENTIAL_REGISTER,
@@ -37,6 +45,12 @@ __all__ = [
     "compute_metrics",
     "SCENARIO_SUITE",
     "run_baseline",
+    "ATTESTATION_REGISTRY",
+    "AttestationRecord",
+    "AttestationStatus",
+    "AttestationCategory",
+    "registry_summary",
+    "validate_registry",
 ]
 
 
