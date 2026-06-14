@@ -1,0 +1,184 @@
+{
+  "system": "AI Construction Internal Tracking Agents",
+  "version": "1.0",
+  "agents": [
+    {
+      "id": "agent_schedule",
+      "name": "Schedule Agent",
+      "function": "Auto-update project schedule from IoT and RFID scans",
+      "input_sources": [
+        "RFID tags on materials/equipment",
+        "IoT gateways at zones",
+        "Primavera P6 / MS Project API"
+      ],
+      "outputs": [
+        "Real-time Gantt chart updates",
+        "Delay alerts with predicted impact",
+        "Recovery recommendations"
+      ],
+      "trigger": "continuous (event-driven)",
+      "data_retention_days": 90
+    },
+    {
+      "id": "agent_cost",
+      "name": "Cost Agent",
+      "function": "Real-time earned value analysis and overrun alerts",
+      "input_sources": [
+        "Procurement system",
+        "Timesheets (from Labor Agent)",
+        "Equipment usage logs",
+        "Budget baseline"
+      ],
+      "outputs": [
+        "Earned value (EV, AC, PV) dashboard",
+        "Cost overrun forecast with LLM explanation",
+        "Change order impact simulation"
+      ],
+      "trigger": "hourly",
+      "data_retention_days": 365
+    },
+    {
+      "id": "agent_document",
+      "name": "Document Agent",
+      "function": "Classify RFIs, submittals, change orders and auto-route for approval",
+      "input_sources": [
+        "Email inbox",
+        "Shared folder (PDF/DWG/DOCX)",
+        "Project collaboration platform API"
+      ],
+      "outputs": [
+        "Auto-tagged documents (RFI, submittal, CO, etc.)",
+        "Routing suggestions to responsible person/role",
+        "Deadline reminders and overdue alerts"
+      ],
+      "trigger": "continuous (file arrival)",
+      "data_retention_days": 730
+    },
+    {
+      "id": "agent_inventory",
+      "name": "Inventory Agent",
+      "function": "Just-in-time reorder triggers using drone and scale data",
+      "input_sources": [
+        "Drone inventory scans (daily)",
+        "Smart scale readings at storage bins",
+        "Supplier inventory APIs"
+      ],
+      "outputs": [
+        "Low-stock alerts with reorder quantity",
+        "Auto-generated purchase order (draft)",
+        "Supplier chatbot negotiation (if enabled)"
+      ],
+      "trigger": "daily at 06:00 and on-demand",
+      "data_retention_days": 180
+    },
+    {
+      "id": "agent_equipment",
+      "name": "Equipment Agent",
+      "function": "Predictive maintenance from vibration/temperature sensors",
+      "input_sources": [
+        "IoT sensor data (vibration, temp, hours)",
+        "Maintenance history log",
+        "Equipment manufacturer manuals (parsed)"
+      ],
+      "outputs": [
+        "Remaining useful life (RUL) forecast",
+        "Maintenance work order generation",
+        "Downtime risk alert"
+      ],
+      "trigger": "continuous (streaming)",
+      "data_retention_days": 365
+    },
+    {
+      "id": "agent_labor",
+      "name": "Labor Agent",
+      "function": "Attendance tracking and productivity heatmaps (anonymized)",
+      "input_sources": [
+        "Site entry facial recognition (anonymized IDs)",
+        "Wearable motion sensors",
+        "Task assignment system"
+      ],
+      "outputs": [
+        "Real-time attendance dashboard",
+        "Productivity heatmap (zones with high/low efficiency)",
+        "Anomaly alerts (e.g., idle time spike)"
+      ],
+      "trigger": "continuous",
+      "privacy_note": "No personal identifiers stored – only anonymized role IDs",
+      "data_retention_days": 60
+    },
+    {
+      "id": "agent_quality",
+      "name": "Quality Agent",
+      "function": "AI vision for concrete pour, rebar spacing, weld inspection",
+      "input_sources": [
+        "Fixed cameras",
+        "Drone imagery",
+        "Handheld inspection cameras"
+      ],
+      "outputs": [
+        "Defect detection (cracks, spacing violations, porosity)",
+        "Non-conformance report (NCR) draft",
+        "Pass/fail per inspection point"
+      ],
+      "trigger": "continuous (image upload)",
+      "data_retention_days": 365
+    },
+    {
+      "id": "agent_safety",
+      "name": "Safety Agent",
+      "function": "Real-time PPE violation alerts & incident root-cause mining",
+      "input_sources": [
+        "Edge AI cameras",
+        "Wearable gas/fall sensors",
+        "Incident report history"
+      ],
+      "outputs": [
+        "Live PPE violation alerts (hardhat, vest, harness)",
+        "Near-miss pattern detection",
+        "Root-cause analysis report (LLM-generated)"
+      ],
+      "trigger": "continuous (< 1 sec latency)",
+      "data_retention_days": 730
+    },
+    {
+      "id": "agent_subcontractor",
+      "name": "Subcontractor Agent",
+      "function": "Automated scorecard based on schedule, quality, safety telemetry",
+      "input_sources": [
+        "Schedule Agent (actual vs plan per sub)",
+        "Quality Agent (defects per sub)",
+        "Safety Agent (violations per sub)"
+      ],
+      "outputs": [
+        "Daily subcontractor performance score (0–100)",
+        "Trend analysis (improving/declining)",
+        "Automated flag for contract review"
+      ],
+      "trigger": "daily at 23:59",
+      "data_retention_days": 365
+    },
+    {
+      "id": "agent_daily_field",
+      "name": "Daily Field Agent",
+      "function": "Generate natural-language daily reports + photo timelapse",
+      "input_sources": [
+        "All other agent outputs (schedule, cost, quality, safety, etc.)",
+        "Site camera timelapse feeds"
+      ],
+      "outputs": [
+        "Narrative daily report (LLM-generated)",
+        "Photo summary with captions",
+        "Weather integration and impact note"
+      ],
+      "trigger": "daily at 18:00 (end of shift)",
+      "data_retention_days": 365
+    }
+  ],
+  "global_settings": {
+    "digital_twin_integration": true,
+    "llm_backend": "gpt-4 or local open-source model",
+    "alert_channel": "Teams / Slack / SMS",
+    "edge_processing": true,
+    "fallback_mode": "human approval for high-cost actions"
+  }
+}
