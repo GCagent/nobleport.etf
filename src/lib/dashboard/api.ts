@@ -17,6 +17,7 @@ import {
   getJobs as mockJobs,
   getKillSwitches as mockKillSwitches,
   getKpis as mockKpis,
+  getLaborDisruptionThesis as mockLaborDisruption,
   getOverview as mockOverview,
   getPermitForecast as mockPermitForecast,
   getPermits as mockPermits,
@@ -44,3 +45,4 @@ export const fetchKillSwitches = async () => mockKillSwitches();
 export const fetchAudit = async () => mockAudit();
 export const fetchVoiceSession = async () => mockVoiceSession();
 export const fetchVoiceTranscript = async () => mockVoiceTranscript();
+export const fetchLaborDisruption = async () => mockLaborDisruption();

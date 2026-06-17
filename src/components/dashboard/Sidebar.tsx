@@ -21,6 +21,7 @@ const PRIMARY: NavItem[] = [
   { href: '/dashboard/voice', label: 'Voice', hint: 'Stephanie console' },
   { href: '/dashboard/wallet', label: 'Wallet', hint: 'nobleport.base.eth · Web3' },
   { href: '/dashboard/compliance', label: 'Compliance', hint: 'Cyborg · kill switches' },
+  { href: '/dashboard/labor-disruption', label: 'Labor', hint: 'AI disruption tracker' },
   { href: '/dashboard/audit', label: 'Audit', hint: 'Hash-linked chain' },
 ];
 

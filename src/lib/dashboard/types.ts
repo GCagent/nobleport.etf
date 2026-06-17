@@ -204,6 +204,89 @@ export interface RevenueRule {
   violations: number;
 }
 
+// ---------------------------------------------------------------------------
+// AI Labor Disruption Tracker
+// ---------------------------------------------------------------------------
+
+export type ExposureLevel = 'critical' | 'high' | 'moderate' | 'low' | 'insulated';
+export type DisruptionPhase = 'active' | 'accelerating' | 'emerging' | 'theoretical';
+export type SignalDirection = 'bullish' | 'bearish' | 'neutral';
+
+export interface SectorExposure {
+  id: string;
+  sector: string;
+  roles: string[];
+  exposure: ExposureLevel;
+  phase: DisruptionPhase;
+  headcountAtRisk: number;
+  aiCapabilities: string[];
+  timelineYears: number;
+  notes: string;
+}
+
+export interface AICapabilityVector {
+  id: string;
+  capability: string;
+  description: string;
+  targetedRoles: string[];
+  maturity: number;
+  adoptionPct: number;
+  accelerating: boolean;
+}
+
+export interface ConstructionMoat {
+  id: string;
+  factor: string;
+  strength: ExposureLevel;
+  description: string;
+  aiBypassDifficulty: number;
+  timelineToErode: string;
+}
+
+export interface StrategicPosition {
+  id: string;
+  category: string;
+  companies: string[];
+  advantage: string;
+  nobleportAlignment: number;
+  growthOutlook: SignalDirection;
+}
+
+export interface LaborMarketSignal {
+  id: string;
+  indicator: string;
+  current: string;
+  priorPeriod: string;
+  direction: SignalDirection;
+  source: string;
+  updatedAt: string;
+  significance: string;
+}
+
+export interface CareerLadderRisk {
+  id: string;
+  pipeline: string;
+  entryRoleExposure: ExposureLevel;
+  seniorSupplyImpact: string;
+  timeHorizon: string;
+  structuralRisk: number;
+  mitigation: string;
+}
+
+export interface LaborDisruptionThesis {
+  generatedAt: string;
+  headline: string;
+  phase: string;
+  sectorExposures: SectorExposure[];
+  aiCapabilities: AICapabilityVector[];
+  constructionMoat: ConstructionMoat[];
+  strategicPositions: StrategicPosition[];
+  laborSignals: LaborMarketSignal[];
+  careerLadderRisks: CareerLadderRisk[];
+  watchList: string[];
+  counterArguments: { thesis: string; source: string; probability: number }[];
+}
+
 export interface DashboardOverview {
   generatedAt: string;
   kpis: KpiTile[];
