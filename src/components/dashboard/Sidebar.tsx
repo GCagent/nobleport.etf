@@ -22,6 +22,7 @@ const PRIMARY: NavItem[] = [
   { href: '/dashboard/wallet', label: 'Wallet', hint: 'nobleport.base.eth · Web3' },
   { href: '/dashboard/compliance', label: 'Compliance', hint: 'Cyborg · kill switches' },
   { href: '/dashboard/audit', label: 'Audit', hint: 'Hash-linked chain' },
+  { href: '/dashboard/metrics', label: 'Live Metrics', hint: 'Governance gate · truth layer' },
 ];
 
 const SECONDARY: NavItem[] = [

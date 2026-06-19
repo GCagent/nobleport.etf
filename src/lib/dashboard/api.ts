@@ -27,6 +27,11 @@ import {
   getVoiceTranscript as mockVoiceTranscript,
 } from './mock';
 
+// Governance metrics are computed at request time by the decision gate
+// (FastAPI when GOVERNANCE_API_BASE is set, embedded TS port otherwise) —
+// they are the one feed here that is not a mock fixture.
+export { getGovernanceFeed as fetchGovernance } from '@/lib/governance/feed';
+
 export const fetchOverview = async () => mockOverview();
 export const fetchKpis = async () => mockKpis();
 export const fetchPipeline = async () => mockPipeline();
