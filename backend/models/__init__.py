@@ -28,3 +28,15 @@ from backend.models.inspection import Inspection  # noqa: F401
 from backend.models.maintenance import MaintenanceContract  # noqa: F401
 from backend.models.learning_memory import LearningMemory  # noqa: F401
 from backend.models.journey_asset import JourneyAsset  # noqa: F401
+
+# --- Smart CRM core data layer (STAGED; see backend/core/smart_crm.py) ---
+from backend.models.contact import Contact  # noqa: F401
+from backend.models.property import Property  # noqa: F401
+from backend.models.company import Company  # noqa: F401
+from backend.models.opportunity import Opportunity  # noqa: F401
+from backend.models.contract import Contract  # noqa: F401
+from backend.models.vendor import Vendor, Subcontractor  # noqa: F401
+from backend.models.material import Material, PurchaseOrder  # noqa: F401
+from backend.models.warranty import Warranty  # noqa: F401
+from backend.models.service_request import ServiceRequest  # noqa: F401
+from backend.models.audit import AuditLog, ActivityLog  # noqa: F401
