@@ -46,6 +46,23 @@ from backend.learning.memory import RecursiveMemory, RecursiveMemoryStore
 from backend.learning.engine import LearningCycle, RecursiveLearningEngine
 from backend.learning.metrics import CommandCenterMetrics, compute_command_center
 from backend.learning.topics import FIRST_PILOT, PRIORITY_TOPICS, PriorityTopic
+from backend.learning.reflection import (
+    MEMORY_LAYER_PURPOSE,
+    REFLECTION_LOOP,
+    EvidenceItem,
+    EvidenceType,
+    ImprovementStatus,
+    ImprovementTarget,
+    MemoryLayer,
+    ProposedImprovement,
+    ReflectionEngine,
+    ReflectionResult,
+    ReflectionSignal,
+    ReflectionStage,
+    apply_improvement,
+    approve_improvement,
+    reject_improvement,
+)
 
 __all__ = [
     "LearningLoop",
@@ -64,4 +81,20 @@ __all__ = [
     "PRIORITY_TOPICS",
     "FIRST_PILOT",
     "PriorityTopic",
+    # Reflection engine — project-evidence learning loop
+    "ReflectionEngine",
+    "ReflectionResult",
+    "ReflectionSignal",
+    "ReflectionStage",
+    "REFLECTION_LOOP",
+    "MemoryLayer",
+    "MEMORY_LAYER_PURPOSE",
+    "EvidenceItem",
+    "EvidenceType",
+    "ImprovementTarget",
+    "ImprovementStatus",
+    "ProposedImprovement",
+    "approve_improvement",
+    "reject_improvement",
+    "apply_improvement",
 ]
