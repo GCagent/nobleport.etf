@@ -35,6 +35,7 @@ class PaymentStatus(str, PyEnum):
 
 class PaymentProcessor(str, PyEnum):
     STRIPE = "stripe"
+    PAYPAL = "paypal"
     ACH = "ach"
     CHECK = "check"
     WIRE = "wire"
