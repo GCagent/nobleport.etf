@@ -38,6 +38,7 @@ from backend.api.governance import router as governance_router
 from backend.api.learning import router as learning_router
 from backend.api.journey import router as journey_router
 from backend.api.np_os import router as np_os_router
+from backend.api.orchestras import router as orchestras_router
 from backend.config.database import init_db
 from backend.config.settings import settings
 from backend.core.secrets import build_secrets_manager, set_secrets_manager
@@ -143,6 +144,7 @@ app.include_router(governance_router, prefix="/api/governance", tags=["Stephanie
 app.include_router(learning_router, prefix="/api/learning", tags=["Recursive Learning"])
 app.include_router(journey_router, prefix="/api/journey", tags=["Journey Agent (Story Engine)"])
 app.include_router(np_os_router, prefix="/api/np-os", tags=["NP-OS Master Operating System"])
+app.include_router(orchestras_router, prefix="/api/orchestras", tags=["Stephanie Orchestras"])
 
 
 if __name__ == "__main__":
