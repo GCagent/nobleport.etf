@@ -27,6 +27,16 @@ from backend.agents.audit_beacon import AuditBeaconAgent
 from backend.agents.recursive_learning import RecursiveLearningAgent
 from backend.agents.journey import JourneyAgent
 from backend.agents.orchestrator import AgentMesh
+from backend.agents.orchestras import (
+    SCORES,
+    Movement,
+    MovementStatus,
+    OrchestraConductor,
+    Score,
+    create_conductor,
+    get_score,
+    list_scores,
+)
 
 __all__ = [
     "AgentFamily",
@@ -40,4 +50,13 @@ __all__ = [
     "RecursiveLearningAgent",
     "JourneyAgent",
     "AgentMesh",
+    # Stephanie Orchestras
+    "SCORES",
+    "Score",
+    "Movement",
+    "MovementStatus",
+    "OrchestraConductor",
+    "create_conductor",
+    "get_score",
+    "list_scores",
 ]
