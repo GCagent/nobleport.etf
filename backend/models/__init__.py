@@ -28,3 +28,11 @@ from backend.models.inspection import Inspection  # noqa: F401
 from backend.models.maintenance import MaintenanceContract  # noqa: F401
 from backend.models.learning_memory import LearningMemory  # noqa: F401
 from backend.models.journey_asset import JourneyAsset  # noqa: F401
+from backend.models.command_board import (  # noqa: F401
+    BidOpportunity,
+    BuildProject,
+    ChangeOrderAWO,
+    EvidenceLabel,
+    ProjectEvent,
+    ProjectFinancial,
+)
