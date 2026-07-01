@@ -177,6 +177,41 @@ export interface AuditEntry {
   status: 'committed' | 'pending' | 'rejected';
 }
 
+export type TruthTag = 'LIVE' | 'STAGED' | 'SIMULATED' | 'BLOCKED';
+
+export interface TruthArtifact {
+  key: string;
+  title: string;
+  gating: boolean;
+  status: 'COLLECTED' | 'FAILED' | 'PENDING' | 'NOT_APPLICABLE';
+  detail: string;
+}
+
+/**
+ * A TruthAuditor verdict. Every number here is computed by the backend
+ * (`backend/verification/truth_auditor.py`) from collected artifacts — the
+ * evidence index — never hand-asserted. The widget only renders it.
+ */
+export interface TruthLabel {
+  target: string;
+  generatedAt: string;
+  truthTag: TruthTag;
+  status: string;
+  classification: string;
+  evidenceLevel: string;
+  evidencePct: number;
+  gatingCollected: number;
+  gatingTotal: number;
+  gatingFailed: string[];
+  designMaturityAvg: number;
+  requiresHumanApproval: boolean;
+  released: boolean;
+  disclaimer: string;
+  integritySha256: string;
+  ed25519Signature: string | null;
+  artifacts: TruthArtifact[];
+}
+
 export interface VoiceSessionSummary {
   active: boolean;
   sessionId?: string;

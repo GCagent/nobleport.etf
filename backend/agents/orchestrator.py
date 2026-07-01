@@ -21,6 +21,7 @@ from backend.agents.cyborg import CyborgAgent
 from backend.agents.audit_beacon import AuditBeaconAgent
 from backend.agents.recursive_learning import RecursiveLearningAgent
 from backend.agents.journey import JourneyAgent
+from backend.agents.truth_auditor import TruthAuditorAgent
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +112,11 @@ EVENT_ROUTING: dict[str, AgentFamily] = {
     "get_flywheel": AgentFamily.JOURNEY,
     "list_channels": AgentFamily.JOURNEY,
     "list_playbooks": AgentFamily.JOURNEY,
+
+    # TruthAuditor: evidence-gated verdicts + pre-output enforcement
+    "audit_target": AgentFamily.TRUTH_AUDITOR,
+    "pre_output_filter": AgentFamily.TRUTH_AUDITOR,
+    "verify_digest": AgentFamily.TRUTH_AUDITOR,
 }
 
 
@@ -130,6 +136,7 @@ class AgentMesh:
         self.audit_beacon = AuditBeaconAgent()
         self.recursive_learning = RecursiveLearningAgent()
         self.journey = JourneyAgent()
+        self.truth_auditor = TruthAuditorAgent()
 
         self._agents: dict[AgentFamily, BaseAgent] = {
             AgentFamily.STEPHANIE: self.stephanie,
@@ -139,6 +146,7 @@ class AgentMesh:
             AgentFamily.AUDIT_BEACON: self.audit_beacon,
             AgentFamily.RECURSIVE_LEARNING: self.recursive_learning,
             AgentFamily.JOURNEY: self.journey,
+            AgentFamily.TRUTH_AUDITOR: self.truth_auditor,
         }
 
     # -----------------------------------------------------------------------

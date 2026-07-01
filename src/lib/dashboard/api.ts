@@ -23,6 +23,7 @@ import {
   getPipeline as mockPipeline,
   getRevenueRules as mockRules,
   getStaleDeals as mockDeals,
+  getTruthLabel as mockTruthLabel,
   getVoiceSession as mockVoiceSession,
   getVoiceTranscript as mockVoiceTranscript,
 } from './mock';
@@ -42,5 +43,8 @@ export const fetchAgentSummary = async () => mockAgentSummary();
 export const fetchComplianceAlerts = async () => mockAlerts();
 export const fetchKillSwitches = async () => mockKillSwitches();
 export const fetchAudit = async () => mockAudit();
+// Swap point: replace with `fetch(${API_BASE}/truth-audit/label?target=...)`
+// to read the live, mechanically-computed verdict.
+export const fetchTruthLabel = async () => mockTruthLabel();
 export const fetchVoiceSession = async () => mockVoiceSession();
 export const fetchVoiceTranscript = async () => mockVoiceTranscript();

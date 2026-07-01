@@ -22,6 +22,7 @@ import type {
   PermitForecastBucket,
   PipelineStage,
   RevenueRule,
+  TruthLabel,
   VoiceSessionSummary,
   VoiceTranscriptTurn,
 } from './types';
@@ -867,4 +868,49 @@ export const getOverview = (): DashboardOverview => ({
     .map((j) => ({ jobCode: j.code, milestone: j.nextMilestone, at: j.nextMilestoneAt }))
     .sort((a, b) => Date.parse(a.at) - Date.parse(b.at))
     .slice(0, 5),
+});
+
+// ---------------------------------------------------------------------------
+// TruthAuditor verdict (Truth & Audit Module)
+//
+// This fixture is NOT hand-invented. It mirrors the actual output of
+//   python -m backend.verification.truth_auditor --target "..."
+// against the collected evidence index — STAGED / PARTIAL-EVIDENCE, 6/8 gating
+// artifacts proven (75%). The two live-only artifacts (k6 load, Stripe sandbox)
+// are PENDING until collected against a real deployment. To read the live
+// verdict instead of this snapshot, point `fetchTruthLabel` at
+// GET /api/truth-audit/label — the widget does not change.
+// ---------------------------------------------------------------------------
+
+export const getTruthLabel = (): TruthLabel => ({
+  target: 'NoblePort Platform',
+  // Faithful snapshot of a real verdict: this generatedAt + the fields below
+  // hash to the integritySha256 shown, verifiable with core.verify_digest.
+  generatedAt: '2026-05-09T14:35:00+00:00',
+  truthTag: 'STAGED',
+  status: 'STAGED',
+  classification: 'PARTIAL-EVIDENCE',
+  evidenceLevel: 'PARTIAL',
+  evidencePct: 75,
+  gatingCollected: 6,
+  gatingTotal: 8,
+  gatingFailed: [],
+  designMaturityAvg: 89,
+  requiresHumanApproval: true,
+  released: true,
+  disclaimer:
+    'Advisory only. Subject to licensed human oversight — not cleared for final ' +
+    'engineering, legal, or investment decisions without a qualified reviewer.',
+  integritySha256: '44d07fb30fa5884ac403f814a804b5f9dfb53d78f7ab2244fc718ce3472e7055',
+  ed25519Signature: null,
+  artifacts: [
+    { key: 'build_typecheck', title: 'Backend import + frontend typecheck logs', gating: true, status: 'COLLECTED', detail: 'backend.main imports cleanly' },
+    { key: 'migration_roundtrip', title: 'Alembic migration upgrade → downgrade → upgrade', gating: true, status: 'COLLECTED', detail: '2 passed' },
+    { key: 'route_contract', title: 'API route contract', gating: true, status: 'COLLECTED', detail: '16 passed' },
+    { key: 'health_endpoint', title: 'Health endpoint exact status match', gating: true, status: 'COLLECTED', detail: 'status=healthy (exact)' },
+    { key: 'payment_verification', title: 'Payment endpoint + deposit gate', gating: true, status: 'COLLECTED', detail: '4 passed' },
+    { key: 'webhook_security', title: 'Stripe webhook signature reject/accept', gating: true, status: 'COLLECTED', detail: '8 passed' },
+    { key: 'load_report', title: 'k6 tiered load report (250/500/1000)', gating: true, status: 'PENDING', detail: 'requires live deployment' },
+    { key: 'stripe_sandbox', title: 'Stripe sandbox payment evidence', gating: true, status: 'PENDING', detail: 'requires Stripe test keys' },
+  ],
 });

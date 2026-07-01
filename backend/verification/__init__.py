@@ -13,10 +13,12 @@ that still require a live environment as PENDING — never fabricating proof.
 
 Modules:
   truth_label   -- computes the honest STATUS / CLASSIFICATION / EVIDENCE label
+  truth_auditor -- derives one Truth-Layer tag per target from truth_label +
+                   design maturity, with a real SHA-256 integrity digest
   tests/        -- runnable verification suite (route contract, payments,
                    webhook security, migration rollback, object storage)
   load/         -- k6 tiered load configs (250 / 500 / 1000 concurrent users)
   evidence/     -- collection target; MANIFEST.md lists the 10 RC1 artifacts
 """
 
-__all__ = ["truth_label"]
+__all__ = ["truth_label", "truth_auditor"]

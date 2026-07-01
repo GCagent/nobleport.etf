@@ -55,6 +55,9 @@ REQUIRED_ROUTES: list[tuple[str, str]] = [
     ("GET", "/api/jobs"),
     ("GET", "/api/estimates"),
     ("GET", "/api/invoices"),
+    ("GET", "/api/truth-audit/label"),
+    ("POST", "/api/truth-audit/audit"),
+    ("POST", "/api/truth-audit/filter"),
 ]
 
 # Routes the audit template assumed but which DO NOT exist in this stack. We

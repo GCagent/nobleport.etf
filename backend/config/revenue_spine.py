@@ -190,6 +190,7 @@ class SpineAgentFamily(str, Enum):
     AUDIT_BEACON = "AuditBeacon"
     RECURSIVE_LEARNING = "RecursiveLearning"
     JOURNEY = "Journey"
+    TRUTH_AUDITOR = "TruthAuditor"
 
 
 @dataclass(frozen=True)

@@ -26,6 +26,7 @@ from backend.agents.cyborg import CyborgAgent
 from backend.agents.audit_beacon import AuditBeaconAgent
 from backend.agents.recursive_learning import RecursiveLearningAgent
 from backend.agents.journey import JourneyAgent
+from backend.agents.truth_auditor import TruthAuditorAgent
 from backend.agents.orchestrator import AgentMesh
 
 __all__ = [
@@ -39,5 +40,6 @@ __all__ = [
     "AuditBeaconAgent",
     "RecursiveLearningAgent",
     "JourneyAgent",
+    "TruthAuditorAgent",
     "AgentMesh",
 ]

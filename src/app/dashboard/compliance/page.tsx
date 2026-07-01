@@ -1,7 +1,8 @@
 import { Topbar } from '@/components/dashboard/Topbar';
 import { Panel } from '@/components/dashboard/Panel';
 import { SeverityPill } from '@/components/dashboard/StatusPill';
-import { fetchComplianceAlerts, fetchKillSwitches } from '@/lib/dashboard/api';
+import { TruthScoreCard } from '@/components/dashboard/TruthScoreCard';
+import { fetchComplianceAlerts, fetchKillSwitches, fetchTruthLabel } from '@/lib/dashboard/api';
 import { fmtDateTime, fmtRelative } from '@/lib/dashboard/format';
 
 export const dynamic = 'force-dynamic';
@@ -16,9 +17,10 @@ const CATEGORY_LABEL: Record<string, string> = {
 };
 
 export default async function CompliancePage() {
-  const [alerts, switches] = await Promise.all([
+  const [alerts, switches, truth] = await Promise.all([
     fetchComplianceAlerts(),
     fetchKillSwitches(),
+    fetchTruthLabel(),
   ]);
 
   const open = alerts.filter((a) => !a.resolved);
@@ -39,6 +41,30 @@ export default async function CompliancePage() {
             value={`${armed} / ${switches.length}`}
             tone={armed ? 'err' : 'ok'}
           />
+        </section>
+
+        <section className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <TruthScoreCard label={truth} />
+          <div className="panel panel-pad">
+            <div className="panel-subtitle">Truth &amp; Audit Module</div>
+            <p className="mt-2 text-[12px] leading-relaxed text-ink-300">
+              The TruthAuditor derives one canonical Truth-Layer tag per target from
+              two independent axes: <span className="text-ink-100">design maturity</span>{' '}
+              (architecture completeness) and <span className="text-ink-100">runtime evidence</span>{' '}
+              (share of gating artifacts proven by collected artifacts). Design never
+              upgrades a verdict — only collected, passing evidence does.
+            </p>
+            <p className="mt-2 text-[12px] leading-relaxed text-ink-300">
+              Every avatar and briefing response is routed through the pre-output filter,
+              so nothing ships untagged and anything needing licensed oversight says so.
+              Verdicts carry a real SHA-256 integrity digest; Ed25519 signing is reported
+              honestly as unavailable until a key is provisioned.
+            </p>
+            <p className="mt-2 text-[11px] text-ink-500">
+              Live verdict: <code className="num">GET /api/truth-audit/label</code> ·
+              recompute: <code className="num">python -m backend.verification.truth_auditor</code>
+            </p>
+          </div>
         </section>
 
         <Panel title="Kill Switches" subtitle="armed switches halt their scope immediately">

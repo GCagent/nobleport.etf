@@ -34,6 +34,7 @@ class AgentFamily(StrEnum):
     AUDIT_BEACON = "AuditBeacon"
     RECURSIVE_LEARNING = "RecursiveLearning"
     JOURNEY = "Journey"
+    TRUTH_AUDITOR = "TruthAuditor"
 
 
 class AgentStatus(StrEnum):
