@@ -5,6 +5,9 @@ description: Use to interpret building-code requirements for NoblePort residenti
 
 # Building Code Skill
 
+> **Tier** 1 — Core Construction · **Owner role** Code Compliance — CSL/HIC reviewer *(assign a named owner)*
+> **Powered by** knowledge skill · final authority: the AHJ / building official · **Last reviewed** 2026-07-01
+
 ## Purpose
 Interpret applicable code for a given scope and produce a verifiable
 code-compliance checklist — without asserting authority the company does not
@@ -49,6 +52,11 @@ Massachusetts ADU law.
   appropriate licensed professional (CSL/HIC contractor, and a PE where
   structural). Mirrors `backend/learning/knowledge_domains.py` — knowledge-domain
   reasoning only, `can_claim_credential = False`.
+
+## Related Skills
+- **Input** ← `03-project-manager` · `01-estimator` · `12-real-estate-development` (scopes needing a code read)
+- **Output** → `05-structural-review` (life-safety/structural provisions trigger a takeoff)
+- **Dependency** ⋈ the AHJ / building official (final authority) · licensed CSL/HIC/PE for binding conclusions
 
 ## Success criteria
 - Every checklist line names the governing provision, not just a verdict.

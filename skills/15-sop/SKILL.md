@@ -1,52 +1,55 @@
 ---
 name: sop
-description: Use to author and maintain NoblePort standard operating procedures — process documentation, training guides, and checklists. Use when a repeatable process needs to be captured, standardized, or turned into a teachable, checkable procedure (often from a change order or field lesson).
+description: Use to author and maintain NoblePort standard operating procedures — the competency for turning a repeatable process into a versioned, checkable, teachable procedure. The SOPs themselves live in /docs/sops/, not here. Use this skill when writing or revising an SOP; read the SOP itself from /docs/sops/.
 ---
 
-# SOP Skill
+# SOP Authoring Skill
+
+> **Tier** 3 — Growth Engine · **Owner role** Operations Lead *(assign a named owner)*
+> **Powered by** cross-cutting · SOP artifacts live in [`/docs/sops/`](../../docs/sops/) · **Last reviewed** 2026-07-01
+
+> **Skills vs. SOPs.** A **skill** defines a *competency* (e.g., "Manage Change
+> Orders" → `skills/09-change-orders`). An **SOP** defines *how NoblePort applies
+> it* (e.g., "Change Order Approval Workflow" → `docs/sops/change-order-approval.md`).
+> This skill is the competency for **authoring** SOPs; the SOPs it produces are
+> stored in [`/docs/sops/`](../../docs/sops/), where field teams access them —
+> never in `/skills/`.
 
 ## Purpose
 Capture how NoblePort does the work so it's repeatable, teachable, and
-improvable — the connective tissue across every other skill.
+improvable — then write it as a versioned SOP under `/docs/sops/`.
 
 ## When to use
-- A repeatable process needs documenting or standardizing.
-- A training guide or onboarding doc is needed.
-- A checklist must be produced for a recurring task or compliance step.
+- A repeatable process needs to be captured or standardized as an SOP.
 - A change order or field lesson reveals a process worth codifying.
+- An SOP needs revising to a new version.
 
 ## When NOT to use
-- One-off decisions with no repeatability (document as a note, not an SOP).
-
-## Inputs
-- The process (as currently performed), its triggers, roles, and failure modes.
+- Reading/following an existing procedure → open it directly in `/docs/sops/`.
+- One-off decisions with no repeatability (a note, not an SOP).
 
 ## Workflow
-1. **Capture** the process as actually performed: trigger → steps → roles →
-   outputs.
-2. **Standardize**: name the owner, inputs/outputs, decision points, and
-   escalation path.
-3. **Make it checkable**: convert to a checklist with pass/fail/verify items.
-4. **Make it teachable**: a training guide with the why, the common mistakes, and
-   examples.
-5. **Version & route for review**; capture improvements as the process evolves.
+1. **Capture** the process as actually performed: trigger → steps → roles → outputs.
+2. **Standardize**: owner role, inputs/outputs, decision points, escalation path.
+3. **Make it checkable**: a checklist with pass/fail/verify items.
+4. **Make it teachable**: the why, common mistakes, and examples.
+5. **Write it to `/docs/sops/<name>.md`**, version it, and route for review.
 
 ## Outputs
-- Process documentation · training guides · checklists
+- Versioned SOPs in `/docs/sops/` · training guides · checklists
 
-## System integration
-- Sources process lessons from **09-change-orders** (`process_improvement` /
-  `training_example` channels in `backend/journey/channels.py`).
-- Aligns with the broader operating model in
-  `docs/np-os/master-operating-system.md` and the governance docs.
+## Related Skills
+- **Input** ← `09-change-orders` (process lessons) · any skill whose procedure is being codified
+- **Output** → `/docs/sops/` (the authored SOP) · `14-recruiting` (onboarding material)
+- **Dependency** ⋈ the authority governing the process (skill / licensed reviewer / AHJ)
 
 ## Guardrails
-- An SOP documents the *approved* process; it does not invent policy. Where a step
-  touches code, finance, or safety, it points to the authority/skill that governs
-  it rather than restating it as fact.
+- An SOP documents the *approved* process; it does not invent policy. Steps that
+  touch code, finance, or safety point to the governing authority, not a restated
+  "fact."
 - SOPs are versioned; superseded versions are retained for audit.
 
 ## Success criteria
-- Each SOP names an owner, inputs/outputs, and an escalation path.
-- The checklist is usable in the field without the narrative.
-- Process changes produce a new version, not silent edits.
+- The authored SOP names an owner, inputs/outputs, and an escalation path.
+- Its checklist is usable in the field without the narrative.
+- It lives in `/docs/sops/`, and process changes produce a new version.

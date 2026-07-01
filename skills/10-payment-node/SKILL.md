@@ -5,6 +5,9 @@ description: Use for NoblePort financial controls — structuring draw schedules
 
 # Payment Node Skill
 
+> **Tier** 2 — NoblePort Operations · **Owner role** Finance / Controller — human approver *(assign a named owner)*
+> **Powered by** `/api/payments` · `contracts/HumanApprovalGateway.sol` (human-gated) · **Last reviewed** 2026-07-01
+
 ## Purpose
 Apply controls to money movement: structure, validate, and compliance-check every
 draw, deposit, and retention — then hand a clean package to the human approver.
@@ -46,6 +49,11 @@ draw, deposit, and retention — then hand a clean package to the human approver
   authorizes every release, logged to the immutable ledger. This is the strongest
   gate in the system — do not route around it.
 - A deposit exceeding the HIC cap is a hard stop, not a warning.
+
+## Related Skills
+- **Input** ← `01-estimator` (payment schedule) · `09-change-orders` (approved CO billing) · `03-project-manager` (milestone completion)
+- **Output** → `08-trust-pipeline` (final payment → closeout) · `06-executive-support` (cash KPIs)
+- **Dependency** ⋈ human approval gate (`contracts/HumanApprovalGateway.sol`)
 
 ## Success criteria
 - Every draw ties to a milestone; deposits are provably within HIC limits.

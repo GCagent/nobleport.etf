@@ -5,6 +5,9 @@ description: Use to control project scope on NoblePort jobs — drafting change 
 
 # Change Order Skill
 
+> **Tier** 2 — NoblePort Operations · **Owner role** Construction / PM Lead *(assign a named owner)*
+> **Powered by** `/api/change-orders` · `AuditBeacon` · **Last reviewed** 2026-07-01
+
 ## Purpose
 Keep scope, cost, and schedule under control: every deviation from the signed
 contract becomes a documented, approved, auditable change order.
@@ -45,6 +48,11 @@ contract becomes a documented, approved, auditable change order.
 - **No work on an unapproved change.** The approval gate is the control; the skill
   drafts and routes, it does not authorize.
 - Cost/schedule impacts are estimates until confirmed — label them as such.
+
+## Related Skills
+- **Input** ← `03-project-manager` (scope creep detected)
+- **Output** → `01-estimator` (cost impact) · `10-payment-node` (approved CO → billing) · `docs/sops/` (process lessons)
+- **Dependency** ⋈ `06-executive-support` (approval routing & audit)
 
 ## Success criteria
 - Every scope deviation has a CO with cost, schedule, and approval state.

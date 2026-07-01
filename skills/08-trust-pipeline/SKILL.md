@@ -5,6 +5,9 @@ description: Use for NoblePort customer-relationship management after the sale �
 
 # Trust Pipeline Skill
 
+> **Tier** 2 — NoblePort Operations · **Owner role** Customer Success Lead *(assign a named owner)*
+> **Powered by** `/api/trust` · `backend/core/proof_of_trust.py` · **Last reviewed** 2026-07-01
+
 ## Purpose
 Own the post-sale relationship: turn a delivered job into a durable, documented,
 trust-building customer record and a steady cadence of proactive contact.
@@ -42,6 +45,11 @@ trust-building customer record and a steady cadence of proactive contact.
   gated (see **11-content-engine**). Private follow-ups are fine; publishing is
   not, without consent.
 - Opportunities must be grounded in real history, not manufactured urgency.
+
+## Related Skills
+- **Input** ← `03-project-manager` (completed job) · `07-sales-router` (closed won)
+- **Output** → `13-noblenest` (homeowner platform) · `11-content-engine` (proof moments → testimonials)
+- **Dependency** ⋈ `10-payment-node` (final payment → closeout)
 
 ## Success criteria
 - Each active customer has a next scheduled touch.

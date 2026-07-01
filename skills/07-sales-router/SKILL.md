@@ -5,6 +5,9 @@ description: Use for NoblePort lead management and sales-pipeline work — routi
 
 # Sales Router Skill
 
+> **Tier** 2 — NoblePort Operations · **Owner role** Sales Lead *(assign a named owner)*
+> **Powered by** `StephanieAgent.route_intake` · `/api/leads` · **Last reviewed** 2026-07-01
+
 ## Purpose
 Move demand through the pipeline with the right priority and a concrete next
 action at every stage.
@@ -43,6 +46,11 @@ New Lead → Qualified → Inspection → Estimate → Closed Won → Nurture.
 - Qualification routes leads; it does not make commitments or quote prices.
 - Don't fabricate lead attributes (value, source) — missing fields are gaps to
   collect, which determine routing.
+
+## Related Skills
+- **Input** ← `02-permitstream` (scored permit leads)
+- **Output** → `01-estimator` (qualified → estimate) · `08-trust-pipeline` (closed won → nurture/closeout)
+- **Dependency** ⋈ `06-executive-support` (pipeline KPIs & forecast)
 
 ## Success criteria
 - Every lead has a current stage and exactly one next action with an owner/date.

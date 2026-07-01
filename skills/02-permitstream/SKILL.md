@@ -5,6 +5,9 @@ description: Use for permit intelligence in NoblePort's Massachusetts/Essex Coun
 
 # PermitStream Skill
 
+> **Tier** 1 — Core Construction · **Owner role** Permit Lead *(assign a named owner)*
+> **Powered by** `PermitStreamAgent` · `/api/projects` · **Last reviewed** 2026-07-01
+
 ## Purpose
 Convert municipal permit data into market intelligence, scored leads, and
 approval-risk signals.
@@ -50,6 +53,11 @@ approval-risk signals.
   submission requires human authorization and passes the governance gate.
 - AHJ requirements vary by municipality and change over time — present them as
   *to-verify against the current adopting authority*, not as settled fact.
+
+## Related Skills
+- **Input** ← `07-sales-router` (address-bearing leads → permit pre-check)
+- **Output** → `03-project-manager` (permit clearance → mobilization) · `01-estimator` (permit constraints → scope/cost)
+- **Dependency** ⋈ `04-building-code` (governing provisions per work type)
 
 ## Success criteria
 - Opportunities are ranked with an explicit scoring rationale.

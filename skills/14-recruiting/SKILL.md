@@ -5,6 +5,9 @@ description: Use for NoblePort hiring and subcontractor onboarding — writing j
 
 # Recruiting Skill
 
+> **Tier** 3 — Growth Engine · **Owner role** Operations / Hiring Lead *(assign a named owner)*
+> **Powered by** Journey Agent recruiting channel (`backend/journey/channels.py`) · **Last reviewed** 2026-07-01
+
 ## Purpose
 Bring on the right people and trade partners: clear roles, structured evaluation,
 and a documented qualification bar.
@@ -42,6 +45,11 @@ and a documented qualification bar.
 - License/insurance claims must be **verified**, not assumed — flag unverified
   credentials rather than passing them through.
 - Evaluation criteria are job-related and consistent across candidates.
+
+## Related Skills
+- **Input** ← `06-executive-support` (hiring needs from capacity/forecast) · `11-content-engine` (employer brand)
+- **Output** → `03-project-manager` (crews & subs staffed)
+- **Dependency** ⋈ `docs/sops/` (onboarding procedures)
 
 ## Success criteria
 - Every role has a description with explicit required licenses/skills.

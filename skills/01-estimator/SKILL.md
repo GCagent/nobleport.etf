@@ -5,6 +5,9 @@ description: Use when building or reviewing a NoblePort construction estimate, p
 
 # Estimator Skill
 
+> **Tier** 1 — Core Construction · **Owner role** Estimating Lead *(assign a named owner)*
+> **Powered by** NoblePort OS — `/api/estimates`, `/api/change-orders` · **Last reviewed** 2026-07-01
+
 ## Purpose
 Turn a scope of work into a priced, defensible estimate and a client-ready
 proposal with a compliant payment schedule.
@@ -57,6 +60,11 @@ proposal with a compliant payment schedule.
 - Mark every assumed cost as **unconfirmed** until a real quote backs it.
 - The estimate is a **draft** until a CSL/HIC-licensed reviewer approves it; the
   skill prices and proposes, it does not bind the company.
+
+## Related Skills
+- **Input** ← `07-sales-router` (qualified lead → estimate) · `02-permitstream` (permit constraints → scope)
+- **Output** → `10-payment-node` (approved estimate → payment schedule) · `09-change-orders` (scope re-pricing)
+- **Dependency** ⋈ `04-building-code` · `05-structural-review` (scope must be code-/structurally sound)
 
 ## Success criteria
 - Every line item traces to a quantity and a unit cost (no lump-sum hand-waving).

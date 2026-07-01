@@ -5,6 +5,9 @@ description: Use for structural takeoffs and framing analysis on NoblePort proje
 
 # Structural Review Skill
 
+> **Tier** 1 — Core Construction · **Owner role** Structural — licensed PE *(assign a named owner)*
+> **Powered by** knowledge skill · build-ready output gated on PE stamp · **Last reviewed** 2026-07-01
+
 ## Purpose
 Translate a framing scope into a structural takeoff — material lists, framing
 schedules, and a structural summary — staged for PE review.
@@ -44,6 +47,11 @@ and load paths.
 - Record every load assumption explicitly; a sizing pass built on an unstated
   assumption is a latent failure. Mirrors the OS posture: draft + named licensed
   reviewer, `can_claim_credential = False`.
+
+## Related Skills
+- **Input** ← `04-building-code` (code triggers structural analysis) · `01-estimator` (takeoff needs)
+- **Output** → `01-estimator` (material list / framing schedule → estimate)
+- **Dependency** ⋈ licensed Professional Engineer (stamp required before build)
 
 ## Success criteria
 - Every member in the schedule has a span, a load basis, and a status.

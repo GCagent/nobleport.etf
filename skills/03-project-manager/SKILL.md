@@ -5,6 +5,9 @@ description: Use to run NoblePort job execution — writing daily logs, building
 
 # Project Manager Skill
 
+> **Tier** 1 — Core Construction · **Owner role** Construction / PM Lead *(assign a named owner)*
+> **Powered by** `GCAgent` · `/api/jobs`, `/api/schedules` · **Last reviewed** 2026-07-01
+
 ## Purpose
 Keep an active job on schedule, on budget, and documented — the execution layer
 between a signed contract and closeout.
@@ -52,6 +55,11 @@ between a signed contract and closeout.
   them over. A late discovery is the most expensive kind.
 - Inspection sign-offs and code conformance are not the PM's to assert; route to
   the AHJ and **04-building-code**.
+
+## Related Skills
+- **Input** ← `02-permitstream` (permit clearance triggers mobilization) · `01-estimator` (won estimate → job)
+- **Output** → `09-change-orders` (field scope changes) · `11-content-engine` (logs/photos → content) · `10-payment-node` (milestones → draws)
+- **Dependency** ⋈ `04-building-code` · `05-structural-review` (code/inspection gates)
 
 ## Success criteria
 - Every active day has a log; the schedule reflects reality, not the plan.

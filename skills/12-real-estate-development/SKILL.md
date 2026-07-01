@@ -1,54 +1,34 @@
 ---
 name: real-estate-development
-description: Use for NoblePort real-estate development analysis — feasibility studies, land valuation, ADU analysis, and rental projections. Use when evaluating a parcel or development opportunity, or sizing the return on an ADU or value-add play.
+description: Index for the NoblePort Real Estate Development skill tier — feasibility, valuation, and development analysis. Routes to the acquisition, financing, and entitlement sub-skills. Use this to pick the right sub-skill; finance/valuation outputs are scenario analysis requiring licensed review before acting.
 ---
 
-# Real Estate Development Skill
+# Real Estate Development Skill Tier
 
-## Purpose
-Evaluate development and value-add opportunities with a disciplined,
-assumption-explicit financial and feasibility analysis.
+> **Tier** 3 — Growth Engine · **Owner role** Development Lead *(assign a named owner)*
+> **Powered by** `/api/projects` · `src/lib/realty/property-analysis.ts` · **Last reviewed** 2026-07-01
 
-## When to use
-- A parcel or property needs a feasibility / go-no-go read.
-- Land or after-repair value must be estimated.
-- An ADU's cost, code path, and return need analysis.
-- Rental income / hold projections are needed.
+Long-horizon development analysis, split into sub-skills so acquisition,
+financing, and entitlement can mature independently. All share the OS honesty
+posture: figures trace to comps/quotes/assumptions, and finance/valuation is
+knowledge-domain reasoning requiring a licensed reviewer (CCIM/appraiser,
+financial/legal) before it binds anything.
 
-## When NOT to use
-- Construction cost detail → **01-estimator**; code path → **04-building-code**.
-- Securities/financing structuring → licensed financial/legal review required.
+## Sub-skills
+- [Acquisition](./acquisition/SKILL.md) — sourcing, land valuation, feasibility screen.
+- [Financing](./financing/SKILL.md) — pro forma, capital stack, returns.
+- [Entitlement](./entitlement/SKILL.md) — zoning, ADU law, permit path.
 
-## Inputs
-- Parcel data, zoning, comps, construction cost basis, rent comps, financing
-  assumptions.
+## Which sub-skill
+- Is this parcel worth pursuing / what's it worth → **acquisition**.
+- Does the deal pencil / how is it capitalized → **financing**.
+- Can we get it approved / what's the zoning-permit path → **entitlement**.
 
-## Workflow
-1. **Feasibility**: zoning/use, site constraints, entitlement path, timeline.
-2. **Valuation**: land and as-complete value from comps; state the comp set.
-3. **ADU analysis**: code path (with **04-building-code**), cost (with
-   **01-estimator**), and incremental value/rent.
-4. **Pro forma**: cost, financing, income, returns (IRR/ROI/carry) — every
-   assumption labeled and sourced.
-5. **Recommend** with the reversible first step and what would change the call.
+## Related Skills
+- **Input** ← `02-permitstream` (parcel & permit data)
+- **Output** → `03-project-manager` (approved development → build) · `01-estimator` (construction cost)
+- **Dependency** ⋈ `04-building-code` (code path) · licensed CCIM/appraiser & financial/legal review
 
-## Outputs
-- Feasibility studies · land valuation · ADU analysis · rental projections
-
-## System integration
-- Realty analysis: `src/lib/realty/property-analysis.ts`.
+## Governance
 - Worked example: `docs/realty/236-high-road-newbury.md`.
-- Projects/properties surface via `/api/projects`; NP-OS real-estate development
-  layer in `docs/np-os/master-operating-system.md`.
-
-## Guardrails
-- Real-estate/finance reasoning is **knowledge-domain only** — a CCIM/appraiser
-  and financial/legal review are required before acting (mirrors
-  `knowledge_domains.py`; `can_claim_credential = False`).
-- Pro formas are scenario analysis (`SIMULATED`/`STAGED`), not guaranteed
-  returns; never present projections as certainty.
-
-## Success criteria
-- Every figure traces to a comp, a quote, or a labeled assumption.
-- The entitlement path and its timeline risk are explicit.
-- The recommendation names the trigger that would reverse it.
+- Pro formas are `SIMULATED`/`STAGED` scenario analysis, never guaranteed returns.

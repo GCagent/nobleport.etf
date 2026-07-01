@@ -5,6 +5,9 @@ description: Use for the NobleNest homeowner platform — generating maintenance
 
 # NobleNest Skill
 
+> **Tier** 3 — Growth Engine · **Owner role** Customer Success / Product Lead *(assign a named owner)*
+> **Powered by** customer layer · `backend/models/maintenance.py` · **Last reviewed** 2026-07-01
+
 ## Purpose
 Power the homeowner platform: give each property owner a clear record of their
 home's systems, a maintenance plan, and grounded upgrade recommendations.
@@ -44,6 +47,11 @@ home's systems, a maintenance plan, and grounded upgrade recommendations.
   invented condition data; unknown items are flagged for inspection.
 - Homeowner-facing content uses the customer's own data only; public use of the
   property follows the consent gate in **11-content-engine**.
+
+## Related Skills
+- **Input** ← `08-trust-pipeline` (customer records) · `03-project-manager` (installed systems)
+- **Output** → `07-sales-router` (upsell leads) · `11-content-engine` (homeowner stories)
+- **Dependency** ⋈ consent gate (Journey Agent) for any public use of a property
 
 ## Success criteria
 - Every system has age/condition/last-service or a flagged unknown.
