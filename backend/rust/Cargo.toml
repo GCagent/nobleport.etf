@@ -30,4 +30,3 @@ tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
 dotenvy = "0.15"
 tower-http = { version = "0.6", features = ["cors", "trace"] }
 futures-util = "0.3"
-tokio-stream = "0.1"
