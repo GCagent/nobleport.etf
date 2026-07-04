@@ -31,6 +31,9 @@ venv/
 *.egg-info/
 .pytest_cache/
 
+# SQLite databases
+*.db
+
 # Logs
 *.log
 npm-debug.log*

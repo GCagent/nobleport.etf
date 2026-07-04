@@ -1,0 +1,52 @@
+[Unit]
+Description=NoblePort Backend API Service
+Documentation=https://nobleport.eth
+After=network.target redis.service postgresql.service
+Wants=redis.service
+
+[Service]
+Type=exec
+User=nobleport
+Group=nobleport
+WorkingDirectory=/opt/nobleport/backend
+Environment=NOBLEPORT_ENVIRONMENT=production
+Environment=NOBLEPORT_LOG_LEVEL=INFO
+EnvironmentFile=-/opt/nobleport/backend/.env
+
+ExecStart=/opt/nobleport/backend/.venv/bin/uvicorn \
+    backend.main:app \
+    --host 0.0.0.0 \
+    --port 8400 \
+    --workers 4 \
+    --log-level info \
+    --access-log
+
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+# Security Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/nobleport/backend /var/log/nobleport
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+# Resource Limits
+LimitNOFILE=65535
+MemoryMax=512M
+CPUQuota=200%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nobleport-backend
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+  background-color: #080b15;
+  color: #eceef2;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(124, 58, 237, 0.35);
+  color: #fff;
+}
+
+@layer components {
+  .panel {
+    @apply rounded-lg border border-ink-700 bg-ink-900/80 shadow-panel;
+  }
+  .panel-pad {
+    @apply p-4 sm:p-5;
+  }
+  .panel-h {
+    @apply flex items-center justify-between border-b border-ink-700 px-4 sm:px-5 py-3;
+  }
+  .panel-title {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-ink-300;
+  }
+  .panel-subtitle {
+    @apply text-[11px] uppercase tracking-wider text-ink-400;
+  }
+  .kbd {
+    @apply rounded border border-ink-700 bg-ink-800 px-1.5 py-0.5 font-mono text-[10px] text-ink-300;
+  }
+  .num {
+    @apply font-mono tabular-nums;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium;
+  }
+  .pill-ok {
+    @apply pill bg-signal-ok/15 text-emerald-300;
+  }
+  .pill-warn {
+    @apply pill bg-signal-warn/15 text-yellow-300;
+  }
+  .pill-err {
+    @apply pill bg-signal-err/15 text-red-300;
+  }
+  .pill-info {
+    @apply pill bg-signal-info/15 text-blue-300;
+  }
+  .pill-ai {
+    @apply pill bg-signal-ai/15 text-violet-300;
+  }
+  .pill-mute {
+    @apply pill bg-ink-700/60 text-ink-300;
+  }
+  .row-hover {
+    @apply hover:bg-ink-800/60 transition-colors;
+  }
+  .btn {
+    @apply inline-flex items-center gap-1.5 rounded-md border border-ink-700 bg-ink-800 px-3 py-1.5 text-sm font-medium text-ink-100 hover:border-ink-500 hover:bg-ink-700 transition-colors;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-1.5 rounded-md border border-violet-500/40 bg-violet-600/30 px-3 py-1.5 text-sm font-semibold text-violet-100 hover:bg-violet-600/50 transition-colors;
+  }
+  .input {
+    @apply w-full rounded-md border border-ink-700 bg-ink-900 px-3 py-1.5 text-sm text-ink-100 placeholder:text-ink-400 focus:border-violet-500/60 focus:outline-none focus:ring-1 focus:ring-violet-500/40;
+  }
+  .divider {
+    @apply h-px w-full bg-ink-700/70;
+  }
+}
+
+.bar-track {
+  background: linear-gradient(
+    to right,
+    rgba(124, 58, 237, 0.15) 0%,
+    rgba(124, 58, 237, 0.15) var(--p),
+    rgba(255, 255, 255, 0.04) var(--p),
+    rgba(255, 255, 255, 0.04) 100%
+  );
+}

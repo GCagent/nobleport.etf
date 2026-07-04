@@ -1,0 +1,61 @@
+//@version=5
+// OctaStackTrader — SuperTrend + ADX strategy (TradingView Pine Script)
+//
+// Mirrors backend/trading/strategy.py::SupertrendAdxStrategy so you can
+// backtest/optimize the exact same logic on TradingView before exporting the
+// tuned parameters back into the bot's .env (SUPERTREND_*, ADX_*).
+//
+// Entry : SuperTrend flips bullish AND ADX > threshold (strong trend)
+// Exit  : SuperTrend flips bearish, OR stop-loss / take-profit hit
+strategy("OctaStack SuperTrend + ADX",
+     overlay=true,
+     initial_capital=10000,
+     default_qty_type=strategy.percent_of_equity,
+     default_qty_value=10,
+     commission_type=strategy.commission.percent,
+     commission_value=0.075)
+
+// ----------------------------- Inputs --------------------------------------
+stFactor   = input.float(3.0, "SuperTrend Factor", minval=0.5, step=0.1)
+stPeriod   = input.int(10,   "SuperTrend ATR Period", minval=1)
+adxPeriod  = input.int(14,   "ADX Period", minval=1)
+adxThresh  = input.float(25, "ADX Threshold", minval=0)
+slPct      = input.float(5,  "Stop Loss %", minval=0.1) / 100.0
+tp1Pct     = input.float(5,  "Take Profit 1 %", minval=0.1) / 100.0
+tp2Pct     = input.float(10, "Take Profit 2 %", minval=0.1) / 100.0
+
+// ----------------------------- Indicators ----------------------------------
+[supertrend, direction] = ta.supertrend(stFactor, stPeriod)
+// ta.supertrend: direction == -1 means uptrend, +1 means downtrend
+stBullish = direction < 0
+
+// ADX (trend strength)
+[diPlus, diMinus, adxVal] = ta.dmi(adxPeriod, adxPeriod)
+
+flipUp   = stBullish and not stBullish[1]
+flipDown = not stBullish and stBullish[1]
+
+longCond = flipUp and adxVal > adxThresh
+
+// ----------------------------- Orders --------------------------------------
+if longCond
+    strategy.entry("Long", strategy.long)
+
+if flipDown
+    strategy.close("Long", comment="SuperTrend flip")
+
+// Stop-loss + two-tier take-profit (5% / 10%) on the open long.
+if strategy.position_size > 0
+    entry = strategy.position_avg_price
+    strategy.exit("TP1/SL", from_entry="Long",
+         qty_percent=50,
+         stop=entry * (1 - slPct),
+         limit=entry * (1 + tp1Pct))
+    strategy.exit("TP2/SL", from_entry="Long",
+         stop=entry * (1 - slPct),
+         limit=entry * (1 + tp2Pct))
+
+// ----------------------------- Plots ---------------------------------------
+plot(supertrend, "SuperTrend", color=stBullish ? color.green : color.red, linewidth=2)
+plotchar(longCond, "Buy", "▲", location.belowbar, color.green, size=size.tiny)
+plotchar(flipDown, "Sell", "▼", location.abovebar, color.red, size=size.tiny)

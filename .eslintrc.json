@@ -1,0 +1,14 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "react/no-unescaped-entities": "off"
+  },
+  "overrides": [
+    {
+      "files": ["src/lib/stephanieAI.ts"],
+      "rules": {
+        "@next/next/no-assign-module-variable": "off"
+      }
+    }
+  ]
+}

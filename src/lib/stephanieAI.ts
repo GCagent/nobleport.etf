@@ -1,8 +1,16 @@
 /**
- * Stephanie.ai Core Integration Module
+ * Stephanie.ai — Orchestration Interface
  *
- * Central AI orchestration hub for NoblePort.eth ecosystem
- * Connects with all modules, platforms, and external AI LLMs via MCP
+ * Stephanie.ai is the intake and orchestration layer for the NoblePort
+ * construction operations platform. She routes homeowner conversations
+ * to the correct execution agent, but does not autonomously execute
+ * financial, legal, or construction decisions.
+ *
+ * Layered architecture:
+ *   Stephanie.ai  → intake / orchestration
+ *   GCagent.ai    → construction execution
+ *   PermitStream.ai → permit intelligence
+ *   Treasury/Compliance → human-gated financial controls
  *
  * @domain stephanie.ai / stephanie.io
  * @ens nobleport.eth
@@ -11,6 +19,56 @@
 import { ethers } from 'ethers';
 import { Resolver } from 'did-resolver';
 import { getResolver as getEnsResolver } from 'ens-did-resolver';
+
+// ============================================================================
+// DEPLOYMENT STATUS TAXONOMY
+// ============================================================================
+
+export type DeploymentStatus = 'LIVE' | 'STAGED' | 'MODELED' | 'INTERNAL_R&D';
+
+export const FEATURE_STATUS: Record<string, DeploymentStatus> = {
+  voice_intake: 'LIVE',
+  crew_task_routing: 'LIVE',
+  lead_pipeline: 'LIVE',
+  estimate_generation: 'LIVE',
+  dashboard_kpis: 'LIVE',
+  permit_scraping: 'STAGED',
+  treasury_workflows: 'STAGED',
+  hubspot_sync: 'STAGED',
+  calendar_scheduling: 'STAGED',
+  revenue_operator: 'STAGED',
+  permit_forecast: 'MODELED',
+  agent_mesh: 'MODELED',
+  compliance_engine: 'MODELED',
+  job_cost_forecasting: 'MODELED',
+  dao_governance: 'INTERNAL_R&D',
+  erc1400_tokenization: 'INTERNAL_R&D',
+  ssi_identity: 'INTERNAL_R&D',
+  billion_task_systems: 'INTERNAL_R&D',
+} as const;
+
+// ============================================================================
+// PRODUCTION COMMAND FREEZE
+// ============================================================================
+
+export const BLOCKED_COMMANDS = [
+  'autonomous_zoning_rulings',
+  'autonomous_contract_generation',
+  'autonomous_financial_recommendations',
+  'autonomous_permit_submission',
+  'autonomous_payment_disbursement',
+  'autonomous_lien_filing',
+  'autonomous_insurance_claims',
+  'autonomous_token_issuance',
+  'autonomous_crew_termination',
+  'autonomous_scope_reduction',
+] as const;
+
+export type BlockedCommand = typeof BLOCKED_COMMANDS[number];
+
+export function isCommandBlocked(command: string): boolean {
+  return (BLOCKED_COMMANDS as readonly string[]).includes(command);
+}
 
 // ============================================================================
 // NOBLEPORT MODULE DEFINITIONS
@@ -477,10 +535,11 @@ export class StephanieAI {
 
     this.provider = new ethers.JsonRpcProvider(providerUrl);
 
-    // ens-did-resolver expects an ethers v5 Provider; cast through any for v6 compat
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // Initialize DID resolver
+    // ens-did-resolver's Provider type is the ethers v5 shape; ethers v6
+    // JsonRpcProvider is structurally compatible at runtime.
     const ensResolver = getEnsResolver({
-      networks: [{ name: 'mainnet', provider: this.provider as any }]
+      networks: [{ name: 'mainnet', provider: this.provider as unknown as never }]
     });
     this.resolver = new Resolver(ensResolver);
 

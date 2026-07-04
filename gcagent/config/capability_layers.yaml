@@ -1,0 +1,64 @@
+---
+# GCagent.ai — Capability Layers (v1.1)
+# Top-level taxonomy. Every core skill belongs to exactly one layer; domain
+# modules live in the `domain` layer and compose core skills from the others.
+
+version: 1.1
+
+layers:
+  - id: architecture
+    name: Architecture
+    description: >
+      How agents are designed, constrained, and made safe. Sets the shape of
+      every system GCagent builds.
+    skills:
+      - agent_architecture
+      - prompt_engineering
+      - reliability_safety
+
+  - id: execution
+    name: Execution
+    description: >
+      How agents act in the world — tool calls, orchestrated pipelines, and
+      autonomous automation.
+    skills:
+      - tool_integration
+      - workflow_orchestration
+      - workflow_automation
+
+  - id: knowledge
+    name: Knowledge
+    description: >
+      What agents remember and what they retrieve. Memory, embeddings, and
+      grounded retrieval.
+    skills:
+      - memory_management
+      - rag_systems
+
+  - id: platform
+    name: Platform
+    description: >
+      Where agents run and how developers ship them. Services, infra, and DX.
+    skills:
+      - backend_infrastructure
+      - developer_experience
+
+  - id: quality
+    name: Quality
+    description: >
+      How agents are observed, measured, and optimized. Trace, eval, and tune.
+    skills:
+      - debugging_observability
+      - performance_optimization
+
+  - id: domain
+    name: Domain
+    description: >
+      Product-specific operating modes composed from core skills across the
+      other layers. This is where GCagent becomes a GCagent.
+    modules:
+      - construction_operations
+      - internal_ops_assistant
+      - compliance_documentation
+      - reporting_automation
+      - investor_admin_workflows

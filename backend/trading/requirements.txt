@@ -1,0 +1,9 @@
+# OctaStackTrader — runtime dependencies
+#
+# The strategy / paper-trading core (indicators, strategy, risk, paper broker,
+# engine) has NO third-party dependencies. The packages below are only needed
+# for LIVE market data + order execution and loading a .env file.
+
+ccxt==4.4.50          # exchange connectivity (Bybit, Binance + 100s of others)
+python-dotenv==1.0.1  # .env loading (already pinned in backend/requirements.txt)
+mcp[cli]>=1.2.0       # MCP backtesting server (optional — only for mcp_server.py)

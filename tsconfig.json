@@ -14,8 +14,11 @@
     "jsx": "preserve",
     "incremental": true,
     "plugins": [{ "name": "next" }],
-    "paths": { "@/*": ["./src/*"] }
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "services"]
+  "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", "backend", "gcagent", "contracts"]
 }

@@ -1,0 +1,223 @@
+---
+# GCagent.ai — Domain Module Registry (v1.1)
+# Product-specific operating modes. Each module composes core skills declared
+# in skill_registry.yaml. Modules are the bridge between GCagent's generic
+# engineering competence and Noble Port's actual business workflows.
+
+version: 1.1
+
+module_contract:
+  required_fields:
+    - id
+    - name
+    - purpose
+    - capabilities
+    - inputs
+    - outputs
+    - required_skills
+    - dependencies           # other modules or external systems
+    - safety_rules
+    - success_criteria
+    - failure_modes
+
+modules:
+
+  - id: construction_operations
+    name: Construction Operations
+    purpose: >
+      Run the project-management and field-operations surface for Noble Port
+      Realty: leads → estimates → jobs → change orders → schedules → invoices,
+      with Buildertrend as the system of record.
+    capabilities:
+      - project_lifecycle_coordination
+      - change_order_triage
+      - schedule_and_dependency_management
+      - field_to_office_sync
+      - media_and_daily_log_intake
+    inputs:
+      - buildertrend_events
+      - field_logs
+      - subcontractor_submittals
+      - change_order_requests
+    outputs:
+      - synced_job_state
+      - change_order_recommendations
+      - schedule_updates
+      - escalation_tickets
+    required_skills:
+      - workflow_orchestration
+      - workflow_automation
+      - tool_integration
+      - reliability_safety
+    dependencies:
+      - backend/integrations/buildertrend_client.py
+      - backend/services/sync_engine.py
+    safety_rules:
+      - Never auto-approve change orders above declared threshold.
+      - Buildertrend is source of truth; conflicts escalate, they do not overwrite.
+      - Field-originated edits require office confirmation before downstream sync.
+    success_criteria:
+      - Job state in backend matches Buildertrend within sync SLA.
+      - Every escalation has a named owner and a resolution path.
+    failure_modes:
+      - silent_sync_divergence
+      - change_order_approval_bypass
+      - schedule_flap_from_duplicate_events
+
+  - id: internal_ops_assistant
+    name: Internal Ops Assistant
+    purpose: >
+      Day-to-day operational copilot for the Noble Port team: HubSpot sync,
+      task triage, cross-tool lookups, and routine status reporting.
+    capabilities:
+      - crm_sync_and_enrichment
+      - cross_system_lookup
+      - task_triage_and_routing
+      - standup_and_status_summaries
+    inputs:
+      - hubspot_events
+      - inbound_requests
+      - team_calendars
+      - service_logs
+    outputs:
+      - synced_crm_records
+      - triaged_task_queue
+      - daily_status_digest
+    required_skills:
+      - tool_integration
+      - workflow_orchestration
+      - memory_management
+      - developer_experience
+    dependencies:
+      - backend/services/hubspot_sync.py
+    safety_rules:
+      - Do not act on external customer communications without human review.
+      - Scope CRM writes to fields the module owns; never blind-overwrite.
+    success_criteria:
+      - Triage decisions are explainable with linked source records.
+      - CRM write conflicts raise, not silently merge.
+    failure_modes:
+      - crm_field_overwrite
+      - duplicate_task_creation
+      - lost_context_across_channels
+
+  - id: compliance_documentation
+    name: Compliance Documentation
+    purpose: >
+      Produce and maintain documentation for SEC '40 Act obligations,
+      Massachusetts building permits, HumanApprovalGateway audit trails, and
+      on-chain attestations.
+    capabilities:
+      - regulatory_document_drafting
+      - audit_trail_assembly
+      - citation_and_grounding
+      - permit_and_filing_tracking
+    inputs:
+      - regulatory_templates
+      - on_chain_events
+      - approval_gateway_records
+      - permit_registry
+    outputs:
+      - draft_filings
+      - audit_bundles
+      - permit_status_reports
+      - cited_compliance_memos
+    required_skills:
+      - rag_systems
+      - prompt_engineering
+      - reliability_safety
+      - debugging_observability
+    dependencies:
+      - contracts/HumanApprovalGateway.sol
+      - contracts/MassachusettsBuildingPermits.sol
+    safety_rules:
+      - Compliance output is draft-only; final filing requires counsel sign-off.
+      - Every regulatory claim must cite its source document and version.
+      - Audit trails are append-only; redactions require a paired record.
+    success_criteria:
+      - All cited sources resolve and match quoted language.
+      - Audit bundles reconstruct the decision chain deterministically.
+    failure_modes:
+      - hallucinated_regulatory_citation
+      - missing_approval_evidence
+      - permit_state_lag
+
+  - id: reporting_automation
+    name: Reporting Automation
+    purpose: >
+      Automate scheduled and on-demand reports: NAV, revenue, construction
+      project status, and investor-facing dashboards.
+    capabilities:
+      - report_generation
+      - nav_calculation_pipelines
+      - revenue_rollup
+      - dashboard_refresh
+      - cron_and_event_triggers
+    inputs:
+      - revenue_events
+      - on_chain_valuations
+      - project_state
+      - disbursement_ledger
+    outputs:
+      - daily_nav_report
+      - revenue_statements
+      - project_status_pdfs
+      - refreshed_dashboards
+    required_skills:
+      - workflow_automation
+      - workflow_orchestration
+      - debugging_observability
+      - performance_optimization
+    dependencies:
+      - backend/services/revenue_engine.py
+      - backend/services/stephanie_revenue.py
+    safety_rules:
+      - Financial reports require a reconciliation check before publication.
+      - Republish, do not edit; corrections are new, versioned reports.
+    success_criteria:
+      - Scheduled reports publish within SLA with reconciliation passing.
+      - Every report is reproducible from its declared input snapshot.
+    failure_modes:
+      - silent_reconciliation_failure
+      - timezone_off_by_one
+      - unversioned_retroactive_edit
+
+  - id: investor_admin_workflows
+    name: Investor Admin Workflows
+    purpose: >
+      Support authorized participants and institutional investors:
+      creation/redemption flows, onboarding, disclosures, and capital events.
+    capabilities:
+      - ap_creation_redemption
+      - kyc_and_onboarding_coordination
+      - disclosure_distribution
+      - capital_event_tracking
+    inputs:
+      - ap_requests
+      - custodian_messages
+      - kyc_provider_callbacks
+      - capital_event_feeds
+    outputs:
+      - creation_unit_orders
+      - onboarding_packets
+      - disclosure_notices
+      - capital_event_ledger
+    required_skills:
+      - workflow_orchestration
+      - workflow_automation
+      - reliability_safety
+      - tool_integration
+    dependencies:
+      - backend/services/stripe_service.py
+      - backend/services/nobleport_bridge.py
+    safety_rules:
+      - All investor-visible communications require human approval before send.
+      - KYC state is never self-attested by the agent; it comes from the provider.
+      - Capital events are recorded before any downstream notification fires.
+    success_criteria:
+      - Creation/redemption orders reconcile with custodian within T+1.
+      - Every investor notification has a matched approval record.
+    failure_modes:
+      - premature_investor_notification
+      - duplicate_capital_event_recording
+      - kyc_state_desync

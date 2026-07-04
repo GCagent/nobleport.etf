@@ -1,0 +1,5 @@
+# Generated verification artifacts — reproduced by run_verification.sh.
+# The checks are the source of truth, not these snapshots.
+results/
+evidence_index.json
+*.bak

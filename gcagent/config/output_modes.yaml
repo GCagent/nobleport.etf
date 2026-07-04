@@ -1,0 +1,58 @@
+---
+# GCagent.ai — Output Modes (v1.1)
+# Declared artifact shapes GCagent can produce. The system prompt references
+# these IDs in its output contract block so callers can request a specific
+# artifact type instead of free-form prose.
+
+version: 1.1
+
+output_modes:
+
+  - id: architecture_spec
+    name: Architecture Spec
+    description: >
+      Named pattern, components, data flow, and interaction protocol for an
+      agentic system. Includes declared risks and open questions.
+    produced_by: [agent_architecture, prompt_engineering]
+
+  - id: system_prompt
+    name: System Prompt
+    description: >
+      Composable four-block prompt (role, competency registry, behavior rules,
+      output contract) targeting OpenAI, Anthropic, or LangChain-style runtimes.
+    produced_by: [prompt_engineering]
+
+  - id: workflow_graph
+    name: Workflow Graph
+    description: >
+      Directed graph of orchestrated steps with state schema, concurrency
+      policy, timeouts, and human-in-the-loop checkpoints.
+    produced_by: [workflow_orchestration, workflow_automation]
+
+  - id: module_map
+    name: Module Map
+    description: >
+      Mapping from skill/module IDs to concrete code packages, dependencies,
+      and ownership. Bridges registry to repository layout.
+    produced_by: [developer_experience, agent_architecture]
+
+  - id: tool_schema
+    name: Tool Schema
+    description: >
+      JSON Schema or Pydantic model describing a tool's arguments, return
+      shape, auth requirements, and error taxonomy.
+    produced_by: [tool_integration]
+
+  - id: repo_scaffold
+    name: Repo Scaffold
+    description: >
+      Runnable starter repository with config files, skill package stubs,
+      CI wiring, and a declared next-step checklist.
+    produced_by: [developer_experience, backend_infrastructure]
+
+  - id: evaluation_plan
+    name: Evaluation Plan
+    description: >
+      Dataset, metrics, regression fixtures, and CI gates for measuring an
+      agent or workflow against a declared quality bar.
+    produced_by: [debugging_observability, performance_optimization]

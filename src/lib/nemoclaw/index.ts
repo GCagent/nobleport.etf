@@ -9,37 +9,26 @@
  * @see §1-22 of the Nemoclaw v1 Execution Policy Specification
  */
 
-// ─── Enums & Runtime Values ──────────────────────────────────────
+// ─── Runtime values (enums + consts) ───────────────────────────────
 export {
-  // Operating modes (§3)
   OperatingMode,
-  // Action classes (§4)
   ActionClass,
-  // Roles (§6)
   Role,
   APPROVAL_ROLES,
   PROPOSAL_CREATOR_ROLES,
-  // Approval thresholds (§5)
   ExposureTier,
   APPROVAL_THRESHOLDS,
   RWA_EXECUTION_THRESHOLD,
-  buildRwaThreshold,
-  // Proposals (§8)
   ProposalState,
-  // Data sources (§7)
   DataSourcePrecedence,
-  // Circuit breakers (§15)
   CircuitBreakerTrigger,
   KillSwitchScope,
-  // Incidents (§18)
   IncidentSeverity,
-  // Audit (§14)
   AuditSnapshotPoint,
-  // Freshness (§7.3)
   DEFAULT_FRESHNESS_CONFIG,
 } from './types';
 
-// ─── Type-only exports (required under isolatedModules) ─────────
+// ─── Type-only re-exports ──────────────────────────────────────────
 export type {
   ApprovalThreshold,
   Proposal,
@@ -85,9 +74,7 @@ export {
   DuplicateDetector,
   resolveSourceConflicts,
   checkFreshness,
-  DEFAULT_SANITY_BOUNDS,
 } from './validation';
-export type { SanityBounds } from './validation';
 
 // ─── Signer Gateway (§10) ─────────────────────────────────────────
 export {

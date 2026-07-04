@@ -1,0 +1,322 @@
+---
+# GCagent.ai — Core Skill Registry (v1.1)
+# Canonical contracts for the 12 always-on skills. Each entry satisfies
+# `skill_contract.required_fields`. IDs are stable and referenced by:
+#   - capability_layers.yaml          (layer assignment)
+#   - module_registry.yaml            (required_skills)
+#   - gcagent/<layer>/<skill>/        (code package)
+#   - system_prompt.md                (competency registry)
+
+version: 1.1
+
+skill_contract:
+  required_fields:
+    - id
+    - name
+    - purpose
+    - capabilities
+    - inputs
+    - outputs
+    - dependencies
+    - safety_rules
+    - success_criteria
+    - failure_modes
+
+skills:
+
+  # --- architecture ---------------------------------------------------------
+
+  - id: agent_architecture
+    name: Agent System Architecture
+    purpose: Design single- and multi-agent systems with explicit roles and comms.
+    capabilities:
+      - single_agent_design
+      - multi_agent_coordination
+      - role_and_memory_boundaries
+      - communication_patterns
+      - pattern_selection   # planner_executor, react, supervisor_worker, hierarchical
+    inputs: [problem_statement, constraints, existing_services]
+    outputs: [architecture_spec, role_specs, interaction_protocol, data_flow]
+    dependencies: []
+    safety_rules:
+      - Name the pattern explicitly and state why it fits.
+      - Identify blast radius and isolation boundaries before proposing agents.
+      - Refuse designs that grant unbounded tool access without supervision.
+    success_criteria:
+      - Every agent has a declared role, inputs, outputs, and escalation path.
+      - Failure and handoff modes are enumerated.
+    failure_modes:
+      - over_engineered_hierarchy
+      - implicit_shared_state
+      - missing_human_in_the_loop_checkpoints
+
+  - id: prompt_engineering
+    name: Prompt Engineering (Production)
+    purpose: Produce robust, modular prompts with guardrails and output contracts.
+    capabilities:
+      - system_prompt_design
+      - role_and_constraint_encoding
+      - few_shot_prompting
+      - tool_use_prompting
+      - guardrails_and_failure_handling
+      - prompt_modularization
+    inputs: [agent_role, capability_registry, output_modes, example_traces]
+    outputs: [system_prompt, behavior_rules, output_contract, eval_fixtures]
+    dependencies: [agent_architecture]
+    safety_rules:
+      - Declare refusal and fallback behavior in the prompt, not in code comments.
+      - Keep role, competencies, behavior, and output contract separable.
+    success_criteria:
+      - Prompt passes regression fixtures across target models.
+      - Modifications to one block do not silently alter another.
+    failure_modes:
+      - monolithic_prompt
+      - implicit_format_assumptions
+      - prompt_leakage_of_guardrails
+
+  - id: reliability_safety
+    name: Reliability & Safety Engineering
+    purpose: Validate inputs, contain misuse, and cap blast radius and cost.
+    capabilities:
+      - input_validation_and_sanitization
+      - tool_misuse_prevention
+      - rate_limiting
+      - cost_controls
+      - fallback_strategies
+      - safe_completion_handling
+    inputs: [tool_catalog, trust_boundaries, cost_budget, sla]
+    outputs: [validation_schema, rate_limit_policy, fallback_playbook, incident_runbook]
+    dependencies: [agent_architecture, tool_integration]
+    safety_rules:
+      - Validate at trust boundaries; trust internal contracts.
+      - Gate destructive or externally visible actions behind explicit approval.
+      - Prefer idempotent retries over best-effort re-invocation.
+    success_criteria:
+      - All external tool calls have declared error taxonomies and retry policies.
+      - Cost and rate ceilings are enforced at the orchestrator, not per-tool.
+    failure_modes:
+      - retry_storm
+      - silent_fallback_to_degraded_mode
+      - unbounded_tool_recursion
+
+  # --- execution ------------------------------------------------------------
+
+  - id: tool_integration
+    name: Tooling & Function Integration
+    purpose: Define, route, and safely invoke external tools and APIs.
+    capabilities:
+      - openai_function_tool_calling
+      - json_schema_design
+      - pydantic_schema_design
+      - tool_routing_and_selection
+      - auth_handling
+      - retry_and_error_handling
+    inputs: [api_spec, auth_config, tool_purpose, usage_examples]
+    outputs: [tool_schema, router_config, auth_client, error_taxonomy]
+    dependencies: [reliability_safety]
+    safety_rules:
+      - Never embed secrets in tool schemas or prompts.
+      - Reject tool invocations whose arguments fail schema validation.
+      - Log tool calls with correlation IDs for replay and audit.
+    success_criteria:
+      - Tool schemas are the single source of truth for argument shape.
+      - Auth failures surface distinct error types from business failures.
+    failure_modes:
+      - schema_drift
+      - leaked_credentials_in_logs
+      - overlapping_tool_routes
+
+  - id: workflow_orchestration
+    name: LLM Workflow Orchestration
+    purpose: Compose multi-step LLM pipelines with explicit state and concurrency.
+    capabilities:
+      - task_decomposition
+      - chaining_and_branching
+      - state_management
+      - async_and_parallel_execution
+      - framework_selection  # langchain, langgraph, autogen, crewai, custom
+    inputs: [task_graph, llm_endpoints, tool_registry, latency_budget]
+    outputs: [workflow_graph, state_schema, concurrency_policy]
+    dependencies: [agent_architecture, tool_integration]
+    safety_rules:
+      - State transitions must be declared; no implicit cross-step mutation.
+      - Every branch must terminate, either in a result or an escalation.
+    success_criteria:
+      - Pipeline is resumable from any checkpoint without re-running side effects.
+      - Parallel fan-out has a declared join strategy and timeout.
+    failure_modes:
+      - hidden_coupling_between_steps
+      - nondeterministic_join_order
+      - missing_timeout_on_fanout
+
+  - id: workflow_automation
+    name: Workflow Automation
+    purpose: Run autonomous, event- and schedule-driven pipelines safely.
+    capabilities:
+      - data_processing_pipelines
+      - report_generation
+      - monitoring_agents
+      - cron_and_event_triggers
+      - human_in_the_loop
+    inputs: [trigger_spec, target_system, approval_policy]
+    outputs: [scheduler_config, pipeline_definition, hitl_checkpoints]
+    dependencies: [workflow_orchestration, reliability_safety]
+    safety_rules:
+      - Automations that write to shared systems require an approval checkpoint.
+      - Every scheduled run has an ownership tag and on-call escalation.
+    success_criteria:
+      - Failed runs page an owner; they do not silently retry indefinitely.
+      - HITL approvals are auditable and reversible within SLA.
+    failure_modes:
+      - runaway_cron
+      - approval_bypass
+      - stale_pipeline_with_no_owner
+
+  # --- knowledge ------------------------------------------------------------
+
+  - id: memory_management
+    name: Memory & Context Management
+    purpose: Design short-/long-term memory and optimize context windows.
+    capabilities:
+      - short_term_memory
+      - long_term_memory
+      - vector_database_integration
+      - embedding_strategies
+      - context_window_optimization
+      - session_continuity
+    inputs: [session_shape, retention_policy, privacy_constraints]
+    outputs: [memory_schema, embedding_pipeline, retrieval_policy]
+    dependencies: [rag_systems]
+    safety_rules:
+      - Honor declared retention windows; purge on schedule.
+      - Never retrieve memories across tenant boundaries.
+    success_criteria:
+      - Context window stays under budget across multi-turn sessions.
+      - Memory retrieval latency is bounded and observable.
+    failure_modes:
+      - context_bloat
+      - cross_tenant_leakage
+      - stale_memory_dominating_new_signal
+
+  - id: rag_systems
+    name: Retrieval-Augmented Generation
+    purpose: Ground responses in sourced, retrieved evidence.
+    capabilities:
+      - document_ingestion
+      - chunking_strategies
+      - semantic_search_tuning
+      - hybrid_retrieval
+      - citation_and_grounding
+    inputs: [corpus, chunking_config, retrieval_query, grounding_policy]
+    outputs: [ingestion_pipeline, index_spec, retrieval_ranker, cited_response]
+    dependencies: []
+    safety_rules:
+      - Surface citations for every grounded claim.
+      - Refuse to answer when retrieval confidence is below threshold.
+    success_criteria:
+      - Hybrid retrieval beats single-mode baseline on eval set.
+      - Citations resolve to the specific chunk that supported the claim.
+    failure_modes:
+      - hallucinated_citation
+      - chunk_boundary_drops_context
+      - stale_index_without_reindex_trigger
+
+  # --- platform -------------------------------------------------------------
+
+  - id: backend_infrastructure
+    name: Backend & Infrastructure
+    purpose: Implement services, queues, and deployment targets.
+    capabilities:
+      - python_patterns
+      - nodejs_patterns
+      - api_design
+      - queue_systems
+      - containerization
+      - serverless_deployment
+      - persistent_services
+    inputs: [service_contract, load_profile, deployment_target]
+    outputs: [service_skeleton, api_schema, container_spec, deploy_manifest]
+    dependencies: []
+    safety_rules:
+      - Secrets live in the platform's secret store, never in config files.
+      - Every service declares health, readiness, and liveness probes.
+    success_criteria:
+      - Service starts cold under declared latency budget.
+      - Horizontal scaling behavior is validated, not assumed.
+    failure_modes:
+      - noisy_neighbor_on_shared_queue
+      - config_secret_leak
+      - missing_readiness_probe
+
+  - id: developer_experience
+    name: Developer Experience (DX)
+    purpose: Generate, refactor, and review production-grade code.
+    capabilities:
+      - boilerplate_generation
+      - config_file_generation
+      - api_schema_generation
+      - refactoring
+      - code_review
+      - idea_to_architecture_translation
+    inputs: [intent, existing_codebase, style_guide]
+    outputs: [scaffolded_repo, refactor_plan, code_review_notes]
+    dependencies: [backend_infrastructure]
+    safety_rules:
+      - Do not silently expand scope beyond the stated change.
+      - Match the existing style and conventions unless asked otherwise.
+    success_criteria:
+      - Generated code compiles, passes lint, and has minimal surface area.
+      - Review comments are actionable and pinned to file:line references.
+    failure_modes:
+      - scope_creep_refactor
+      - hallucinated_import
+      - style_drift
+
+  # --- quality --------------------------------------------------------------
+
+  - id: debugging_observability
+    name: Debugging & Observability
+    purpose: Inspect traces, evaluate outputs, and prevent regressions.
+    capabilities:
+      - agent_trace_inspection
+      - prompt_and_tool_debugging
+      - structured_logging
+      - step_level_tracing
+      - evaluation_frameworks
+      - regression_testing
+    inputs: [trace_stream, eval_dataset, success_metrics]
+    outputs: [trace_dashboard, eval_harness, regression_suite]
+    dependencies: [workflow_orchestration]
+    safety_rules:
+      - PII must be scrubbed before logs leave the trust boundary.
+      - Eval fixtures are versioned alongside the prompts they test.
+    success_criteria:
+      - Every production trace is linkable to prompt version and tool versions.
+      - Regressions fail CI before reaching production.
+    failure_modes:
+      - log_flood_without_sampling
+      - eval_drift_from_production
+      - missing_correlation_ids
+
+  - id: performance_optimization
+    name: Performance Optimization
+    purpose: Reduce tokens, latency, and cost without sacrificing quality.
+    capabilities:
+      - token_optimization
+      - latency_reduction
+      - response_caching
+      - embedding_caching
+      - model_selection_tradeoffs
+    inputs: [baseline_metrics, quality_bar, budget]
+    outputs: [optimization_plan, cache_policy, model_routing_rules]
+    dependencies: [debugging_observability]
+    safety_rules:
+      - Measure before optimizing; name the metric and the target.
+      - Quality regressions block any latency or cost win.
+    success_criteria:
+      - Named metric moves in the stated direction against a control run.
+      - Cache invalidation strategy is declared and tested.
+    failure_modes:
+      - premature_caching_of_stateful_responses
+      - model_downgrade_without_eval
+      - micro_optimization_with_no_user_impact

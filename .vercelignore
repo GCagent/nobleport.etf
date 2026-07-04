@@ -1,0 +1,9 @@
+backend/
+contracts/
+gcagent/
+*.py
+*.db
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+nobleport.db
