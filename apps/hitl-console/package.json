@@ -1,0 +1,17 @@
+{
+  "name": "@nobleport/hitl-console",
+  "version": "0.1.0",
+  "description": "Human-in-the-loop approval console for L3/L4 authority gates.",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "typescript": "^5.5.0"
+  }
+}

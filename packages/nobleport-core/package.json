@@ -1,0 +1,21 @@
+{
+  "name": "@nobleport/core",
+  "version": "0.1.0",
+  "description": "NoblePort verification core: authority matrix, six-tier truth standard, and cryptographic hash-chain primitives shared by Stephanie.ai apps.",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test \"dist/test/*.test.js\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@noble/curves": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  }
+}
