@@ -23,23 +23,11 @@ class DeploymentStatus(str, Enum):
 
 OPERATIONAL_TRUTH: dict[str, dict[str, Any]] = {
     # ── LIVE ──────────────────────────────────────────────────────────
-    "voice_intake": {
-        "status": DeploymentStatus.LIVE,
-        "surface": "Stephanie.ai",
-        "description": "Homeowner voice intake via LiveKit + ElevenLabs",
-        "dependencies": ["livekit", "elevenlabs", "fastapi"],
-    },
-    "crew_task_routing": {
-        "status": DeploymentStatus.LIVE,
-        "surface": "GCagent.ai",
-        "description": "Crew and subcontractor task routing from intake",
-        "dependencies": ["langgraph", "redis"],
-    },
     "lead_pipeline": {
         "status": DeploymentStatus.LIVE,
         "surface": "Backend",
-        "description": "Lead capture, CRM sync, and pipeline management",
-        "dependencies": ["hubspot", "fastapi", "postgres"],
+        "description": "Lead capture and pipeline management (DB-backed CRUD)",
+        "dependencies": ["fastapi", "postgres"],
     },
     "estimate_generation": {
         "status": DeploymentStatus.LIVE,
@@ -47,14 +35,29 @@ OPERATIONAL_TRUTH: dict[str, dict[str, Any]] = {
         "description": "Estimate creation, sending, and tracking",
         "dependencies": ["fastapi", "postgres"],
     },
-    "dashboard_kpis": {
-        "status": DeploymentStatus.LIVE,
-        "surface": "Frontend",
-        "description": "Mission Control KPI tiles and pipeline funnel",
-        "dependencies": ["nextjs", "tailwind"],
-    },
 
     # ── STAGED ────────────────────────────────────────────────────────
+    "voice_intake": {
+        "status": DeploymentStatus.STAGED,
+        "surface": "Stephanie.ai",
+        "description": "Homeowner voice intake; ElevenLabs TTS wired, "
+                       "LiveKit transport not yet integrated",
+        "dependencies": ["livekit", "elevenlabs", "fastapi"],
+    },
+    "crew_task_routing": {
+        "status": DeploymentStatus.STAGED,
+        "surface": "GCagent.ai",
+        "description": "Crew and subcontractor task routing from intake; "
+                       "graph runtime not yet integrated",
+        "dependencies": ["langgraph", "redis"],
+    },
+    "dashboard_kpis": {
+        "status": DeploymentStatus.STAGED,
+        "surface": "Frontend",
+        "description": "Mission Control KPI tiles and pipeline funnel; "
+                       "panels render deterministic fixtures, not live data",
+        "dependencies": ["nextjs", "tailwind"],
+    },
     "permit_scraping": {
         "status": DeploymentStatus.STAGED,
         "surface": "PermitStream.ai",
