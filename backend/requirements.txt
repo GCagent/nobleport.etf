@@ -51,4 +51,7 @@ python-dotenv==1.0.1
 # Testing
 pytest==8.3.4
 pytest-asyncio==0.25.0
-httpx-mock==0.14.0
+# NOTE: "httpx-mock" was removed — that distribution does not exist on PyPI
+# and broke `pip install -r`. The end-to-end API tests drive the app through
+# httpx's ASGITransport (httpx is pinned above); if outbound-HTTP mocking is
+# ever needed, add `pytest-httpx` (the real package name).
