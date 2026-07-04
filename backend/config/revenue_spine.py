@@ -254,11 +254,13 @@ REVENUE_SPINE_ROLES: tuple[SpineRoleConfig, ...] = (
         stage=SpineStage.ESTIMATE,
         agent_family=SpineAgentFamily.STEPHANIE,
         primary_task=None,
-        status=ImplementationStatus.PLANNED,
-        backed_by=("backend/core/np_os.py (Contracts table)",
-                   "src/lib/nemoclaw/signer-gateway.ts"),
-        notes="Contracts are catalogued in NP-OS and the signing gateway exists "
-              "on the frontend; a backend contract model/agent task is not built.",
+        status=ImplementationStatus.IMPLEMENTED,
+        backed_by=("backend/models/contract.py", "backend/api/contracts.py",
+                   "backend/services/contract_service.py"),
+        notes="Delivered as a service (like Payment Node): signing a proposal "
+              "freezes it into an executed Contract — immutable pricing/scope/"
+              "signature snapshot, milestone copy, and a running current_value "
+              "that tracks approved change orders.",
     ),
     SpineRoleConfig(
         number=6,
@@ -266,11 +268,13 @@ REVENUE_SPINE_ROLES: tuple[SpineRoleConfig, ...] = (
         stage=SpineStage.ESTIMATE,
         agent_family=SpineAgentFamily.STEPHANIE,
         primary_task=None,
-        status=ImplementationStatus.PLANNED,
-        backed_by=("src/lib/nemoclaw/signer-gateway.ts",
-                   "contracts/HumanApprovalGateway.sol"),
-        notes="Human-approval signing gate is enforced today via the proposal "
-              "deposit gate; a dedicated envelope-tracking agent task is planned.",
+        status=ImplementationStatus.PARTIAL,
+        backed_by=("backend/services/proposal_engine.py:accept",
+                   "backend/models/contract.py (signature record)",
+                   "src/lib/nemoclaw/signer-gateway.ts"),
+        notes="Signature capture (name/email/IP/timestamp) is real on proposal "
+              "acceptance and frozen into the contract; a dedicated envelope-"
+              "tracking task (send/remind/countersign) is still to build.",
     ),
     SpineRoleConfig(
         number=7,

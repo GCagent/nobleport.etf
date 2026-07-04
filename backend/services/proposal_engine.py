@@ -465,11 +465,20 @@ class ProposalEngine:
         # PENDING_DEPOSIT. No money moves until the deposit clears.
         gate = await RevenueEngine.approve_estimate(proposal.estimate_id, db)
 
+        # Freeze the signed proposal into the executed contract — the durable
+        # document of record for pricing, schedule, scope, and signature.
+        from backend.services.contract_service import ContractService
+
+        contract = await ContractService.execute_from_proposal(
+            proposal.id, db, job_id=gate.get("job_id")
+        )
+
         logger.info(
-            "Proposal %s signed by %s -> %s",
+            "Proposal %s signed by %s -> %s (%s)",
             proposal.proposal_number,
             signer_name,
             gate.get("status"),
+            contract.contract_number,
         )
         return {
             "proposal_id": proposal.id,
@@ -477,6 +486,8 @@ class ProposalEngine:
             "status": proposal.status.value,
             "signed_at": now.isoformat(),
             "deposit_gate": gate,
+            "contract_id": contract.id,
+            "contract_number": contract.contract_number,
         }
 
     @classmethod

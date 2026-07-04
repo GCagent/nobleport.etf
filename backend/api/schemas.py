@@ -636,6 +636,66 @@ class ProposalResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# --- Contract Schemas ---
+
+class ContractMilestoneResponse(BaseModel):
+    id: str
+    name: str
+    trigger: Optional[str]
+    milestone_type: str
+    percent: float
+    amount: float
+    sort_order: int
+
+    model_config = {"from_attributes": True}
+
+
+class ContractTerminate(BaseModel):
+    reason: str
+
+
+class ContractResponse(BaseModel):
+    id: str
+    proposal_id: str
+    estimate_id: str
+    lead_id: Optional[str]
+    job_id: Optional[str]
+    contract_number: str
+    title: str
+    client_name: str
+    client_email: Optional[str]
+    client_phone: Optional[str]
+    project_address: Optional[str]
+    status: str
+    labor_total: float
+    material_total: float
+    allowance_total: float
+    subtotal: float
+    markup_percent: float
+    markup_amount: float
+    original_value: float
+    current_value: float
+    change_order_total: float
+    deposit_percent: float
+    deposit_amount: float
+    scope_snapshot: Optional[str]
+    terms: Optional[str]
+    signer_name: Optional[str]
+    signer_email: Optional[str]
+    signature_text: Optional[str]
+    signed_at: Optional[datetime]
+    executed_at: Optional[datetime]
+    activated_at: Optional[datetime]
+    completed_at: Optional[datetime]
+    terminated_at: Optional[datetime]
+    termination_reason: Optional[str]
+    milestones: list[ContractMilestoneResponse] = Field(default_factory=list)
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 # --- Job Schemas ---
 
 class JobUpdate(BaseModel):

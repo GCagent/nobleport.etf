@@ -16,6 +16,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.models.change_order import ChangeOrder, ChangeOrderStatus
+from backend.models.contract import Contract, ContractStatus
 from backend.models.estimate import Estimate, EstimateStatus
 from backend.models.job import Job, JobStatus
 from backend.models.lead import Lead, LeadStatus
@@ -236,6 +237,17 @@ class RevenueEngine:
             )
 
         job.status = JobStatus.IN_PROGRESS
+
+        # Deposit cleared: the executed contract (if one exists for this job)
+        # becomes active alongside the job.
+        contract_result = await db.execute(
+            select(Contract).where(Contract.job_id == job.id)
+        )
+        contract = contract_result.scalar_one_or_none()
+        if contract and contract.status == ContractStatus.EXECUTED:
+            contract.status = ContractStatus.ACTIVE
+            contract.activated_at = datetime.now(timezone.utc)
+
         await db.commit()
         await db.refresh(job)
 
@@ -364,6 +376,13 @@ class RevenueEngine:
             job.change_order_total += co.total_amount
             job.change_order_count += 1
             job.contract_value += co.total_amount
+
+        # Roll the approved amount into the contract's running value, keeping
+        # the signed original_value untouched. Local import avoids a circular
+        # dependency (contract_service -> proposal_engine -> revenue_engine).
+        from backend.services.contract_service import ContractService
+
+        await ContractService.apply_change_order(co.job_id, co.total_amount, db)
 
         await db.commit()
         await db.refresh(co)
