@@ -14,6 +14,7 @@ from backend.models.proposal import (  # noqa: F401
     ProposalMilestone,
     ProposalScopeItem,
 )
+from backend.models.contract import Contract, ContractMilestone  # noqa: F401
 from backend.models.job import Job  # noqa: F401
 from backend.models.payment import Payment  # noqa: F401
 from backend.models.change_order import ChangeOrder  # noqa: F401

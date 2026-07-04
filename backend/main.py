@@ -27,12 +27,14 @@ from backend.api.sync import router as sync_router
 from backend.api.bridge import router as bridge_router
 from backend.api.estimates import router as estimates_router
 from backend.api.proposals import router as proposals_router
+from backend.api.contracts import router as contracts_router
 from backend.api.jobs import router as jobs_router
 from backend.api.payments import router as payments_router
 from backend.api.change_orders import router as change_orders_router
 from backend.api.revenue import router as revenue_router
 from backend.api.dashboard import router as dashboard_router
 from backend.api.trust import router as trust_router
+from backend.api.trust_engine import router as trust_engine_router
 from backend.api.ops_brief import router as ops_brief_router
 from backend.api.governance import router as governance_router
 from backend.api.learning import router as learning_router
@@ -133,12 +135,14 @@ app.include_router(sync_router, prefix="/api/sync", tags=["Sync"])
 app.include_router(bridge_router, prefix="/api/bridge", tags=["NoblePort Bridge"])
 app.include_router(estimates_router, prefix="/api/estimates", tags=["Estimates"])
 app.include_router(proposals_router, prefix="/api/proposals", tags=["Proposal Engine"])
+app.include_router(contracts_router, prefix="/api/contracts", tags=["Contracts"])
 app.include_router(jobs_router, prefix="/api/jobs", tags=["Jobs"])
 app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
 app.include_router(change_orders_router, prefix="/api/change-orders", tags=["Change Orders (AWO)"])
 app.include_router(revenue_router, prefix="/api/revenue", tags=["Revenue Engine"])
 app.include_router(dashboard_router, prefix="/api/v1/dashboard", tags=["Mission Control"])
 app.include_router(trust_router, prefix="/api/trust", tags=["Proof of Trust"])
+app.include_router(trust_engine_router, prefix="/api/cyborg", tags=["Cyborg.io Trust Engine"])
 app.include_router(ops_brief_router, prefix="/api/ops-brief", tags=["Stephanie Ops Brief"])
 app.include_router(governance_router, prefix="/api/governance", tags=["Stephanie Governance"])
 app.include_router(learning_router, prefix="/api/learning", tags=["Recursive Learning"])

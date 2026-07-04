@@ -128,9 +128,11 @@ def test_helpers_agree_with_the_table():
     build_roles = roles_for_stage(SpineStage.BUILD)
     assert all(r.stage == SpineStage.BUILD for r in build_roles)
 
-    # The known backlog today: Contract, eSign, Collections, Vendor Intelligence.
+    # The known backlog today. Contract graduated to IMPLEMENTED
+    # (backend/models/contract.py + contract_service); eSign is PARTIAL
+    # (signature capture is real, envelope tracking still to build).
     backlog = {r.role for r in unbuilt_roles()}
-    assert backlog == {"Contract", "eSign", "Collections", "Vendor Intelligence",
+    assert backlog == {"eSign", "Collections", "Vendor Intelligence",
                        "Qualification"}
 
 

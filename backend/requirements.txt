@@ -51,4 +51,6 @@ python-dotenv==1.0.1
 # Testing
 pytest==8.3.4
 pytest-asyncio==0.25.0
-httpx-mock==0.14.0
+# httpx mocking fixture (the package "httpx-mock" does not exist on PyPI;
+# pytest-httpx is the real one and 0.35.x pairs with httpx 0.28.*)
+pytest-httpx==0.35.0
