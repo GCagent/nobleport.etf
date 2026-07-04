@@ -47,14 +47,19 @@ OPERATIONAL_TRUTH: dict[str, dict[str, Any]] = {
         "description": "Estimate creation, sending, and tracking",
         "dependencies": ["fastapi", "postgres"],
     },
+    # ── STAGED ────────────────────────────────────────────────────────
     "dashboard_kpis": {
-        "status": DeploymentStatus.LIVE,
+        "status": DeploymentStatus.STAGED,
         "surface": "Frontend",
-        "description": "Mission Control KPI tiles and pipeline funnel",
+        "description": (
+            "Mission Control KPI tiles and pipeline funnel. UI ships, but "
+            "the dashboard router and frontend read deterministic fixtures "
+            "(backend/api/dashboard.py, src/lib/dashboard/mock.ts) — not "
+            "verified source data. LIVE only once wired to the revenue "
+            "pipeline and validated against source records."
+        ),
         "dependencies": ["nextjs", "tailwind"],
     },
-
-    # ── STAGED ────────────────────────────────────────────────────────
     "permit_scraping": {
         "status": DeploymentStatus.STAGED,
         "surface": "PermitStream.ai",

@@ -31,7 +31,9 @@ export const FEATURE_STATUS: Record<string, DeploymentStatus> = {
   crew_task_routing: 'LIVE',
   lead_pipeline: 'LIVE',
   estimate_generation: 'LIVE',
-  dashboard_kpis: 'LIVE',
+  // Fixture-backed today (src/lib/dashboard/mock.ts, backend dashboard
+  // router); promote to LIVE only once wired to verified pipeline data.
+  dashboard_kpis: 'STAGED',
   permit_scraping: 'STAGED',
   treasury_workflows: 'STAGED',
   hubspot_sync: 'STAGED',
