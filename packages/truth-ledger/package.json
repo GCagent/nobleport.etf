@@ -1,0 +1,15 @@
+{
+  "name": "@nobleport/truth-ledger",
+  "version": "0.1.0",
+  "description": "Canonical database schema for the NoblePort truth ledger: jobs, permits, agent sessions, HITL approvals, hash-chain ledger, and pgvector memory.",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "validate": "DATABASE_URL=\"${DATABASE_URL:-postgresql://placeholder:placeholder@localhost:5432/truth_ledger}\" prisma validate",
+    "generate": "prisma generate",
+    "migrate:deploy": "prisma migrate deploy"
+  },
+  "devDependencies": {
+    "prisma": "^5.19.0"
+  }
+}

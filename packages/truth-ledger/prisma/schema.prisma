@@ -1,0 +1,88 @@
+// NoblePort truth-ledger canonical schema.
+//
+// Deviation from the Phase 2 blueprint: TruthLedger is polymorphic
+// (entity_type + entity_id can point at jobs, permits, agent sessions, …),
+// so it carries no hard foreign key to jobs — a required FK on entity_id
+// would reject every non-job ledger row. Integrity of the chain is enforced
+// cryptographically (previous_hash / current_hash / signature), not
+// relationally.
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgcrypto, vector]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+model Job {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  externalId    String?  @unique @map("external_id")
+  status        String
+  metadata      Json
+  truthTier     String   @default("T0_RAW_INGESTION") @map("truth_tier")
+  canonicalHash String?  @map("canonical_hash")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("jobs")
+}
+
+model Permit {
+  id              String   @id @db.Uuid
+  municipality    String
+  permitNumber    String   @map("permit_number")
+  status          String
+  rawData         Json     @map("raw_data")
+  canonicalHash   String   @map("canonical_hash")
+  anchoredOnChain Boolean  @default(false) @map("anchored_on_chain")
+  truthTier       String   @map("truth_tier")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([municipality, permitNumber])
+  @@map("permits")
+}
+
+model AgentSession {
+  id                   String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  stephanieSessionId   String         @unique @map("stephanie_session_id")
+  voiceSessionId       String?        @map("voice_session_id")
+  currentState         Json           @map("current_state")
+  certificationContext Json           @map("certification_context")
+  truthTier            String         @map("truth_tier")
+  createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  HitlApproval         HitlApproval[]
+
+  @@map("agent_sessions")
+}
+
+model TruthLedger {
+  id            BigInt   @id @default(autoincrement())
+  entityType    String   @map("entity_type")
+  entityId      String   @map("entity_id") @db.Uuid
+  previousHash  String   @map("previous_hash")
+  currentHash   String   @unique @map("current_hash")
+  signature     String
+  auditBeaconId String   @map("audit_beacon_id") @db.Uuid
+  tier          String
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([entityType, entityId])
+  @@map("truth_ledger")
+}
+
+model HitlApproval {
+  id                           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId                    String       @map("session_id") @db.Uuid
+  tier                         String
+  decision                     String
+  reviewerId                   String       @map("reviewer_id")
+  certificationContextSnapshot Json         @map("certification_context_snapshot")
+  createdAt                    DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  agentSession                 AgentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("hitl_approvals")
+}

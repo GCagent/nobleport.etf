@@ -1,0 +1,13 @@
+{
+  "name": "@nobleport/stephanie-avatar",
+  "version": "0.1.0",
+  "description": "Stephanie.ai avatar front-end: low-latency voice session client and audio/visual sync contract.",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
