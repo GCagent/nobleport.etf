@@ -7,7 +7,8 @@
     "ens": "stephanie.nobleport.eth",
     "did": "did:ens:stephanie.nobleport.eth",
     "domain": ["stephanie.ai", "stephanie.io"],
-    "rootIdentity": "nobleport.eth"
+    "rootIdentity": "nobleport.eth",
+    "rootAddress": "0xc59e66BB2b6E19699F82A72a1569821cb1711504"
   },
   "mcpServers": {
     "claude": {

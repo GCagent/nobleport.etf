@@ -5,16 +5,26 @@
  * post-execution reconciliation (§17), and evidence requirements.
  */
 
+import { randomUUID } from 'crypto';
 import {
-  ApprovalRecord,
   AuditRecord,
   AuditSnapshotPoint,
   DataSource,
   Proposal,
   ReconciliationResult,
-  SimulationResult,
   ValidationResult,
 } from './types';
+
+/**
+ * Deep clone using structuredClone (Node 17+). Falls back to JSON
+ * round-trip when structuredClone isn't available (e.g., older runtimes).
+ */
+function deepClone<T>(value: T): T {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value)) as T;
+}
 
 // ─── Audit Store (§14.3 append-only) ──────────────────────────────
 
@@ -22,13 +32,20 @@ export class AuditStore {
   private records: AuditRecord[] = [];
   private recordIndex = new Map<string, AuditRecord[]>(); // proposalId -> records
 
-  /** Append a new audit record — never overwrites (§14.3) */
-  append(record: AuditRecord): void {
-    this.records.push(record);
+  /**
+   * Append a new audit record — never overwrites (§14.3). The record is
+   * deep-cloned and deep-frozen so that neither the caller nor a downstream
+   * reader can mutate the stored snapshot. Returns the frozen stored copy.
+   */
+  append(record: AuditRecord): AuditRecord {
+    const cloned = deepFreeze(deepClone(record));
 
-    const existing = this.recordIndex.get(record.proposalId) ?? [];
-    existing.push(record);
-    this.recordIndex.set(record.proposalId, existing);
+    this.records.push(cloned);
+    const existing = this.recordIndex.get(cloned.proposalId) ?? [];
+    existing.push(cloned);
+    this.recordIndex.set(cloned.proposalId, existing);
+
+    return cloned;
   }
 
   /** Get all audit records for a proposal */
@@ -59,15 +76,11 @@ export class AuditStore {
     proposalId: string,
     sources: DataSource[],
   ): AuditRecord {
-    const record: AuditRecord = {
-      recordId: generateRecordId(),
+    return this.appendSnapshot({
       proposalId,
       snapshotPoint: AuditSnapshotPoint.BeforeProposalGeneration,
-      timestamp: Date.now(),
       sourceSnapshot: sources,
-    };
-    this.append(record);
-    return record;
+    });
   }
 
   /** Create snapshot after validation */
@@ -76,16 +89,12 @@ export class AuditStore {
     proposal: Proposal,
     validationResult: ValidationResult,
   ): AuditRecord {
-    const record: AuditRecord = {
-      recordId: generateRecordId(),
+    return this.appendSnapshot({
       proposalId,
       snapshotPoint: AuditSnapshotPoint.AfterValidation,
-      timestamp: Date.now(),
-      proposalSnapshot: { ...proposal },
+      proposalSnapshot: proposal,
       validationResult,
-    };
-    this.append(record);
-    return record;
+    });
   }
 
   /** Create snapshot before approval */
@@ -93,16 +102,12 @@ export class AuditStore {
     proposalId: string,
     proposal: Proposal,
   ): AuditRecord {
-    const record: AuditRecord = {
-      recordId: generateRecordId(),
+    return this.appendSnapshot({
       proposalId,
       snapshotPoint: AuditSnapshotPoint.BeforeApproval,
-      timestamp: Date.now(),
-      proposalSnapshot: { ...proposal },
-      approvalRecords: [...proposal.approvals],
-    };
-    this.append(record);
-    return record;
+      proposalSnapshot: proposal,
+      approvalRecords: proposal.approvals,
+    });
   }
 
   /** Create snapshot before signer submission */
@@ -112,17 +117,13 @@ export class AuditStore {
     signerPolicyResult: { passed: boolean; reason?: string },
     payloadHash: string,
   ): AuditRecord {
-    const record: AuditRecord = {
-      recordId: generateRecordId(),
+    return this.appendSnapshot({
       proposalId,
       snapshotPoint: AuditSnapshotPoint.BeforeSignerSubmission,
-      timestamp: Date.now(),
-      proposalSnapshot: { ...proposal },
+      proposalSnapshot: proposal,
       signerPolicyResult,
       payloadHash,
-    };
-    this.append(record);
-    return record;
+    });
   }
 
   /** Create snapshot after receipt ingest */
@@ -130,15 +131,11 @@ export class AuditStore {
     proposalId: string,
     receipt: { success: boolean; txHash?: string; error?: string },
   ): AuditRecord {
-    const record: AuditRecord = {
-      recordId: generateRecordId(),
+    return this.appendSnapshot({
       proposalId,
       snapshotPoint: AuditSnapshotPoint.AfterReceiptIngest,
-      timestamp: Date.now(),
       receiptOrFailure: receipt,
-    };
-    this.append(record);
-    return record;
+    });
   }
 
   /** Create snapshot after reconciliation */
@@ -146,15 +143,23 @@ export class AuditStore {
     proposalId: string,
     reconciliation: { matched: boolean; discrepancies?: string[] },
   ): AuditRecord {
-    const record: AuditRecord = {
-      recordId: generateRecordId(),
+    return this.appendSnapshot({
       proposalId,
       snapshotPoint: AuditSnapshotPoint.AfterReconciliation,
-      timestamp: Date.now(),
       reconciliationResult: reconciliation,
+    });
+  }
+
+  /** Internal: build, deep-clone, and append a snapshot record. */
+  private appendSnapshot(
+    fields: Omit<AuditRecord, 'recordId' | 'timestamp'>,
+  ): AuditRecord {
+    const record: AuditRecord = {
+      recordId: generateRecordId(),
+      timestamp: Date.now(),
+      ...fields,
     };
-    this.append(record);
-    return record;
+    return this.append(record); // returns the frozen stored copy
   }
 
   // ─── Completeness Check (§14.1) ────────────────────────────────
@@ -192,16 +197,33 @@ export class AuditStore {
 
 // ─── Post-Execution Reconciliation (§17) ──────────────────────────
 
+/**
+ * Compare expected vs. actual post-execution state. Walks every key in
+ * either map (so unexpected mutations in `actual` are flagged) and uses a
+ * stable JSON serialization (sorted keys) so that object-key ordering
+ * doesn't produce false discrepancies.
+ */
 export function reconcile(
   proposalId: string,
   expected: Record<string, unknown>,
   actual: Record<string, unknown>,
 ): ReconciliationResult {
   const discrepancies: string[] = [];
+  const allKeys = new Set([...Object.keys(expected), ...Object.keys(actual)]);
 
-  for (const key of Object.keys(expected)) {
-    const exp = JSON.stringify(expected[key]);
-    const act = JSON.stringify(actual[key]);
+  for (const key of allKeys) {
+    const hasExpected = Object.prototype.hasOwnProperty.call(expected, key);
+    const hasActual = Object.prototype.hasOwnProperty.call(actual, key);
+    if (!hasExpected) {
+      discrepancies.push(`${key}: unexpected key in actual state (value: ${stableStringify(actual[key])})`);
+      continue;
+    }
+    if (!hasActual) {
+      discrepancies.push(`${key}: missing in actual state (expected: ${stableStringify(expected[key])})`);
+      continue;
+    }
+    const exp = stableStringify(expected[key]);
+    const act = stableStringify(actual[key]);
     if (exp !== act) {
       discrepancies.push(`${key}: expected ${exp}, got ${act}`);
     }
@@ -220,5 +242,31 @@ export function reconcile(
 // ─── Helpers ──────────────────────────────────────────────────────
 
 function generateRecordId(): string {
-  return `AUD-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  return `AUD-${randomUUID()}`;
+}
+
+/** Recursively freeze an object and all its nested properties. */
+function deepFreeze<T>(value: T): T {
+  if (value === null || typeof value !== 'object') return value;
+  if (Object.isFrozen(value)) return value;
+  Object.freeze(value);
+  for (const key of Object.keys(value as Record<string, unknown>)) {
+    deepFreeze((value as Record<string, unknown>)[key]);
+  }
+  return value;
+}
+
+/** JSON.stringify with sorted object keys for stable comparison. */
+function stableStringify(value: unknown): string {
+  if (value === undefined) return 'undefined';
+  return JSON.stringify(value, (_, v) => {
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      const sorted: Record<string, unknown> = {};
+      for (const k of Object.keys(v).sort()) {
+        sorted[k] = (v as Record<string, unknown>)[k];
+      }
+      return sorted;
+    }
+    return v;
+  });
 }

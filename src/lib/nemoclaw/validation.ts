@@ -27,13 +27,13 @@ const CLASS_C_ALLOWLIST: ReadonlySet<string> = new Set([
 
 // ─── Sanity Bounds ─────────────────────────────────────────────────
 
-interface SanityBounds {
+export interface SanityBounds {
   maxAmountUsd: number;
   maxRiskScore: number;
   minRiskScore: number;
 }
 
-const DEFAULT_SANITY_BOUNDS: SanityBounds = {
+export const DEFAULT_SANITY_BOUNDS: SanityBounds = {
   maxAmountUsd: 10_000_000, // $10M hard ceiling
   maxRiskScore: 100,
   minRiskScore: 0,
@@ -120,6 +120,11 @@ export function checkFreshness(
 
 // ─── Full Validation Wall (§7.2) ──────────────────────────────────
 
+/**
+ * Runs the full §7.2 validation wall. Records the proposal's payload hash
+ * into the duplicate detector on a successful pass so that a subsequent
+ * resubmission of the same payload fails closed.
+ */
 export function validateProposal(
   proposal: Proposal,
   duplicateDetector: DuplicateDetector,
@@ -141,7 +146,7 @@ export function validateProposal(
   // 4. Sanity bounds
   checks.push(checkSanityBounds(proposal, sanityBounds));
 
-  // 5. Source precedence resolution
+  // 5. Source precedence resolution (real enforcement)
   checks.push(checkSourcePrecedence(proposal));
 
   // 6. Stale lockout (proposal expiry)
@@ -150,13 +155,17 @@ export function validateProposal(
   // 7. Policy allowlist check (Class C)
   checks.push(checkPolicyAllowlist(proposal));
 
-  // 8. Exposure check
-  checks.push(checkExposure(proposal, sanityBounds));
-
-  // 9. Anomaly check (basic)
+  // 8. Anomaly check (only meaningful if simulation has populated riskScore)
   checks.push(checkAnomaly(proposal));
 
   const passed = checks.every(c => c.passed);
+
+  // §7.2 + §9.2: record the payload hash so subsequent identical submissions
+  // are caught by the dedupe window. Only record on successful validation —
+  // failed validation should not consume the dedupe budget.
+  if (passed) {
+    duplicateDetector.record(proposal.payloadHash, now);
+  }
 
   return { passed, checks, timestamp: now };
 }
@@ -218,14 +227,34 @@ function checkSanityBounds(
   return { name: 'sanity_bounds', passed: true };
 }
 
+/**
+ * §7.1: When two sources for the same logical fact disagree, the lower
+ * precedence value (higher numeric `precedence`) must not be used. We
+ * accept duplicate IDs only when the values are identical; any conflict
+ * across precedence tiers is a hard validation failure to force the
+ * caller to resolve the discrepancy explicitly.
+ */
 function checkSourcePrecedence(proposal: Proposal): ValidationCheck {
-  const resolved = resolveSourceConflicts(proposal.sourceSet);
-  if (resolved.length < proposal.sourceSet.length) {
-    return {
-      name: 'source_precedence',
-      passed: true,
-      reason: 'Lower-precedence conflicting sources resolved',
-    };
+  const byId = new Map<string, DataSource[]>();
+  for (const source of proposal.sourceSet) {
+    const list = byId.get(source.id) ?? [];
+    list.push(source);
+    byId.set(source.id, list);
+  }
+
+  for (const [id, sources] of byId) {
+    if (sources.length < 2) continue;
+    const canonical = JSON.stringify(sources[0].value);
+    const conflicting = sources.find(
+      s => JSON.stringify(s.value) !== canonical,
+    );
+    if (conflicting) {
+      return {
+        name: 'source_precedence',
+        passed: false,
+        reason: `Conflicting values for source '${id}' across precedence tiers; resolve before submission`,
+      };
+    }
   }
   return { name: 'source_precedence', passed: true };
 }
@@ -255,23 +284,17 @@ function checkPolicyAllowlist(proposal: Proposal): ValidationCheck {
   return { name: 'policy_allowlist', passed: true };
 }
 
-function checkExposure(
-  proposal: Proposal,
-  bounds: SanityBounds,
-): ValidationCheck {
-  // Basic exposure check: amount should not exceed hard ceiling
-  if (proposal.amountUsdEquivalent > bounds.maxAmountUsd) {
-    return {
-      name: 'exposure',
-      passed: false,
-      reason: `Exposure $${proposal.amountUsdEquivalent} exceeds ceiling`,
-    };
-  }
-  return { name: 'exposure', passed: true };
-}
-
+/**
+ * Anomaly check based on risk score. Skipped when risk score is unset (0)
+ * — at validation time the simulation has not yet populated a score; the
+ * check fires only on revalidation paths where a previous simulation
+ * informed the score. Tier-based hard stops (§5) are enforced separately
+ * in `checkApprovalsComplete` and are the authoritative gate.
+ */
 function checkAnomaly(proposal: Proposal): ValidationCheck {
-  // Basic anomaly: risk score above critical threshold
+  if (proposal.riskScore <= 0) {
+    return { name: 'anomaly', passed: true };
+  }
   if (proposal.riskScore > 90) {
     return {
       name: 'anomaly',

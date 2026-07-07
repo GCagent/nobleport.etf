@@ -5,7 +5,9 @@
  * and emergency override policy (§16).
  */
 
+import { randomUUID } from 'crypto';
 import {
+  APPROVAL_ROLES,
   CircuitBreakerState,
   CircuitBreakerTrigger,
   EmergencyOverride,
@@ -120,10 +122,28 @@ export class CircuitBreakerManager {
     return this.state;
   }
 
-  /** Reset the circuit breaker (manual action) */
-  reset(): void {
+  /**
+   * Reset the circuit breaker. Requires an actor with an approval role
+   * (financial / executive / legal-compliance) and a recorded reason; the
+   * reset is logged as an incident resolution snapshot for auditability.
+   */
+  reset(actor: { id: string; role: Role }, reason: string): { success: boolean; error?: string } {
+    if (!APPROVAL_ROLES.has(actor.role)) {
+      return {
+        success: false,
+        error: `Role ${actor.role} not authorized to reset the circuit breaker`,
+      };
+    }
+    if (!reason || reason.trim().length === 0) {
+      return { success: false, error: 'Reset requires a reason' };
+    }
+    this.createIncident(
+      IncidentSeverity.Sev3_AdvisoryDegradationOnly,
+      `Circuit breaker reset by ${actor.id}: ${reason}`,
+    );
     this.state = { triggered: false };
     this.consecutiveFailures = 0;
+    return { success: true };
   }
 
   /** Get current circuit breaker state */
@@ -137,12 +157,22 @@ export class CircuitBreakerManager {
 
   // ─── Kill Switches (§15.2) ──────────────────────────────────────
 
+  /**
+   * Activate a kill switch. If a kill switch with the same (scope, target)
+   * is already active this is a no-op and the existing record is returned;
+   * deduping prevents misleading audit trails and one-sided deactivation.
+   */
   activateKillSwitch(params: {
     scope: KillSwitchScope;
     target?: string;
     activatedBy: string;
     reason: string;
   }): KillSwitchAction {
+    const existing = this.killSwitches.find(
+      ks => ks.scope === params.scope && ks.target === params.target,
+    );
+    if (existing) return existing;
+
     const action: KillSwitchAction = {
       scope: params.scope,
       target: params.target,
@@ -170,14 +200,23 @@ export class CircuitBreakerManager {
     return false;
   }
 
+  /**
+   * Returns true if execution at the given (scope, target) is blocked by an
+   * active kill switch. The "all execution" switch blocks everything; a
+   * scope-only switch (no target) blocks every target within that scope; a
+   * scope+target switch blocks only that specific target.
+   */
   isKillSwitchActive(scope: KillSwitchScope, target?: string): boolean {
-    // All-execution kill switch blocks everything
     if (this.killSwitches.some(ks => ks.scope === KillSwitchScope.AllExecution)) {
       return true;
     }
-    return this.killSwitches.some(
-      ks => ks.scope === scope && (!target || ks.target === target),
-    );
+    return this.killSwitches.some(ks => {
+      if (ks.scope !== scope) return false;
+      // scope-only kill switch (target undefined) → blocks every target in scope
+      if (ks.target === undefined) return true;
+      // scope+target kill switch → only blocks that specific target
+      return ks.target === target;
+    });
   }
 
   getActiveKillSwitches(): KillSwitchAction[] {
@@ -192,7 +231,7 @@ export class CircuitBreakerManager {
     affectedPath?: string,
   ): Incident {
     const incident: Incident = {
-      incidentId: `INC-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      incidentId: `INC-${randomUUID()}`,
       severity,
       description,
       affectedPath,
@@ -225,9 +264,37 @@ export class CircuitBreakerManager {
     valid: boolean;
     reason: string;
   } {
-    // Dual approval minimum
-    if (override.approvals.length < 2) {
-      return { valid: false, reason: 'Emergency override requires dual approval minimum' };
+    // Dual approval minimum (non-expired)
+    const validApprovals = override.approvals.filter(a => a.expiresAt > now);
+    if (validApprovals.length < 2) {
+      return {
+        valid: false,
+        reason: 'Emergency override requires at least 2 valid (non-expired) approvals',
+      };
+    }
+
+    // Distinct approvers
+    const approverIds = new Set(validApprovals.map(a => a.approverId));
+    if (approverIds.size < validApprovals.length) {
+      return {
+        valid: false,
+        reason: 'Emergency override approvals must come from distinct approvers',
+      };
+    }
+    if (approverIds.size < 2) {
+      return {
+        valid: false,
+        reason: 'Emergency override requires at least 2 distinct approvers',
+      };
+    }
+
+    // All approvers must hold an approval-eligible role
+    const unauthorized = validApprovals.find(a => !APPROVAL_ROLES.has(a.role));
+    if (unauthorized) {
+      return {
+        valid: false,
+        reason: `Approver ${unauthorized.approverId} role ${unauthorized.role} is not authorized for emergency override`,
+      };
     }
 
     // Must have explicit reason

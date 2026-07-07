@@ -8,11 +8,14 @@ next-env.d.ts.bak
 # Build artifacts
 dist/
 build/
+target/
+backend/rust/target/
 
 # Env files
 .env
 .env.local
 .env.*.local
+.env.production
 
 # OS / editor
 .DS_Store

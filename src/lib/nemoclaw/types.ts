@@ -79,7 +79,12 @@ export interface ApprovalThreshold {
   requireDryRunPacket: boolean;
   requirePostActionMonitoringPlan: boolean;
   requireFinalConfirmationWindow: boolean;
+  /** When true, proposals exceeding `riskScoreHardStopThreshold` are blocked outright */
   riskScoreHardStop: boolean;
+  /** Risk score above this value blocks the proposal when `riskScoreHardStop` is true */
+  riskScoreHardStopThreshold: number;
+  /** Minimum dwell time in QueuedForApproval before final approval is permitted (ms) */
+  finalConfirmationWindowMs: number;
 }
 
 export const APPROVAL_THRESHOLDS: Record<ExposureTier, ApprovalThreshold> = {
@@ -95,6 +100,8 @@ export const APPROVAL_THRESHOLDS: Record<ExposureTier, ApprovalThreshold> = {
     requirePostActionMonitoringPlan: false,
     requireFinalConfirmationWindow: false,
     riskScoreHardStop: false,
+    riskScoreHardStopThreshold: 100,
+    finalConfirmationWindowMs: 0,
   },
   [ExposureTier.From5KTo25K]: {
     tier: ExposureTier.From5KTo25K,
@@ -108,6 +115,8 @@ export const APPROVAL_THRESHOLDS: Record<ExposureTier, ApprovalThreshold> = {
     requirePostActionMonitoringPlan: true,
     requireFinalConfirmationWindow: false,
     riskScoreHardStop: false,
+    riskScoreHardStopThreshold: 100,
+    finalConfirmationWindowMs: 0,
   },
   [ExposureTier.From25KTo100K]: {
     tier: ExposureTier.From25KTo100K,
@@ -121,6 +130,8 @@ export const APPROVAL_THRESHOLDS: Record<ExposureTier, ApprovalThreshold> = {
     requirePostActionMonitoringPlan: true,
     requireFinalConfirmationWindow: false,
     riskScoreHardStop: true,
+    riskScoreHardStopThreshold: 75,
+    finalConfirmationWindowMs: 0,
   },
   [ExposureTier.Over100K]: {
     tier: ExposureTier.Over100K,
@@ -134,23 +145,47 @@ export const APPROVAL_THRESHOLDS: Record<ExposureTier, ApprovalThreshold> = {
     requirePostActionMonitoringPlan: true,
     requireFinalConfirmationWindow: true,
     riskScoreHardStop: true,
+    riskScoreHardStopThreshold: 60,
+    finalConfirmationWindowMs: 5 * 60_000, // 5 minute dwell before final approval
   },
 };
 
-/** Final RWA execution threshold — applies regardless of amount */
+/**
+ * Final RWA execution threshold — applies regardless of amount. Legal-approver
+ * requirement is configurable per deployment via `buildRwaThreshold`.
+ */
 export const RWA_EXECUTION_THRESHOLD: ApprovalThreshold = {
   tier: ExposureTier.Over100K, // treated as highest tier
   minApprovers: 2,
   requireFinancialApprover: true,
   requireExecutiveApprover: true,
-  requireLegalApprover: false, // "where designated"
+  requireLegalApprover: false, // override per deployment via buildRwaThreshold
   requireSimulationPass: true,
   requireManualRationale: true,
   requireDryRunPacket: true,
   requirePostActionMonitoringPlan: true,
   requireFinalConfirmationWindow: true,
   riskScoreHardStop: true,
+  riskScoreHardStopThreshold: 60,
+  finalConfirmationWindowMs: 5 * 60_000,
 };
+
+/** Build an RWA threshold with deployment-specific legal-approver requirement */
+export function buildRwaThreshold(opts: {
+  requireLegalApprover: boolean;
+  finalConfirmationWindowMs?: number;
+  riskScoreHardStopThreshold?: number;
+}): ApprovalThreshold {
+  return {
+    ...RWA_EXECUTION_THRESHOLD,
+    requireLegalApprover: opts.requireLegalApprover,
+    finalConfirmationWindowMs:
+      opts.finalConfirmationWindowMs ?? RWA_EXECUTION_THRESHOLD.finalConfirmationWindowMs,
+    riskScoreHardStopThreshold:
+      opts.riskScoreHardStopThreshold ??
+      RWA_EXECUTION_THRESHOLD.riskScoreHardStopThreshold,
+  };
+}
 
 // ─── Proposal (§8) ─────────────────────────────────────────────────
 
@@ -200,7 +235,10 @@ export interface ValidationCheck {
 export interface Proposal {
   proposalId: string;
   correlationId: string;
+  /** Service or system that originated the proposal (for telemetry/audit) */
   creatorService: string;
+  /** Human user ID of the operator/analyst who created the proposal (for §6.3 SoD) */
+  creatorUserId: string;
   creatorRole: Role;
   actionClass: ActionClass;
   assetOrWorkflowTarget: string;
@@ -213,11 +251,17 @@ export interface Proposal {
   riskScore: number;
   requiredApprovals: ApprovalThreshold;
   approvals: ApprovalRecord[];
+  /** Whether a dry-run packet artifact was attached and verified (§5 / §11) */
+  dryRunPacketAttached: boolean;
+  /** Whether a post-action monitoring plan has been registered (§5 / §11) */
+  postActionMonitoringRegistered: boolean;
   payloadHash: string;
   expiryTimestamp: number;
   state: ProposalState;
   createdAt: number;
   updatedAt: number;
+  /** Set when the proposal entered QueuedForApproval (used for finalization-window dwell) */
+  queuedForApprovalAt?: number;
   /** For RWA: linked asset ID */
   linkedAssetId?: string;
   /** For RWA: document/state completeness */

@@ -21,8 +21,6 @@ import {
   PROPOSAL_CREATOR_ROLES,
   Role,
   RWA_EXECUTION_THRESHOLD,
-  SimulationResult,
-  ValidationResult,
 } from './types';
 
 // ─── Mode Permission Matrix (§3) ───────────────────────────────────
@@ -178,23 +176,36 @@ export function validateRoleForAction(
 
 // ─── Separation of Duties (§6.3) ───────────────────────────────────
 
+/**
+ * §6.3: No single human may create, approve, and sign the same action.
+ * Compares human user IDs (`creatorUserId`, `approverId`, `signerId`) — never
+ * service identifiers. Pass an empty `creatorUserId` only for purely automated
+ * proposals (in which case the SoD constraint reduces to approver vs. signer).
+ */
 export function checkSeparationOfDuties(
   proposal: Proposal,
   approverId: string,
   signerId?: string,
 ): { passed: boolean; reason: string } {
-  // No single human may create, approve, and sign the same action
-  if (proposal.creatorService === approverId) {
+  if (proposal.creatorUserId && proposal.creatorUserId === approverId) {
     return {
       passed: false,
       reason: 'Proposal creator may not approve their own proposal',
     };
   }
-  if (signerId && (signerId === approverId || signerId === proposal.creatorService)) {
-    return {
-      passed: false,
-      reason: 'Signer must be distinct from proposal creator and approver',
-    };
+  if (signerId) {
+    if (signerId === approverId) {
+      return {
+        passed: false,
+        reason: 'Signer must be distinct from approver',
+      };
+    }
+    if (proposal.creatorUserId && signerId === proposal.creatorUserId) {
+      return {
+        passed: false,
+        reason: 'Signer must be distinct from proposal creator',
+      };
+    }
   }
   return { passed: true, reason: 'Separation of duties satisfied' };
 }
@@ -204,7 +215,7 @@ export function checkSeparationOfDuties(
 export function checkApprovalsComplete(
   proposal: Proposal,
   now: number,
-): { met: boolean; reasons: string[] } {
+): { met: boolean; reasons: string[]; validApprovals: ApprovalRecord[] } {
   const threshold = proposal.requiredApprovals;
   const reasons: string[] = [];
 
@@ -236,7 +247,39 @@ export function checkApprovalsComplete(
     if (!allHaveRationale) reasons.push('Manual rationale required from all approvers');
   }
 
-  return { met: reasons.length === 0, reasons };
+  if (threshold.requireFinalConfirmationWindow && threshold.finalConfirmationWindowMs > 0) {
+    const queuedAt = proposal.queuedForApprovalAt;
+    if (queuedAt === undefined) {
+      reasons.push('Final-confirmation window required but proposal was never queued');
+    } else if (now - queuedAt < threshold.finalConfirmationWindowMs) {
+      const remainingMs = threshold.finalConfirmationWindowMs - (now - queuedAt);
+      reasons.push(
+        `Final-confirmation window not elapsed (${remainingMs}ms remaining)`,
+      );
+    }
+  }
+
+  if (threshold.requireDryRunPacket && !proposal.dryRunPacketAttached) {
+    reasons.push('Dry-run packet required but not attached');
+  }
+
+  if (
+    threshold.requirePostActionMonitoringPlan &&
+    !proposal.postActionMonitoringRegistered
+  ) {
+    reasons.push('Post-action monitoring plan required but not registered');
+  }
+
+  if (
+    threshold.riskScoreHardStop &&
+    proposal.riskScore > threshold.riskScoreHardStopThreshold
+  ) {
+    reasons.push(
+      `Risk score ${proposal.riskScore} exceeds hard-stop threshold ${threshold.riskScoreHardStopThreshold}`,
+    );
+  }
+
+  return { met: reasons.length === 0, reasons, validApprovals };
 }
 
 // ─── Core Policy Evaluation (§2.4 deterministic) ───────────────────
@@ -316,12 +359,12 @@ export function evaluatePolicy(
   // §5: Approval checks
   const approvalCheck = checkApprovalsComplete(proposal, now);
 
-  // §13.3: RWA human-in-the-loop mandatory
+  // §13.3: RWA human-in-the-loop mandatory — count only non-expired approvals
   if (proposal.actionClass === ActionClass.E_FinalRWA) {
-    if (proposal.approvals.length < 2) {
+    if (approvalCheck.validApprovals.length < 2) {
       return {
         allowed: false,
-        reason: 'Final RWA execution requires minimum 2 human approvals',
+        reason: 'Final RWA execution requires minimum 2 valid (non-expired) human approvals',
         actionClass: proposal.actionClass,
         requiredMode: required,
         currentMode,
@@ -372,7 +415,6 @@ export function checkPreExecutionGuardrails(
   currentMode: OperatingMode,
   signerPolicyPassed: boolean,
   auditSnapshotStored: boolean,
-  postActionMonitoringRegistered: boolean,
   exposureConfig: ExposureConfig,
   currentExposure: { concentrationPercent: number; drawdownPercent: number },
   now: number,
@@ -389,7 +431,8 @@ export function checkPreExecutionGuardrails(
     failures.push(`Proposal state must be approved, got ${proposal.state}`);
   }
 
-  // Approvals complete and not expired
+  // Approvals complete and not expired (also covers tier-driven flags:
+  // dry-run packet, monitoring plan, final-confirmation window, risk hard stop)
   const approvalCheck = checkApprovalsComplete(proposal, now);
   if (!approvalCheck.met) {
     failures.push(`Approvals incomplete: ${approvalCheck.reasons.join('; ')}`);
@@ -400,11 +443,15 @@ export function checkPreExecutionGuardrails(
     failures.push('Simulation not passed');
   }
 
-  // Slippage within bounds
+  // Slippage within bounds — fail closed when no limit configured
   if (proposal.simulationResult?.slippage !== undefined) {
     const target = proposal.assetOrWorkflowTarget;
-    const maxSlippage = exposureConfig.slippageLimits.get(target) ?? 100; // 100 bps default
-    if (proposal.simulationResult.slippage > maxSlippage) {
+    const maxSlippage = exposureConfig.slippageLimits.get(target);
+    if (maxSlippage === undefined) {
+      failures.push(
+        `No slippage limit configured for target '${target}' (fail-closed)`,
+      );
+    } else if (proposal.simulationResult.slippage > maxSlippage) {
       failures.push(
         `Slippage ${proposal.simulationResult.slippage}bps exceeds limit ${maxSlippage}bps`,
       );
@@ -435,8 +482,8 @@ export function checkPreExecutionGuardrails(
     failures.push('Audit snapshot not stored');
   }
 
-  // Post-action monitoring
-  if (!postActionMonitoringRegistered) {
+  // Post-action monitoring (proposal-attached, not a side argument)
+  if (!proposal.postActionMonitoringRegistered) {
     failures.push('Post-action monitoring not registered');
   }
 

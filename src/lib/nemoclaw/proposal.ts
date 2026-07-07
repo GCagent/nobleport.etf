@@ -17,7 +17,7 @@ import {
   ValidationResult,
 } from './types';
 import {
-  canCreateProposal,
+  checkApprovalsComplete,
   checkSeparationOfDuties,
   resolveApprovalThreshold,
   validateRoleForAction,
@@ -59,6 +59,7 @@ export class ProposalManager {
   /** Create a new proposal in Draft state */
   createProposal(params: {
     creatorService: string;
+    creatorUserId: string;
     creatorRole: Role;
     actionClass: ActionClass;
     assetOrWorkflowTarget: string;
@@ -77,11 +78,16 @@ export class ProposalManager {
       return { proposal: null, error: roleCheck.reason };
     }
 
+    if (!params.creatorUserId || params.creatorUserId.trim().length === 0) {
+      return { proposal: null, error: 'creatorUserId is required for §6.3 separation of duties' };
+    }
+
     const now = Date.now();
     const proposal: Proposal = {
       proposalId: randomUUID(),
       correlationId: randomUUID(),
       creatorService: params.creatorService,
+      creatorUserId: params.creatorUserId,
       creatorRole: params.creatorRole,
       actionClass: params.actionClass,
       assetOrWorkflowTarget: params.assetOrWorkflowTarget,
@@ -97,6 +103,8 @@ export class ProposalManager {
         params.amountUsdEquivalent,
       ),
       approvals: [],
+      dryRunPacketAttached: false,
+      postActionMonitoringRegistered: false,
       payloadHash: params.payloadHash,
       expiryTimestamp: params.expiryTimestamp,
       state: ProposalState.Draft,
@@ -108,6 +116,24 @@ export class ProposalManager {
 
     this.proposals.set(proposal.proposalId, proposal);
     return { proposal };
+  }
+
+  /** Attach a dry-run packet artifact (§5/§11). */
+  attachDryRunPacket(proposalId: string): { success: boolean; error?: string } {
+    const proposal = this.proposals.get(proposalId);
+    if (!proposal) return { success: false, error: 'Proposal not found' };
+    proposal.dryRunPacketAttached = true;
+    proposal.updatedAt = Date.now();
+    return { success: true };
+  }
+
+  /** Register a post-action monitoring plan (§5/§11). */
+  registerPostActionMonitoring(proposalId: string): { success: boolean; error?: string } {
+    const proposal = this.proposals.get(proposalId);
+    if (!proposal) return { success: false, error: 'Proposal not found' };
+    proposal.postActionMonitoringRegistered = true;
+    proposal.updatedAt = Date.now();
+    return { success: true };
   }
 
   /** Transition proposal to a new state */
@@ -133,7 +159,11 @@ export class ProposalManager {
     return { success: true };
   }
 
-  /** Attach validation result and advance to Validated if passed */
+  /**
+   * Attach validation result and advance to Validated if passed. On failure
+   * the proposal is moved to Rejected (terminal); callers wishing to retry
+   * after a transient failure must create a new proposal.
+   */
   setValidationResult(
     proposalId: string,
     result: ValidationResult,
@@ -153,23 +183,41 @@ export class ProposalManager {
     return this.transition(proposalId, ProposalState.Rejected);
   }
 
-  /** Attach simulation result */
+  /**
+   * Attach simulation result. Only permitted while the proposal is in
+   * Validated or QueuedForApproval — never after approval/execution, to
+   * preserve the integrity of the approved risk score and slippage.
+   */
   setSimulationResult(
     proposalId: string,
     result: SimulationResult,
   ): { success: boolean; error?: string } {
     const proposal = this.proposals.get(proposalId);
     if (!proposal) return { success: false, error: 'Proposal not found' };
+    if (
+      proposal.state !== ProposalState.Validated &&
+      proposal.state !== ProposalState.QueuedForApproval
+    ) {
+      return {
+        success: false,
+        error: `Simulation results may only be attached in Validated or QueuedForApproval state (current: ${proposal.state})`,
+      };
+    }
 
     proposal.simulationResult = result;
-    proposal.riskScore = result.warnings.length * 10; // simple risk heuristic
+    proposal.riskScore = Math.min(100, result.warnings.length * 10); // simple risk heuristic, capped
     proposal.updatedAt = Date.now();
     return { success: true };
   }
 
-  /** Queue a validated proposal for approval */
+  /** Queue a validated proposal for approval and stamp the dwell-window start */
   queueForApproval(proposalId: string): { success: boolean; error?: string } {
-    return this.transition(proposalId, ProposalState.QueuedForApproval);
+    const result = this.transition(proposalId, ProposalState.QueuedForApproval);
+    if (result.success) {
+      const proposal = this.proposals.get(proposalId)!;
+      proposal.queuedForApprovalAt = Date.now();
+    }
+    return result;
   }
 
   /** Record an approval on a proposal */
@@ -181,6 +229,10 @@ export class ProposalManager {
     if (!proposal) return { success: false, error: 'Proposal not found' };
     if (proposal.state !== ProposalState.QueuedForApproval) {
       return { success: false, error: 'Proposal must be queued for approval' };
+    }
+
+    if (!approval.approverId || approval.approverId.trim().length === 0) {
+      return { success: false, error: 'approverId is required' };
     }
 
     // §6.2: validate approver role
@@ -205,14 +257,27 @@ export class ProposalManager {
     return { success: true };
   }
 
-  /** Mark proposal as approved (after verifying all approvals met) */
-  approve(proposalId: string, now: number): { success: boolean; error?: string } {
+  /**
+   * Mark proposal as approved. Verifies that the full approval threshold is
+   * met (count, role mix, rationale, dwell window, dry-run packet, monitoring
+   * plan, risk hard stop) and runs RWA-specific checks before the transition.
+   */
+  approve(proposalId: string, now: number = Date.now()): { success: boolean; error?: string } {
     const proposal = this.proposals.get(proposalId);
     if (!proposal) return { success: false, error: 'Proposal not found' };
 
+    // §5: full threshold completeness — never bypass
+    const approvalCheck = checkApprovalsComplete(proposal, now);
+    if (!approvalCheck.met) {
+      return {
+        success: false,
+        error: `Approval threshold not met: ${approvalCheck.reasons.join('; ')}`,
+      };
+    }
+
     // RWA-specific checks (§13)
     if (proposal.actionClass === ActionClass.E_FinalRWA) {
-      const rwaCheck = this.checkRWARequirements(proposal);
+      const rwaCheck = this.checkRWARequirements(proposal, approvalCheck.validApprovals);
       if (!rwaCheck.passed) {
         return { success: false, error: rwaCheck.reason };
       }
@@ -281,7 +346,10 @@ export class ProposalManager {
 
   // ─── RWA Checks (§13) ───────────────────────────────────────────
 
-  private checkRWARequirements(proposal: Proposal): { passed: boolean; reason: string } {
+  private checkRWARequirements(
+    proposal: Proposal,
+    validApprovals: ApprovalRecord[],
+  ): { passed: boolean; reason: string } {
     // §13.1: linked asset ID verification
     if (!proposal.linkedAssetId) {
       return { passed: false, reason: 'RWA execution requires linked asset ID' };
@@ -292,9 +360,9 @@ export class ProposalManager {
       return { passed: false, reason: 'RWA execution requires document completeness' };
     }
 
-    // §13.1: double-approval minimum
-    if (proposal.approvals.length < 2) {
-      return { passed: false, reason: 'RWA execution requires minimum 2 approvals' };
+    // §13.1: double-approval minimum (non-expired)
+    if (validApprovals.length < 2) {
+      return { passed: false, reason: 'RWA execution requires minimum 2 valid approvals' };
     }
 
     return { passed: true, reason: 'RWA requirements met' };

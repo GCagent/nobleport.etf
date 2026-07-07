@@ -5,7 +5,7 @@
  * and replay protection (§9.3).
  */
 
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import { ActionClass, NemoclawEvent } from './types';
 
 // ─── Idempotency Enforcer (§9.2) ─────────────────────────────────
@@ -52,6 +52,16 @@ export class ReplayProtector {
     proposalId: string;
     executedAt: number;
   }>();
+  private retentionMs: number;
+
+  /**
+   * @param retentionMs how long an executed payload hash is remembered for
+   * replay protection. Defaults to 30 days; entries older than this are
+   * eligible for pruning so memory does not grow unboundedly.
+   */
+  constructor(retentionMs: number = 30 * 24 * 3_600_000) {
+    this.retentionMs = retentionMs;
+  }
 
   /** Record a payload hash as executed */
   recordExecution(payloadHash: string, proposalId: string): void {
@@ -93,10 +103,33 @@ export class ReplayProtector {
       reason: `Payload hash ${payloadHash} already executed by proposal ${existing.proposalId} at ${existing.executedAt}`,
     };
   }
+
+  /** Prune entries older than the retention window. Returns count pruned. */
+  prune(now: number): number {
+    let pruned = 0;
+    for (const [hash, info] of this.executedPayloadHashes) {
+      if (now - info.executedAt >= this.retentionMs) {
+        this.executedPayloadHashes.delete(hash);
+        pruned++;
+      }
+    }
+    return pruned;
+  }
+
+  /** Test/diagnostic helper. */
+  size(): number {
+    return this.executedPayloadHashes.size;
+  }
 }
 
 // ─── Event Builder (§9.1) ────────────────────────────────────────
 
+/**
+ * Build a Nemoclaw event. The idempotency key is content-derived so that
+ * two semantically identical events deduplicate within the dedupe window.
+ * Callers may override the key (e.g., when the producer already has a
+ * canonical request ID); the override must be stable across retries.
+ */
 export function createEvent(params: {
   correlationId: string;
   parentEventId?: string;
@@ -104,18 +137,40 @@ export function createEvent(params: {
   actionClass: ActionClass;
   targetEntityId: string;
   payload: unknown;
+  /** Optional caller-supplied idempotency key (must be stable across retries). */
+  idempotencyKey?: string;
 }): NemoclawEvent {
+  const idempotencyKey =
+    params.idempotencyKey ?? deriveIdempotencyKey(params);
   return {
     eventId: randomUUID(),
     correlationId: params.correlationId,
     parentEventId: params.parentEventId,
-    idempotencyKey: `${params.correlationId}:${params.targetEntityId}:${Date.now()}`,
+    idempotencyKey,
     timestamp: Date.now(),
     producer: params.producer,
     actionClass: params.actionClass,
     targetEntityId: params.targetEntityId,
     payload: params.payload,
   };
+}
+
+function deriveIdempotencyKey(params: {
+  correlationId: string;
+  producer: string;
+  actionClass: ActionClass;
+  targetEntityId: string;
+  payload: unknown;
+}): string {
+  const canonical = JSON.stringify({
+    c: params.correlationId,
+    p: params.producer,
+    a: params.actionClass,
+    t: params.targetEntityId,
+    d: params.payload,
+  });
+  const digest = createHash('sha256').update(canonical).digest('hex');
+  return `${params.correlationId}:${params.targetEntityId}:${digest.slice(0, 32)}`;
 }
 
 // ─── Event Processor ─────────────────────────────────────────────
@@ -165,8 +220,11 @@ export class EventProcessor {
     return this.eventLog;
   }
 
-  /** Prune stale idempotency entries */
-  prune(now: number): number {
-    return this.idempotencyEnforcer.prune(now);
+  /** Prune stale idempotency and replay entries. */
+  prune(now: number): { idempotency: number; replay: number } {
+    return {
+      idempotency: this.idempotencyEnforcer.prune(now),
+      replay: this.replayProtector.prune(now),
+    };
   }
 }

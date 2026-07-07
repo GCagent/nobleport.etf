@@ -1,0 +1,20 @@
+[package]
+name = "blockchain-indexer"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+common = { path = "../common" }
+tokio = { workspace = true }
+axum = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+reqwest = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+dotenvy = { workspace = true }
+tower-http = { workspace = true }
+sha3 = { workspace = true }
+hex = { workspace = true }

@@ -157,9 +157,12 @@ export async function getEnsTextRecords(
 /**
  * NoblePort root ENS identifiers
  */
+export { NOBLEPORT_IDENTITY, NBPT_FUND_IDENTITY, MODULE_IDENTITIES } from './identity';
+
 export const NOBLEPORT_ENS = {
   ROOT: 'nobleport.eth',
   ROOT_DID: 'did:ens:nobleport.eth',
+  ROOT_ADDRESS: '0xc59e66BB2b6E19699F82A72a1569821cb1711504',
   ETF: 'etf.nobleport.eth',
   ETF_DID: 'did:ens:etf.nobleport.eth',
 } as const;

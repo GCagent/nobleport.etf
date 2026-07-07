@@ -25,6 +25,7 @@ export enum SignerRejectionReason {
   FreeFormTransaction = 'free_form_transaction',
   ValueExceedsBounds = 'value_exceeds_bounds',
   MissingApprovalRecords = 'missing_approval_records',
+  MalformedPayloadValue = 'malformed_payload_value',
 }
 
 export interface SignerGatewayResult {
@@ -69,11 +70,14 @@ export function evaluateSignerRequest(
     rejections.push(SignerRejectionReason.UnknownContract);
   }
 
-  // §10.5: Function selector allowlist
+  // §10.5: Function selector allowlist (case-insensitive on the hex selector)
   const contractSelectors = config.allowedSelectors.get(
     payload.contractAddress.toLowerCase(),
   );
-  if (!contractSelectors || !contractSelectors.has(payload.functionSelector)) {
+  if (
+    !contractSelectors ||
+    !contractSelectors.has(payload.functionSelector.toLowerCase())
+  ) {
     rejections.push(SignerRejectionReason.UnknownSelector);
   }
 
@@ -92,10 +96,16 @@ export function evaluateSignerRequest(
     rejections.push(SignerRejectionReason.MissingAuditRecord);
   }
 
-  // §10.1: Value bounds check
+  // §10.1: Value bounds check — guard malformed values (fail-closed)
   const maxValue = config.maxValueBounds.get(payload.contractAddress.toLowerCase());
   if (maxValue !== undefined) {
-    const payloadValue = BigInt(payload.value);
+    let payloadValue: bigint;
+    try {
+      payloadValue = BigInt(payload.value);
+    } catch {
+      rejections.push(SignerRejectionReason.MalformedPayloadValue);
+      payloadValue = maxValue + 1n; // ensure subsequent comparison is also rejected
+    }
     if (payloadValue > maxValue) {
       rejections.push(SignerRejectionReason.ValueExceedsBounds);
     }
@@ -129,7 +139,10 @@ export function createSignerGatewayConfig(params: {
 
   const allowedSelectors = new Map<string, Set<string>>();
   for (const [address, sels] of Object.entries(params.selectors)) {
-    allowedSelectors.set(address.toLowerCase(), new Set(sels));
+    allowedSelectors.set(
+      address.toLowerCase(),
+      new Set(sels.map(s => s.toLowerCase())),
+    );
   }
 
   const maxValueBounds = new Map<string, bigint>();
