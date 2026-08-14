@@ -1,0 +1,15 @@
+{
+  "permit_id": "MA-2026-00451",
+  "blockchain_status": "not_anchored",
+  "digest": {
+    "type": "COMMERCIAL_NEW_CONSTRUCTION",
+    "municipality": "Boston",
+    "body": "Commercial new construction permit for mixed-use development at 150 Seaport Blvd, Boston MA 02210. 12-story structure, 180 residential units, 25,000 sq ft retail. Structural steel frame, reinforced concrete foundation. Compliance with 780 CMR 9th Edition, IBC 2021 reference. Seismic Design Category B. Estimated completion Q4 2027.",
+    "value": 48500000,
+    "contractor_verified": true,
+    "oracle_confirmed": true,
+    "risk_score": 4,
+    "issue_date": "2026-02-20",
+    "expiry_date": "2027-02-20"
+  }
+}
