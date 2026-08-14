@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Topbar } from '@/components/dashboard/Topbar';
 import { Panel } from '@/components/dashboard/Panel';
 import { fetchPermitForecast, fetchPermits } from '@/lib/dashboard/api';
@@ -26,6 +27,20 @@ export default async function PermitsPage() {
     <>
       <Topbar pageTitle="PermitStream · AHJ Workflows" />
       <main className="flex-1 space-y-4 px-4 py-4 sm:px-6 sm:py-6">
+        <div className="flex items-center justify-between rounded-md border border-violet-500/30 bg-violet-600/10 px-4 py-3 text-sm">
+          <div>
+            <div className="font-medium text-violet-100">Review workflow</div>
+            <div className="text-[11px] text-violet-300/80">
+              200-check pipeline · MA zoning · 780 CMR · IRC 2021 · audit-trail
+            </div>
+          </div>
+          <Link
+            href="/dashboard/permits/review"
+            className="rounded border border-violet-500/40 px-3 py-1.5 text-violet-100 hover:bg-violet-500/20"
+          >
+            Open PermitStream →
+          </Link>
+        </div>
         <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <Stat label="Permits Open" value={String(open.length)} />
           <Stat
