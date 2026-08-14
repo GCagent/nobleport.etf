@@ -149,3 +149,9 @@ manufacture demand from a token launch. Each stage earns the right to the
 next: revenue funds infrastructure, infrastructure proves the software,
 the software generates the credentials, and only verified operational
 reality justifies tokenization — never the reverse.
+
+The **payment infrastructure** stage of this sequence is detailed in
+[`payment-node-stablecoin-roadmap.md`](./payment-node-stablecoin-roadmap.md),
+which scopes Stripe-backed stablecoin readiness to contractor/vendor payouts
+and construction receivables — strictly construction-payments-only, behind a
+compliance gate and human approval.
