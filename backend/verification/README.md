@@ -11,9 +11,13 @@ backend/verification/run_verification.sh
 # Smoke-check a running deployment (corrected, exact-match health check)
 BASE_URL=https://api.nobleport.example backend/verification/verify_deployment.sh
 
-# Just the label
+# Just the label (whole-backend RC1 decision)
 python -m backend.verification.truth_label          # human
 python -m backend.verification.truth_label --json    # CI
+
+# Per-app truth scorecard (4 evidence tiers + 6 scored dimensions)
+python -m backend.verification.app_audit            # human
+python -m backend.verification.app_audit --json      # CI (exits non-zero if any app overstates)
 ```
 
 | Audit issue | Fix | Check |
@@ -28,4 +32,5 @@ python -m backend.verification.truth_label --json    # CI
 
 Full methodology: [`docs/verification/verification-framework.md`](../../docs/verification/verification-framework.md)
 · Point-by-point audit response: [`docs/verification/audit-response-rc1.md`](../../docs/verification/audit-response-rc1.md)
+· Per-app audit framework: [`docs/verification/app-audit-framework.md`](../../docs/verification/app-audit-framework.md)
 · The 10 RC1 artifacts: [`evidence/MANIFEST.md`](./evidence/MANIFEST.md)
