@@ -472,6 +472,66 @@ export const AI_PLATFORM_CONNECTIONS: MCPConnection[] = [
       }
     },
     status: 'active'
+  },
+
+  // ========== MANUS ==========
+  {
+    id: 'manus-ai',
+    name: 'Manus AI',
+    provider: 'Manus',
+    endpoint: 'mcp://api.manus.ai/v1/agent',
+    protocol: 'mcp',
+    capabilities: [
+      'agentic-task-execution',
+      'web-research',
+      'autonomous-workflows',
+      'multi-step-planning',
+      'data-extraction',
+      'file-management'
+    ],
+    authentication: {
+      type: 'api_key',
+      config: {
+        headerName: 'Authorization',
+        prefix: 'Bearer',
+        envVar: 'MANUS_API_KEY'
+      }
+    },
+    status: 'active',
+    rateLimits: {
+      requestsPerMinute: 100,
+      tokensPerRequest: 200000
+    }
+  },
+
+  // ========== GENSPARK ==========
+  {
+    id: 'genspark-ai',
+    name: 'Genspark',
+    provider: 'Genspark',
+    endpoint: 'mcp://api.genspark.ai/v1/search',
+    protocol: 'mcp',
+    capabilities: [
+      'ai-powered-search',
+      'multi-source-research',
+      'content-synthesis',
+      'real-time-information',
+      'fact-verification',
+      'spark-pages'
+    ],
+    authentication: {
+      type: 'api_key',
+      config: {
+        headerName: 'Authorization',
+        prefix: 'Bearer',
+        envVar: 'GENSPARK_API_KEY'
+      }
+    },
+    status: 'active',
+    rateLimits: {
+      requestsPerMinute: 200,
+      tokensPerRequest: 100000
+    }
   }
 ];
 
@@ -512,12 +572,218 @@ export interface AITaskResponse {
   citations?: string[];
 }
 
+// ============================================================================
+// AGENT CATALOG (112 AI AGENTS)
+// ============================================================================
+
+export interface AgentDefinition {
+  id: string;
+  name: string;
+  category: string;
+  capabilities: string[];
+  connectedModules: string[];
+  status: 'active' | 'standby' | 'offline';
+}
+
+export interface AgentCategory {
+  name: string;
+  count: number;
+  agents: AgentDefinition[];
+  connectedModules: string[];
+  primaryPlatform: string;
+}
+
+export const AGENT_CATEGORIES: Record<string, { agents: string[]; modules: string[] }> = {
+  'portfolio-management': {
+    agents: [
+      'portfolio-analyzer', 'asset-valuator', 'risk-assessor', 'rebalancing-engine',
+      'performance-tracker', 'benchmark-comparator', 'allocation-optimizer',
+      'dividend-tracker', 'yield-calculator', 'nav-computer',
+      'liquidity-monitor', 'correlation-analyzer', 'volatility-modeler', 'factor-analyzer'
+    ],
+    modules: ['PORTFOLIO_MANAGER', 'HOLDINGS_DASHBOARD']
+  },
+  'compliance-regulatory': {
+    agents: [
+      'sec-filing-agent', 'kyc-verifier', 'aml-monitor', 'accreditation-checker',
+      'regulatory-scanner', 'audit-trail-agent', 'disclosure-generator',
+      'compliance-reporter', 'risk-flag-detector', 'sanctions-screener',
+      'tax-compliance-agent', 'regulatory-change-monitor'
+    ],
+    modules: ['COMPLIANCE_ENGINE', 'CPA_OPERATIONS']
+  },
+  'market-intelligence': {
+    agents: [
+      'market-trend-analyzer', 'sentiment-tracker', 'news-aggregator',
+      'price-predictor', 'economic-indicator-monitor', 'sector-rotation-agent',
+      'interest-rate-watcher', 'real-estate-index-tracker',
+      'macro-event-detector', 'competitive-intelligence-agent'
+    ],
+    modules: ['ORACLE_NETWORK', 'HOLDINGS_DASHBOARD']
+  },
+  'investor-relations': {
+    agents: [
+      'investor-onboarding-agent', 'report-generator', 'query-responder',
+      'communication-drafter', 'meeting-scheduler', 'portfolio-presenter',
+      'faq-handler', 'document-preparer', 'notification-manager',
+      'investor-satisfaction-tracker'
+    ],
+    modules: ['INVESTOR_PORTAL', 'NBPT_GOVERNANCE']
+  },
+  'operations-infrastructure': {
+    agents: [
+      'health-monitor', 'anomaly-detector', 'alert-dispatcher',
+      'log-analyzer', 'uptime-tracker', 'capacity-planner',
+      'incident-responder', 'backup-manager', 'deployment-agent',
+      'config-manager', 'network-monitor', 'performance-optimizer'
+    ],
+    modules: ['OPERATIONS_MONITOR']
+  },
+  'blockchain-defi': {
+    agents: [
+      'smart-contract-auditor', 'transaction-monitor', 'gas-optimizer',
+      'bridge-operator', 'token-tracker', 'staking-manager',
+      'governance-voter', 'oracle-feeder', 'chain-sync-agent',
+      'wallet-manager', 'defi-protocol-integrator'
+    ],
+    modules: ['CUSTODIAN_BRIDGE', 'ORACLE_NETWORK', 'NBPT_GOVERNANCE']
+  },
+  'identity-security': {
+    agents: [
+      'did-resolver-agent', 'credential-verifier', 'auth-manager',
+      'permission-controller', 'key-rotation-agent', 'session-manager',
+      'fraud-detector', 'access-auditor', 'identity-sync-agent'
+    ],
+    modules: ['SSI_IDENTITY', 'CUSTODIAN_BRIDGE']
+  },
+  'financial-accounting': {
+    agents: [
+      'transaction-recorder', 'reconciliation-agent', 'expense-categorizer',
+      'invoice-processor', 'payment-tracker', 'budget-analyzer',
+      'cash-flow-forecaster', 'tax-preparer', 'financial-statement-generator',
+      'audit-assistant', 'revenue-tracker'
+    ],
+    modules: ['BOOKKEEPER_OPS', 'CPA_OPERATIONS']
+  },
+  'real-estate-property': {
+    agents: [
+      'property-valuator', 'inspection-tracker', 'permit-processor',
+      'tenant-manager', 'maintenance-scheduler', 'lease-analyzer',
+      'zoning-checker', 'environmental-assessor', 'title-verifier',
+      'appraisal-reviewer'
+    ],
+    modules: ['PORTFOLIO_MANAGER', 'COMPLIANCE_ENGINE']
+  },
+  'content-communication': {
+    agents: [
+      'report-writer', 'email-drafter', 'presentation-builder',
+      'social-media-manager', 'press-release-writer',
+      'newsletter-composer', 'documentation-agent', 'translation-agent'
+    ],
+    modules: ['INVESTOR_PORTAL']
+  },
+  'data-analytics': {
+    agents: [
+      'data-pipeline-agent', 'visualization-builder', 'statistical-analyzer',
+      'etl-processor', 'data-quality-monitor'
+    ],
+    modules: ['OPERATIONS_MONITOR', 'PORTFOLIO_MANAGER']
+  }
+};
+
+export const TOTAL_AGENTS = Object.values(AGENT_CATEGORIES)
+  .reduce((sum, cat) => sum + cat.agents.length, 0);
+
+// ============================================================================
+// MCP BRIDGE ARCHITECTURE
+// ============================================================================
+
+export interface MCPBridge {
+  id: string;
+  from: string;
+  to: string;
+  protocol: 'mcp';
+  bidirectional: boolean;
+  capabilities: string[];
+  status: 'active' | 'pending' | 'disabled';
+}
+
+export const MCP_BRIDGES: MCPBridge[] = [
+  {
+    id: 'chatgpt-claude-bridge',
+    from: 'openai-chatgpt',
+    to: 'claude-mcp',
+    protocol: 'mcp',
+    bidirectional: true,
+    capabilities: ['task-delegation', 'code-review', 'compliance-handoff'],
+    status: 'active'
+  },
+  {
+    id: 'chatgpt-grok-bridge',
+    from: 'openai-chatgpt',
+    to: 'xai-grok',
+    protocol: 'mcp',
+    bidirectional: true,
+    capabilities: ['real-time-data-feed', 'sentiment-relay', 'market-alerts'],
+    status: 'active'
+  },
+  {
+    id: 'chatgpt-gemini-bridge',
+    from: 'openai-chatgpt',
+    to: 'google-gemini',
+    protocol: 'mcp',
+    bidirectional: true,
+    capabilities: ['multi-modal-handoff', 'research-delegation', 'long-context-relay'],
+    status: 'active'
+  },
+  {
+    id: 'chatgpt-manus-bridge',
+    from: 'openai-chatgpt',
+    to: 'manus-ai',
+    protocol: 'mcp',
+    bidirectional: true,
+    capabilities: ['agentic-task-dispatch', 'web-research-delegation', 'autonomous-workflow'],
+    status: 'active'
+  },
+  {
+    id: 'chatgpt-genspark-bridge',
+    from: 'openai-chatgpt',
+    to: 'genspark-ai',
+    protocol: 'mcp',
+    bidirectional: true,
+    capabilities: ['multi-source-search', 'fact-verification', 'content-synthesis'],
+    status: 'active'
+  },
+  {
+    id: 'chatgpt-replit-bridge',
+    from: 'openai-chatgpt',
+    to: 'replit-ai',
+    protocol: 'mcp',
+    bidirectional: true,
+    capabilities: ['code-execution', 'deployment-trigger', 'collaborative-coding'],
+    status: 'active'
+  },
+  {
+    id: 'chatgpt-deepseek-bridge',
+    from: 'openai-chatgpt',
+    to: 'deepseek-ai',
+    protocol: 'mcp',
+    bidirectional: true,
+    capabilities: ['code-generation', 'math-reasoning', 'research-assist'],
+    status: 'active'
+  }
+];
+
+export const PRIMARY_HUB_PLATFORM = 'openai-chatgpt';
+
 export class StephanieAI {
   private config: StephanieConfig;
   private provider: ethers.Provider | null = null;
   private resolver: Resolver | null = null;
   private moduleConnections: Map<string, ModuleConnection> = new Map();
   private platformConnections: Map<string, MCPConnection> = new Map();
+  private agentRegistry: Map<string, AgentDefinition> = new Map();
+  private bridges: MCPBridge[] = [];
 
   constructor(config: StephanieConfig) {
     this.config = {
@@ -551,9 +817,18 @@ export class StephanieAI {
     // Initialize AI platform connections
     this.initializePlatformConnections();
 
+    // Initialize agent catalog
+    this.initializeAgentCatalog();
+
+    // Initialize MCP bridges
+    this.initializeBridges();
+
     console.log('[Stephanie.ai] Initialized successfully');
+    console.log(`[Stephanie.ai] Primary Hub: ChatGPT (OpenAI)`);
     console.log(`[Stephanie.ai] Connected modules: ${this.moduleConnections.size}`);
     console.log(`[Stephanie.ai] Connected AI platforms: ${this.platformConnections.size}`);
+    console.log(`[Stephanie.ai] Registered agents: ${this.agentRegistry.size}`);
+    console.log(`[Stephanie.ai] Active MCP bridges: ${this.bridges.filter(b => b.status === 'active').length}`);
   }
 
   private async initializeModuleConnections(): Promise<void> {
@@ -581,6 +856,28 @@ export class StephanieAI {
         this.platformConnections.set(platform.id, platform);
       }
     }
+  }
+
+  private initializeAgentCatalog(): void {
+    for (const [category, data] of Object.entries(AGENT_CATEGORIES)) {
+      for (const agentName of data.agents) {
+        const agent: AgentDefinition = {
+          id: agentName,
+          name: agentName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+          category,
+          capabilities: [category, ...data.modules.map(m => m.toLowerCase().replace(/_/g, '-'))],
+          connectedModules: data.modules,
+          status: 'active'
+        };
+        this.agentRegistry.set(agentName, agent);
+      }
+    }
+  }
+
+  private initializeBridges(): void {
+    this.bridges = MCP_BRIDGES.filter(bridge =>
+      this.platformConnections.has(bridge.from) || this.platformConnections.has(bridge.to)
+    );
   }
 
   private getModuleCapabilities(moduleKey: string): string[] {
@@ -743,6 +1040,76 @@ export class StephanieAI {
     });
   }
 
+  // ========== AGENT CATALOG OPERATIONS ==========
+
+  getRegisteredAgents(): AgentDefinition[] {
+    return Array.from(this.agentRegistry.values());
+  }
+
+  getAgentsByCategory(category: string): AgentDefinition[] {
+    return Array.from(this.agentRegistry.values())
+      .filter(a => a.category === category);
+  }
+
+  getAgentById(id: string): AgentDefinition | undefined {
+    return this.agentRegistry.get(id);
+  }
+
+  getAgentCategories(): { category: string; count: number; modules: string[] }[] {
+    return Object.entries(AGENT_CATEGORIES).map(([category, data]) => ({
+      category,
+      count: data.agents.length,
+      modules: data.modules
+    }));
+  }
+
+  getTotalAgentCount(): number {
+    return this.agentRegistry.size;
+  }
+
+  // ========== MCP BRIDGE OPERATIONS ==========
+
+  getBridges(): MCPBridge[] {
+    return this.bridges;
+  }
+
+  getActiveBridges(): MCPBridge[] {
+    return this.bridges.filter(b => b.status === 'active');
+  }
+
+  getBridgesForPlatform(platformId: string): MCPBridge[] {
+    return this.bridges.filter(b => b.from === platformId || b.to === platformId);
+  }
+
+  getPrimaryHub(): MCPConnection | undefined {
+    return this.platformConnections.get(PRIMARY_HUB_PLATFORM);
+  }
+
+  async routeThroughHub(request: AITaskRequest): Promise<AITaskResponse> {
+    const hub = this.getPrimaryHub();
+    if (!hub) {
+      console.warn('[Stephanie.ai] Primary hub not available, falling back to direct routing');
+      return this.executeTask(request);
+    }
+
+    console.log(`[Stephanie.ai] Routing through primary hub: ${hub.name}`);
+
+    // Route through ChatGPT hub, then delegate to best platform if needed
+    const targetPlatform = this.selectBestPlatform(request);
+    if (targetPlatform && targetPlatform.id !== hub.id) {
+      const bridge = this.bridges.find(
+        b => (b.from === hub.id && b.to === targetPlatform.id) ||
+             (b.to === hub.id && b.from === targetPlatform.id)
+      );
+
+      if (bridge) {
+        console.log(`[Stephanie.ai] Delegating via bridge: ${bridge.id} -> ${targetPlatform.name}`);
+      }
+    }
+
+    return this.executeTask(request);
+  }
+
   // ========== DID / IDENTITY OPERATIONS ==========
 
   async resolveDid(did: string): Promise<unknown> {
@@ -766,12 +1133,18 @@ export class StephanieAI {
     initialized: boolean;
     modules: number;
     platforms: number;
+    agents: number;
+    bridges: number;
+    primaryHub: string;
     config: StephanieConfig;
   } {
     return {
       initialized: this.provider !== null,
       modules: this.moduleConnections.size,
       platforms: this.platformConnections.size,
+      agents: this.agentRegistry.size,
+      bridges: this.bridges.filter(b => b.status === 'active').length,
+      primaryHub: PRIMARY_HUB_PLATFORM,
       config: this.config
     };
   }
