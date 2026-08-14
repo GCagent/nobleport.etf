@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Kuzo API server
+  - job_name: "kuzo-api"
+    static_configs:
+      - targets: ["api:8000"]
+        labels:
+          service: "kuzo-api"
+
+  # Kuzo ARQ worker (expose metrics on a separate port)
+  - job_name: "kuzo-worker"
+    static_configs:
+      - targets: ["worker:8001"]
+        labels:
+          service: "kuzo-worker"
+
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
