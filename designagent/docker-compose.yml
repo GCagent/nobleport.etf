@@ -1,0 +1,69 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - artifacts_data:/artifacts
+
+  worker-geometry:
+    build:
+      context: .
+      dockerfile: services/geometry-worker/Dockerfile
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - artifacts_data:/artifacts
+
+  worker-report:
+    build:
+      context: .
+      dockerfile: services/report-worker/Dockerfile
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - artifacts_data:/artifacts
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: designagent
+      POSTGRES_USER: nobleport
+      POSTGRES_PASSWORD: ${DB_PASS:-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nobleport -d designagent"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+  artifacts_data:
