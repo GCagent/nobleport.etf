@@ -1,14 +1,16 @@
 {
   "name": "nobleport-etf",
-  "version": "1.0.0",
-  "description": "Blockchain-Enabled Real Estate ETF Integration with SSI Support",
+  "version": "2.0.0",
+  "description": "NoblePort Systems — 50-Module Nano Ecosystem: Blockchain-Enabled Real Estate ETF with IoT, Municipal Permitting, Construction Ops, AI Governance",
   "main": "src/index.ts",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint src --ext .ts,.tsx",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "compile:contracts": "solc --optimize --abi --bin contracts/*.sol -o build/contracts",
+    "ecosystem:status": "ts-node -e \"const {getModulesByStatus} = require('./src/ecosystem.config'); console.table(getModulesByStatus('live').map(m => ({id: m.id, name: m.name, layer: m.layer})))\""
   },
   "dependencies": {
     "@coinbase/wallet-sdk": "^4.3.7",
@@ -44,7 +46,15 @@
     "ens",
     "did",
     "ssi",
-    "nobleport"
+    "nobleport",
+    "iot",
+    "zk-sbt",
+    "municipal-permitting",
+    "construction",
+    "ai-governance",
+    "fractional-ownership",
+    "usdc",
+    "arbitrum"
   ],
   "author": "Noble Port Realty",
   "license": "UNLICENSED",
