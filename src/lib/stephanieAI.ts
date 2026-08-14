@@ -20,6 +20,18 @@ import { ethers } from 'ethers';
 import { Resolver } from 'did-resolver';
 import { getResolver as getEnsResolver } from 'ens-did-resolver';
 
+import {
+  STEPHANIE_PURPOSE_SKILLS,
+  STEPHANIE_POSITIONING,
+  getPurposeSkill,
+  getPurposeSkillsByOrigin,
+  getPurposeSkillsComposingWith,
+  getPurposeSkillsRequiringHumanApproval,
+  type CoreSkillId,
+  type PurposeOrigin,
+  type PurposeSkill,
+} from './stephaniePurposeSkills';
+
 // ============================================================================
 // DEPLOYMENT STATUS TAXONOMY
 // ============================================================================
@@ -760,18 +772,50 @@ export class StephanieAI {
     return this.resolveDid(module.did);
   }
 
+  // ========== INTERNAL PURPOSE SKILL MATRIX ==========
+  //
+  // Stephanie.ai's 20 internal operating skills, derived from the human-purpose
+  // framework. See `src/lib/stephaniePurposeSkills.ts` and the canonical YAML
+  // at `gcagent/config/stephanie_purpose_skills.yaml`.
+
+  getPurposeSkills(): readonly PurposeSkill[] {
+    return STEPHANIE_PURPOSE_SKILLS;
+  }
+
+  getPurposeSkill(id: string): PurposeSkill | undefined {
+    return getPurposeSkill(id);
+  }
+
+  getPurposeSkillsByOrigin(origin: PurposeOrigin): PurposeSkill[] {
+    return getPurposeSkillsByOrigin(origin);
+  }
+
+  getPurposeSkillsRequiringHumanApproval(): PurposeSkill[] {
+    return getPurposeSkillsRequiringHumanApproval();
+  }
+
+  getPurposeSkillsForCoreSkill(coreSkill: CoreSkillId): PurposeSkill[] {
+    return getPurposeSkillsComposingWith(coreSkill);
+  }
+
+  getPositioning(): typeof STEPHANIE_POSITIONING {
+    return STEPHANIE_POSITIONING;
+  }
+
   // ========== STATUS & HEALTH ==========
 
   getStatus(): {
     initialized: boolean;
     modules: number;
     platforms: number;
+    purposeSkills: number;
     config: StephanieConfig;
   } {
     return {
       initialized: this.provider !== null,
       modules: this.moduleConnections.size,
       platforms: this.platformConnections.size,
+      purposeSkills: STEPHANIE_PURPOSE_SKILLS.length,
       config: this.config
     };
   }
