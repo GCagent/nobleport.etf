@@ -476,6 +476,23 @@ export const AI_PLATFORM_CONNECTIONS: MCPConnection[] = [
 ];
 
 // ============================================================================
+// TASK-TYPE PLATFORM ROUTING
+// ============================================================================
+
+/**
+ * Maps task types to preferred platform IDs for intelligent routing.
+ * When a task doesn't specify preferredPlatforms, Stephanie.ai uses these
+ * defaults to route to the most capable platform for each task type.
+ */
+export const TASK_TYPE_ROUTING: Record<string, string[]> = {
+  analysis: ['claude-mcp', 'openai-chatgpt', 'google-gemini'],
+  generation: ['claude-mcp', 'openai-chatgpt', 'replit-ai', 'deepseek-ai'],
+  prediction: ['xai-grok', 'perplexity-ai', 'groq-ai'],
+  communication: ['claude-mcp', 'openai-chatgpt'],
+  compliance: ['claude-mcp', 'mistral-ai'],
+};
+
+// ============================================================================
 // STEPHANIE.AI CORE CLASS
 // ============================================================================
 
@@ -624,6 +641,22 @@ export class StephanieAI {
     return true;
   }
 
+  async syncAllModules(): Promise<{ synced: string[]; failed: string[] }> {
+    const synced: string[] = [];
+    const failed: string[] = [];
+
+    for (const key of this.moduleConnections.keys()) {
+      const success = await this.syncModule(key);
+      if (success) {
+        synced.push(key);
+      } else {
+        failed.push(key);
+      }
+    }
+
+    return { synced, failed };
+  }
+
   // ========== AI PLATFORM OPERATIONS ==========
 
   getConnectedPlatforms(): MCPConnection[] {
@@ -650,54 +683,159 @@ export class StephanieAI {
     }
 
     const startTime = Date.now();
-
-    // Execute task (placeholder for actual API calls)
     const result = await this.callPlatform(platform, request);
+    const processingTime = Date.now() - startTime;
+
+    // Derive confidence from how well the platform matches the request
+    const confidence = this.computeConfidence(platform, request);
 
     return {
       taskId: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       platform: platform.id,
       result,
-      confidence: 0.95,
-      processingTime: Date.now() - startTime
+      confidence,
+      processingTime
     };
   }
 
-  private selectBestPlatform(request: AITaskRequest): MCPConnection | null {
-    const { preferredPlatforms, requiredCapabilities } = request;
+  private computeConfidence(platform: MCPConnection, request: AITaskRequest): number {
+    let score = 0.7; // base confidence
 
-    // Filter by required capabilities
-    let candidates = Array.from(this.platformConnections.values());
-
-    if (requiredCapabilities && requiredCapabilities.length > 0) {
-      candidates = candidates.filter(p =>
-        requiredCapabilities.every(cap => p.capabilities.includes(cap))
-      );
+    // Boost if platform matches task-type routing table
+    const routingOrder = TASK_TYPE_ROUTING[request.taskType];
+    if (routingOrder?.includes(platform.id)) {
+      score += 0.15;
     }
 
-    // Prefer specified platforms
+    // Boost if platform has all required capabilities
+    if (request.requiredCapabilities && request.requiredCapabilities.length > 0) {
+      const matched = request.requiredCapabilities.filter(
+        cap => platform.capabilities.includes(cap)
+      ).length;
+      score += 0.1 * (matched / request.requiredCapabilities.length);
+    }
+
+    // Boost slightly if platform was explicitly preferred
+    if (request.preferredPlatforms?.includes(platform.id)) {
+      score += 0.05;
+    }
+
+    return Math.min(score, 1.0);
+  }
+
+  private selectBestPlatform(request: AITaskRequest): MCPConnection | null {
+    const { preferredPlatforms, requiredCapabilities, taskType } = request;
+
+    const activePlatforms = Array.from(this.platformConnections.values())
+      .filter(p => p.status === 'active');
+
+    // Filter by required capabilities
+    let candidates = activePlatforms;
+    if (requiredCapabilities && requiredCapabilities.length > 0) {
+      const capFiltered = candidates.filter(p =>
+        requiredCapabilities.every(cap => p.capabilities.includes(cap))
+      );
+      if (capFiltered.length > 0) {
+        candidates = capFiltered;
+      }
+      // If no platform has all required capabilities, fall through to
+      // task-type routing or caller-preferred platforms as a fallback
+    }
+
+    // 1. Prefer explicitly specified platforms (caller override)
     if (preferredPlatforms && preferredPlatforms.length > 0) {
       const preferred = candidates.find(p => preferredPlatforms.includes(p.id));
       if (preferred) return preferred;
     }
 
-    // Return first available active platform
-    return candidates.find(p => p.status === 'active') || null;
+    // 2. Use task-type routing table for intelligent default routing
+    const routingOrder = TASK_TYPE_ROUTING[taskType];
+    if (routingOrder) {
+      for (const platformId of routingOrder) {
+        const match = candidates.find(p => p.id === platformId);
+        if (match) return match;
+      }
+      // Fallback: try routing table against all active platforms (ignore
+      // capability filter) to provide automatic failover
+      for (const platformId of routingOrder) {
+        const match = activePlatforms.find(p => p.id === platformId);
+        if (match) return match;
+      }
+    }
+
+    // 3. Last resort: return first available active candidate
+    return candidates[0] || activePlatforms[0] || null;
   }
 
   private async callPlatform(platform: MCPConnection, request: AITaskRequest): Promise<unknown> {
-    // This is a placeholder for actual MCP/API calls
-    // In production, this would make real API calls to the respective platforms
+    // Validate platform status
+    if (platform.status !== 'active') {
+      throw new Error(`Platform ${platform.name} is not active (status: ${platform.status})`);
+    }
 
-    console.log(`[Stephanie.ai] Executing task on ${platform.name}`);
-    console.log(`[Stephanie.ai] Task type: ${request.taskType}`);
-    console.log(`[Stephanie.ai] Endpoint: ${platform.endpoint}`);
+    // Check API key availability
+    const apiKeyEnvVar = platform.authentication.config.envVar;
+    const apiKeyAvailable = apiKeyEnvVar ? !!process.env[apiKeyEnvVar] : false;
+
+    console.log(`[Stephanie.ai] Executing ${request.taskType} task on ${platform.name}`);
+    console.log(`[Stephanie.ai] Protocol: ${platform.protocol} | Endpoint: ${platform.endpoint}`);
+    console.log(`[Stephanie.ai] API key (${apiKeyEnvVar}): ${apiKeyAvailable ? 'configured' : 'missing'}`);
+
+    // Build the request payload
+    const payload = {
+      task: request.taskType,
+      priority: request.priority,
+      context: request.context,
+      capabilities: request.requiredCapabilities || [],
+      requestedAt: new Date().toISOString(),
+    };
+
+    // When API key is available, make the actual HTTP call
+    if (apiKeyAvailable) {
+      const httpUrl = platform.endpoint.replace(/^mcp:\/\//, 'https://');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      const { type, config } = platform.authentication;
+      if (type === 'api_key') {
+        const value = process.env[config.envVar] || '';
+        headers[config.headerName] = config.prefix
+          ? `${config.prefix} ${value}`
+          : value;
+      }
+
+      const response = await fetch(httpUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(30_000),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Platform ${platform.name} returned HTTP ${response.status}: ${response.statusText}`
+        );
+      }
+
+      return response.json();
+    }
+
+    // Without an API key, return a structured dry-run response
+    console.warn(
+      `[Stephanie.ai] No API key for ${platform.name} — returning dry-run response`
+    );
 
     return {
-      status: 'success',
+      status: 'dry_run',
       platform: platform.name,
+      provider: platform.provider,
+      protocol: platform.protocol,
       taskType: request.taskType,
-      timestamp: new Date().toISOString()
+      priority: request.priority,
+      payload,
+      message: `API key ${apiKeyEnvVar} is not configured. Set it to enable live calls to ${platform.name}.`,
+      timestamp: new Date().toISOString(),
     };
   }
 
