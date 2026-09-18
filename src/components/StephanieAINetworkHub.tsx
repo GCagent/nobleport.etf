@@ -6,8 +6,13 @@ import {
   createStephanieAI,
   NOBLEPORT_MODULES,
   AI_PLATFORM_CONNECTIONS,
+  AGENT_CATEGORIES,
+  MCP_BRIDGES,
+  PRIMARY_HUB_PLATFORM,
   MCPConnection,
-  ModuleConnection
+  ModuleConnection,
+  AgentDefinition,
+  MCPBridge
 } from '../lib/stephanieAI';
 
 /**
@@ -38,6 +43,9 @@ interface NetworkStats {
   activePlatforms: number;
   totalModules: number;
   connectedModules: number;
+  totalAgents: number;
+  activeBridges: number;
+  primaryHub: string;
   lastHealthCheck: Date | null;
   overallHealth: 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
 }
@@ -80,7 +88,9 @@ const PlatformCard: React.FC<PlatformCardProps> = ({ platform, isSelected, onSel
     'Hugging Face': 'border-yellow-500 bg-yellow-50',
     'Together': 'border-indigo-500 bg-indigo-50',
     'Groq': 'border-cyan-500 bg-cyan-50',
-    'DeepSeek': 'border-emerald-500 bg-emerald-50'
+    'DeepSeek': 'border-emerald-500 bg-emerald-50',
+    'Manus': 'border-violet-500 bg-violet-50',
+    'Genspark': 'border-amber-500 bg-amber-50'
   };
 
   const borderColor = providerColors[platform.provider] || 'border-gray-500 bg-gray-50';
@@ -153,11 +163,14 @@ const StephanieAINetworkHub: React.FC = () => {
     activePlatforms: 0,
     totalModules: 0,
     connectedModules: 0,
+    totalAgents: 0,
+    activeBridges: 0,
+    primaryHub: 'ChatGPT',
     lastHealthCheck: null,
     overallHealth: 'unknown'
   });
   const [isInitializing, setIsInitializing] = useState(true);
-  const [activeTab, setActiveTab] = useState<'platforms' | 'modules' | 'architecture'>('platforms');
+  const [activeTab, setActiveTab] = useState<'platforms' | 'modules' | 'agents' | 'architecture'>('platforms');
 
   // Initialize Stephanie.ai
   useEffect(() => {
@@ -177,6 +190,9 @@ const StephanieAINetworkHub: React.FC = () => {
           activePlatforms: instance.getConnectedPlatforms().filter(p => p.status === 'active').length,
           totalModules: Object.keys(NOBLEPORT_MODULES.MODULES).length,
           connectedModules: instance.getConnectedModules().filter(m => m.status === 'connected').length,
+          totalAgents: instance.getTotalAgentCount(),
+          activeBridges: instance.getActiveBridges().length,
+          primaryHub: 'ChatGPT',
           lastHealthCheck: new Date(),
           overallHealth: health.overall
         });
@@ -234,12 +250,24 @@ const StephanieAINetworkHub: React.FC = () => {
       {/* Stats Bar */}
       <div className="bg-black/20 border-b border-purple-500/20">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="bg-white/5 rounded-lg p-4">
+              <p className="text-gray-400 text-xs uppercase tracking-wider">Primary Hub</p>
+              <p className="text-lg font-bold text-green-400">{stats.primaryHub}</p>
+            </div>
             <div className="bg-white/5 rounded-lg p-4">
               <p className="text-gray-400 text-xs uppercase tracking-wider">AI Platforms</p>
               <p className="text-2xl font-bold text-white">
                 {stats.activePlatforms}<span className="text-gray-500">/{stats.totalPlatforms}</span>
               </p>
+            </div>
+            <div className="bg-white/5 rounded-lg p-4">
+              <p className="text-gray-400 text-xs uppercase tracking-wider">AI Agents</p>
+              <p className="text-2xl font-bold text-white">{stats.totalAgents}</p>
+            </div>
+            <div className="bg-white/5 rounded-lg p-4">
+              <p className="text-gray-400 text-xs uppercase tracking-wider">MCP Bridges</p>
+              <p className="text-2xl font-bold text-white">{stats.activeBridges}</p>
             </div>
             <div className="bg-white/5 rounded-lg p-4">
               <p className="text-gray-400 text-xs uppercase tracking-wider">NoblePort Modules</p>
@@ -251,10 +279,6 @@ const StephanieAINetworkHub: React.FC = () => {
               <p className="text-gray-400 text-xs uppercase tracking-wider">Root Identity</p>
               <p className="text-lg font-mono text-purple-400">nobleport.eth</p>
             </div>
-            <div className="bg-white/5 rounded-lg p-4">
-              <p className="text-gray-400 text-xs uppercase tracking-wider">DID Method</p>
-              <p className="text-lg font-mono text-purple-400">did:ens</p>
-            </div>
           </div>
         </div>
       </div>
@@ -262,7 +286,7 @@ const StephanieAINetworkHub: React.FC = () => {
       {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto px-4 pt-6">
         <div className="flex gap-2 border-b border-purple-500/30">
-          {(['platforms', 'modules', 'architecture'] as const).map((tab) => (
+          {(['platforms', 'modules', 'agents', 'architecture'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -274,6 +298,7 @@ const StephanieAINetworkHub: React.FC = () => {
             >
               {tab === 'platforms' && 'AI Platforms'}
               {tab === 'modules' && 'NoblePort Modules'}
+              {tab === 'agents' && `Agent Catalog (${stats.totalAgents})`}
               {tab === 'architecture' && 'Network Architecture'}
             </button>
           ))}
@@ -413,6 +438,61 @@ const StephanieAINetworkHub: React.FC = () => {
           </div>
         )}
 
+        {/* Agent Catalog Tab */}
+        {activeTab === 'agents' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-white">AI Agent Catalog</h2>
+              <div className="bg-green-500/20 text-green-400 px-4 py-2 rounded-lg text-sm font-medium">
+                {stats.totalAgents} Agents via ChatGPT Hub
+              </div>
+            </div>
+
+            <div className="bg-white/5 rounded-lg p-6 border border-purple-500/30 mb-6">
+              <p className="text-gray-300 text-sm">
+                All {stats.totalAgents} AI agents are orchestrated through <span className="text-green-400 font-semibold">ChatGPT</span> as
+                the primary integration hub, enabling complete internal connectivity and unified agent coordination
+                across the NoblePort.eth ecosystem.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(AGENT_CATEGORIES).map(([category, data]) => (
+                <div key={category} className="bg-white/5 rounded-lg p-5 border border-purple-500/30 hover:border-purple-400/50 transition-all">
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="font-semibold text-white text-sm capitalize">
+                      {category.replace(/-/g, ' ')}
+                    </h4>
+                    <span className="bg-purple-500/30 text-purple-300 text-xs px-2 py-1 rounded-full">
+                      {data.agents.length} agents
+                    </span>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-400 mb-1">Connected Modules:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {data.modules.map((mod, idx) => (
+                        <span key={idx} className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded">
+                          {mod.replace(/_/g, ' ').toLowerCase()}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Agents:</p>
+                    <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
+                      {data.agents.map((agent, idx) => (
+                        <span key={idx} className="text-xs bg-white/10 text-gray-300 px-1.5 py-0.5 rounded">
+                          {agent}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Network Architecture Tab */}
         {activeTab === 'architecture' && (
           <div className="space-y-6">
@@ -428,6 +508,7 @@ const StephanieAINetworkHub: React.FC = () => {
                               │                                                             │
                               │  ENS: stephanie.nobleport.eth                               │
                               │  DID: did:ens:stephanie.nobleport.eth                       │
+                              │  Agents: 112 | Platforms: 15 | Bridges: 7                   │
                               └─────────────────────────────────────────────────────────────┘
                                                            │
                     ┌──────────────────────────────────────┼──────────────────────────────────────┐
@@ -437,68 +518,58 @@ const StephanieAINetworkHub: React.FC = () => {
            │  AI PLATFORMS   │                   │  MODULE NETWORK   │               │  & DATA FEEDS         │
            └────────┬────────┘                   └─────────┬─────────┘               └───────────┬───────────┘
                     │                                      │                                      │
-    ┌───────────────┼───────────────┐      ┌───────────────┼───────────────┐       ┌──────────────┼──────────────┐
-    │               │               │      │               │               │       │              │              │
-┌───▼───┐      ┌────▼────┐     ┌────▼────┐ │      ┌────────▼────────┐      │  ┌────▼────┐    ┌────▼────┐   ┌────▼────┐
-│CLAUDE │      │ CHATGPT │     │  GROK   │ │      │ PORTFOLIO MGR   │      │  │ ORACLE  │    │CUSTODIAN│   │  DeFi   │
-│(Anthro│      │ (OpenAI)│     │  (xAI)  │ │      │ portfolio.noble │      │  │ NETWORK │    │ BRIDGE  │   │PROTOCOLS│
-│pic)   │      │         │     │         │ │      │ port.eth        │      │  │         │    │         │   │         │
-└───────┘      └─────────┘     └─────────┘ │      └─────────────────┘      │  └─────────┘    └─────────┘   └─────────┘
-                                           │                               │
-┌───────┐      ┌─────────┐     ┌─────────┐ │      ┌─────────────────┐      │
-│GEMINI │      │ LLAMA   │     │ REPLIT  │ │      │ OPERATIONS MON  │      │
-│(Google│      │ (Meta)  │     │         │ │      │ operations.noble│      │
-│)      │      │         │     │         │ │      │ port.eth        │      │
-└───────┘      └─────────┘     └─────────┘ │      └─────────────────┘      │
-                                           │                               │
-┌───────┐      ┌─────────┐     ┌─────────┐ │      ┌─────────────────┐      │
-│MISTRAL│      │ COHERE  │     │PERPLEXI │ │      │ COMPLIANCE ENG  │      │
-│       │      │         │     │TY       │ │      │ compliance.noble│      │
-│       │      │         │     │         │ │      │ port.eth        │      │
-└───────┘      └─────────┘     └─────────┘ │      └─────────────────┘      │
-                                           │                               │
-┌───────┐      ┌─────────┐     ┌─────────┐ │      ┌─────────────────┐      │
-│ GROQ  │      │DEEPSEEK │     │HUGGING  │ │      │ NBPT GOVERNANCE │      │
-│       │      │         │     │FACE     │ │      │ governance.noble│      │
-│       │      │         │     │         │ │      │ port.eth        │      │
-└───────┘      └─────────┘     └─────────┘ │      └─────────────────┘      │
-                                           │                               │
-┌───────┐                                  │      ┌─────────────────┐      │
-│TOGETHER                                  │      │ INVESTOR PORTAL │      │
-│AI     │                                  │      │ investors.noble │      │
-│       │                                  │      │ port.eth        │      │
-└───────┘                                  │      └─────────────────┘      │
-                                           │                               │
-                                           │      ┌─────────────────┐      │
-                                           │      │ AUTHORIZED PTS  │      │
-                                           │      │ ap.nobleport.eth│      │
-                                           │      └─────────────────┘      │
-                                           │                               │
-                                           │      ┌─────────────────┐      │
-                                           │      │ HOLDINGS DASH   │      │
-                                           │      │ holdings.noble  │      │
-                                           │      │ port.eth        │      │
-                                           │      └─────────────────┘      │
-                                           │                               │
-                                           │      ┌─────────────────┐      │
-                                           │      │ BOOKKEEPER OPS  │      │
-                                           │      │ bookkeeper.noble│      │
-                                           │      │ port.eth        │      │
-                                           │      └─────────────────┘      │
-                                           │                               │
-                                           │      ┌─────────────────┐      │
-                                           │      │ CPA OPERATIONS  │      │
-                                           │      │ cpa.nobleport.  │      │
-                                           │      │ eth             │      │
-                                           │      └─────────────────┘      │
-                                           │                               │
-                                           │      ┌─────────────────┐      │
-                                           │      │ SSI IDENTITY    │      │
-                                           │      │ identity.noble  │      │
-                                           │      │ port.eth        │      │
-                                           │      └─────────────────┘      │
-                                           │                               │
-                                           └───────────────────────────────┘
+                    │         ┌─────────────────────────────────────────────┐                      │
+                    │         │         PRIMARY HUB: CHATGPT (OpenAI)      │                      │
+                    │         │   Advanced Conversational Expertise        │                      │
+                    │         │   112 Agent Internal Connectivity          │                      │
+                    │         │   Hub-and-Spoke MCP Bridge Architecture    │                      │
+                    │         └──────────────────────┬──────────────────────┘                      │
+                    │                                │                                            │
+    ┌───────────────┼───────────────┐    ┌───────────┼───────────┐         ┌──────────────┼──────────────┐
+    │               │               │    │ MCP BRIDGES (7 active)│         │              │              │
+    │               │               │    └───────────┬───────────┘         │              │              │
+┌───▼───┐      ┌────▼────┐     ┌────▼────┐           │           ┌────────▼────────┐ ┌────▼────┐   ┌────▼────┐
+│CLAUDE │◄────►│ CHATGPT │◄───►│  GROK   │           │           │ PORTFOLIO MGR   │ │ ORACLE  │   │  DeFi   │
+│(Anthro│bridge│*PRIMARY*│bridg│  (xAI)  │           │           │ portfolio.noble │ │ NETWORK │   │PROTOCOLS│
+│pic)   │      │  HUB    │e    │         │           │           │ port.eth        │ │         │   │         │
+└───────┘      └────┬────┘     └─────────┘           │           └─────────────────┘ └─────────┘   └─────────┘
+                    │                                │
+┌───────┐      ┌────▼────┐     ┌─────────┐           │           ┌─────────────────┐
+│GEMINI │◄────►│ CHATGPT │     │ REPLIT  │◄──bridge──┤           │ OPERATIONS MON  │
+│(Google│bridge│  HUB    │     │         │           │           │ operations.noble│
+│)      │      └────┬────┘     └─────────┘           │           │ port.eth        │
+└───────┘           │                                │           └─────────────────┘
+                    │                                │
+┌───────┐      ┌────▼────┐     ┌─────────┐           │           ┌─────────────────┐
+│MANUS  │◄────►│ CHATGPT │     │GENSPARK │◄──bridge──┤           │ COMPLIANCE ENG  │
+│(Agent)│bridge│  HUB    │     │         │           │           │ compliance.noble│
+│       │      └────┬────┘     └─────────┘           │           │ port.eth        │
+└───────┘           │                                │           └─────────────────┘
+                    │                                │
+┌───────┐      ┌────▼────┐     ┌─────────┐           │           ┌─────────────────┐
+│DEEPSK │◄────►│ CHATGPT │     │ LLAMA   │           │           │ + 9 MORE MODULES│
+│(Code) │bridge│  HUB    │     │ (Meta)  │           │           │ governance, inv │
+│       │      └─────────┘     └─────────┘           │           │ portal, AP, etc │
+└───────┘                                            │           └─────────────────┘
+                                                     │
+┌───────┐      ┌─────────┐     ┌─────────┐           │
+│MISTRAL│      │ COHERE  │     │PERPLEXI │           │
+│       │      │         │     │TY       │           │
+└───────┘      └─────────┘     └─────────┘           │
+                                                     │
+┌───────┐      ┌─────────┐     ┌─────────┐           │
+│ GROQ  │      │TOGETHER │     │HUGGING  │           │
+│       │      │AI       │     │FACE     │           │
+└───────┘      └─────────┘     └─────────┘           │
+                                                     │
+                              ┌──────────────────────▼──────────────────────────────┐
+                              │              112 AI AGENTS (via ChatGPT Hub)        │
+                              │                                                     │
+                              │  Portfolio Mgmt (14) | Compliance (12) | Market (10)│
+                              │  Investor Rel (10) | Ops/Infra (12) | Blockchain(11)│
+                              │  Identity/Sec (9) | Financial (11) | Real Est (10)  │
+                              │  Content/Comm (8) | Data Analytics (5)              │
+                              └─────────────────────────────────────────────────────┘
 
                               ┌─────────────────────────────────────────────────────────────┐
                               │                    ROOT IDENTITY                            │
@@ -576,7 +647,10 @@ const StephanieAINetworkHub: React.FC = () => {
                   { task: 'Compliance Review', platforms: ['Claude', 'Mistral'] },
                   { task: 'Document Analysis', platforms: ['Claude', 'ChatGPT', 'Gemini'] },
                   { task: 'Market Prediction', platforms: ['Grok', 'Perplexity'] },
-                  { task: 'Research Synthesis', platforms: ['Perplexity', 'Gemini', 'Claude'] },
+                  { task: 'Research Synthesis', platforms: ['Perplexity', 'Gemini', 'Claude', 'Genspark'] },
+                  { task: 'Agentic Workflows', platforms: ['Manus', 'Claude', 'ChatGPT'] },
+                  { task: 'Multi-Source Research', platforms: ['Genspark', 'Perplexity', 'Gemini'] },
+                  { task: 'Agent Coordination', platforms: ['ChatGPT', 'Claude', 'Manus'] },
                 ].map((route, idx) => (
                   <div key={idx} className="bg-black/30 rounded-lg p-4">
                     <p className="text-white font-medium mb-2">{route.task}</p>
@@ -584,6 +658,43 @@ const StephanieAINetworkHub: React.FC = () => {
                       {route.platforms.map((p, pidx) => (
                         <span key={pidx} className="text-xs bg-purple-500/30 text-purple-300 px-2 py-1 rounded">
                           {p}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* MCP Bridges */}
+            <div className="bg-white/5 rounded-lg p-6 border border-purple-500/30">
+              <h3 className="text-lg font-semibold text-white mb-4">MCP Bridge Architecture (Hub-and-Spoke)</h3>
+              <p className="text-gray-300 text-sm mb-4">
+                All inter-platform communication routes through <span className="text-green-400 font-semibold">ChatGPT</span> as
+                the central hub, ensuring unified orchestration and consistent agent coordination.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {MCP_BRIDGES.map((bridge) => (
+                  <div key={bridge.id} className="bg-black/30 rounded-lg p-4 border border-green-500/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-mono text-green-400">{bridge.id}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        bridge.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+                      }`}>
+                        {bridge.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs text-green-300 font-medium">ChatGPT</span>
+                      <span className="text-gray-500">{bridge.bidirectional ? '←→' : '→'}</span>
+                      <span className="text-xs text-purple-300 font-medium">
+                        {bridge.to.replace(/-/g, ' ').replace(/^(.)/, (m: string) => m.toUpperCase())}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {bridge.capabilities.map((cap, idx) => (
+                        <span key={idx} className="text-xs bg-green-500/10 text-green-300/80 px-1.5 py-0.5 rounded">
+                          {cap}
                         </span>
                       ))}
                     </div>
