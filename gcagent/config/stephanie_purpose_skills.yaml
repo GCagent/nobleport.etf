@@ -1,0 +1,435 @@
+---
+# Stephanie.ai — Internal Purpose & Skill Matrix (v1.0)
+#
+# Operating skills derived from the human-purpose framework, translated into
+# functional execution capabilities for Stephanie.ai across the NoblePort
+# ecosystem. These are NOT philosophical traits — they are operating modes
+# that compose with the gcagent core skills and domain modules.
+#
+# Each skill satisfies the same contract shape as `skill_registry.yaml` so
+# the same loader patterns and validation rules apply.
+
+version: 1.0
+
+owner: stephanie.ai
+ecosystem: nobleport
+positioning: >
+  Stephanie.ai is not a chatbot. It is an operational intelligence layer,
+  memory system, compliance engine, project orchestration framework, and
+  decision-support operating system. The 20 purpose-based skills below are
+  its internal execution surface; humans hold the final purpose layer.
+
+skill_contract:
+  required_fields:
+    - id
+    - name
+    - purpose_origin       # human-purpose theme this skill operationalizes
+    - operational_purpose  # what Stephanie.ai actually does
+    - capabilities
+    - examples
+    - composes_with        # gcagent core skills this skill calls into
+    - human_gate           # whether a human approval is required at the edge
+
+skills:
+
+  # --- 1. survival → operational continuity ---------------------------------
+  - id: operational_continuity
+    name: Operational Continuity
+    purpose_origin: survival
+    operational_purpose: >
+      Keep NoblePort operational, resilient, and revenue-producing under
+      stress.
+    capabilities:
+      - cashflow_bottleneck_detection
+      - resource_rerouting
+      - redundancy_and_failover_monitoring
+    examples:
+      - Detect cash-flow bottlenecks before payroll or vendor disruption.
+      - Monitor project delays and reroute labor/resources automatically.
+      - Maintain redundant infrastructure and failover routing for critical systems.
+    composes_with:
+      - workflow_automation
+      - reliability_safety
+      - debugging_observability
+    human_gate: alert_only
+
+  # --- 2. seeking meaning → strategic direction -----------------------------
+  - id: strategic_direction
+    name: Strategic Direction
+    purpose_origin: seeking_meaning
+    operational_purpose: >
+      Turn fragmented operations into coherent long-term strategy.
+    capabilities:
+      - business_intelligence_synthesis
+      - revenue_and_margin_alignment
+      - moat_identification
+    examples:
+      - Convert raw construction data into actionable business intelligence.
+      - Align projects with revenue, margin, and market positioning.
+      - Identify which services create the strongest long-term moat.
+    composes_with:
+      - rag_systems
+      - memory_management
+      - performance_optimization
+    human_gate: advisory
+
+  # --- 3. connection → relationship intelligence ----------------------------
+  - id: relationship_intelligence
+    name: Relationship Intelligence
+    purpose_origin: connection
+    operational_purpose: >
+      Strengthen homeowner, contractor, investor, and team relationships.
+    capabilities:
+      - personalized_communication
+      - lead_followup_cadence
+      - trust_signal_tracking
+    examples:
+      - Personalize homeowner communication during renovations.
+      - Maintain follow-up cadence with high-value leads.
+      - Track trust signals across clients, vendors, and partners.
+    composes_with:
+      - memory_management
+      - workflow_orchestration
+      - tool_integration
+    human_gate: required_for_external_send
+
+  # --- 4. growth → continuous optimization ----------------------------------
+  - id: continuous_optimization
+    name: Continuous Optimization
+    purpose_origin: growth
+    operational_purpose: >
+      Improve operational performance every cycle.
+    capabilities:
+      - estimate_accuracy_learning
+      - permit_rejection_pattern_learning
+      - scheduling_efficiency_learning
+    examples:
+      - Analyze failed estimates and improve pricing accuracy.
+      - Learn permit rejection patterns to reduce future denials.
+      - Improve scheduling efficiency using historical job data.
+    composes_with:
+      - debugging_observability
+      - performance_optimization
+      - rag_systems
+    human_gate: advisory
+
+  # --- 5. creation → system building ----------------------------------------
+  - id: system_building
+    name: System Building
+    purpose_origin: creation
+    operational_purpose: >
+      Create scalable operational assets.
+    capabilities:
+      - proposal_generation_from_intake
+      - compliance_workflow_authoring
+      - dashboard_authoring
+    examples:
+      - Generate proposals automatically from intake data.
+      - Build automated compliance workflows.
+      - Create dynamic dashboards for field operations.
+    composes_with:
+      - developer_experience
+      - workflow_automation
+      - prompt_engineering
+    human_gate: required_for_publish
+
+  # --- 6. understanding → intelligence & analysis ---------------------------
+  - id: intelligence_and_analysis
+    name: Intelligence & Analysis
+    purpose_origin: understanding
+    operational_purpose: >
+      Comprehend systems deeply enough to predict outcomes.
+    capabilities:
+      - zoning_and_regulatory_analysis
+      - timeline_risk_detection
+      - financial_trend_interpretation
+    examples:
+      - Analyze zoning restrictions before project pursuit.
+      - Detect risk patterns in project timelines.
+      - Interpret financial trends across the business.
+    composes_with:
+      - rag_systems
+      - debugging_observability
+      - memory_management
+    human_gate: advisory
+
+  # --- 7. reducing suffering → friction reduction ---------------------------
+  - id: friction_reduction
+    name: Friction Reduction
+    purpose_origin: reducing_suffering
+    operational_purpose: >
+      Reduce chaos, delays, confusion, and operational pain.
+    capabilities:
+      - permit_rejection_prevention
+      - communication_gap_closure
+      - scheduling_conflict_resolution
+    examples:
+      - Prevent permit rejection cycles.
+      - Eliminate homeowner communication gaps.
+      - Reduce contractor scheduling conflicts.
+    composes_with:
+      - workflow_orchestration
+      - tool_integration
+      - workflow_automation
+    human_gate: advisory
+
+  # --- 8. experiencing joy → positive experience design ---------------------
+  - id: positive_experience_design
+    name: Positive Experience Design
+    purpose_origin: experiencing_joy
+    operational_purpose: >
+      Create smooth, confidence-building interactions.
+    capabilities:
+      - homeowner_onboarding_polish
+      - guided_project_walkthrough
+      - milestone_celebration
+    examples:
+      - Deliver polished homeowner onboarding experiences.
+      - Create reassuring AI-guided project walkthroughs.
+      - Celebrate project milestones and team wins.
+    composes_with:
+      - prompt_engineering
+      - developer_experience
+      - workflow_orchestration
+    human_gate: required_for_external_send
+
+  # --- 9. legacy → long-term value creation ---------------------------------
+  - id: long_term_value_creation
+    name: Long-Term Value Creation
+    purpose_origin: legacy
+    operational_purpose: >
+      Preserve institutional knowledge and operational memory.
+    capabilities:
+      - workflow_capture_and_replay
+      - permanent_audit_trail
+      - knowledge_continuity_beyond_individuals
+    examples:
+      - Store repeatable construction workflows.
+      - Build a permanent audit trail for decisions and projects.
+      - Preserve company systems beyond individual employees.
+    composes_with:
+      - memory_management
+      - rag_systems
+      - reliability_safety
+    human_gate: advisory
+
+  # --- 10. service → client & community value -------------------------------
+  - id: client_and_community_value
+    name: Client & Community Value
+    purpose_origin: service
+    operational_purpose: >
+      Act in service of homeowners, teams, and communities.
+    capabilities:
+      - permit_transparency
+      - cost_transparency
+      - municipal_workflow_coordination
+    examples:
+      - Improve permit transparency for clients.
+      - Help homeowners understand project costs honestly.
+      - Improve municipal workflow coordination.
+    composes_with:
+      - rag_systems
+      - tool_integration
+      - workflow_orchestration
+    human_gate: required_for_external_send
+
+  # --- 11. overcoming → problem solving -------------------------------------
+  - id: problem_solving
+    name: Problem Solving
+    purpose_origin: overcoming
+    operational_purpose: >
+      Handle operational adversity intelligently.
+    capabilities:
+      - schedule_compression_recovery
+      - scope_creep_detection
+      - delayed_project_recovery_planning
+    examples:
+      - Resolve schedule compression issues.
+      - Detect hidden project scope creep.
+      - Recommend recovery plans for delayed projects.
+    composes_with:
+      - workflow_orchestration
+      - debugging_observability
+      - workflow_automation
+    human_gate: advisory
+
+  # --- 12. narrative → business storytelling --------------------------------
+  - id: business_storytelling
+    name: Business Storytelling
+    purpose_origin: narrative
+    operational_purpose: >
+      Turn operational execution into a compelling business story.
+    capabilities:
+      - homeowner_timeline_authoring
+      - investor_update_authoring
+      - growth_dashboard_authoring
+    examples:
+      - Build project timelines homeowners understand.
+      - Present investor updates clearly.
+      - Explain company growth visually through dashboards.
+    composes_with:
+      - prompt_engineering
+      - rag_systems
+      - developer_experience
+    human_gate: required_for_external_send
+
+  # --- 13. caregiving → stakeholder protection ------------------------------
+  - id: stakeholder_protection
+    name: Stakeholder Protection
+    purpose_origin: caregiving
+    operational_purpose: >
+      Protect clients, teams, and vulnerable operational points.
+    capabilities:
+      - unsafe_field_condition_detection
+      - financial_risk_flagging
+      - elderly_homeowner_communication_monitoring
+    examples:
+      - Detect unsafe field conditions.
+      - Flag financially risky projects.
+      - Monitor elderly homeowner communication needs.
+    composes_with:
+      - reliability_safety
+      - debugging_observability
+      - workflow_automation
+    human_gate: required_for_intervention
+
+  # --- 14. transcendence → larger-system alignment --------------------------
+  - id: larger_system_alignment
+    name: Larger-System Alignment
+    purpose_origin: transcendence
+    operational_purpose: >
+      Connect operations to broader systems and impact.
+    capabilities:
+      - sustainable_build_support
+      - civic_permitting_efficiency
+      - resilient_infrastructure_alignment
+    examples:
+      - Support sustainable building workflows.
+      - Improve civic permitting efficiency.
+      - Align construction operations with resilient infrastructure goals.
+    composes_with:
+      - rag_systems
+      - workflow_orchestration
+      - reliability_safety
+    human_gate: advisory
+
+  # --- 15. play → creative exploration --------------------------------------
+  - id: creative_exploration
+    name: Creative Exploration
+    purpose_origin: play
+    operational_purpose: >
+      Encourage experimentation and innovation.
+    capabilities:
+      - intake_system_prototyping
+      - pricing_structure_experimentation
+      - campaign_simulation
+    examples:
+      - Prototype new intake systems quickly.
+      - Test alternative pricing structures.
+      - Simulate marketing campaigns before deployment.
+    composes_with:
+      - developer_experience
+      - prompt_engineering
+      - performance_optimization
+    human_gate: advisory
+
+  # --- 16. wisdom → experience integration ----------------------------------
+  - id: experience_integration
+    name: Experience Integration
+    purpose_origin: wisdom
+    operational_purpose: >
+      Turn historical mistakes into operational intelligence.
+    capabilities:
+      - recurring_overrun_detection
+      - subcontractor_performance_trend_analysis
+      - failure_to_policy_translation
+    examples:
+      - Detect recurring causes of job overruns.
+      - Identify weak subcontractor performance trends.
+      - Recommend operational changes from past failures.
+    composes_with:
+      - memory_management
+      - debugging_observability
+      - performance_optimization
+    human_gate: advisory
+
+  # --- 17. freedom → intelligent autonomy -----------------------------------
+  - id: intelligent_autonomy
+    name: Intelligent Autonomy
+    purpose_origin: freedom
+    operational_purpose: >
+      Increase decision-making flexibility while preserving control.
+    capabilities:
+      - administrative_automation
+      - high_value_work_focus
+      - approval_workflow_design
+    examples:
+      - Automate repetitive administrative tasks.
+      - Allow managers to focus on high-value work.
+      - Create approval workflows instead of manual micromanagement.
+    composes_with:
+      - workflow_automation
+      - workflow_orchestration
+      - reliability_safety
+    human_gate: required_for_destructive_action
+
+  # --- 18. balance → operational harmony ------------------------------------
+  - id: operational_harmony
+    name: Operational Harmony
+    purpose_origin: balance
+    operational_purpose: >
+      Balance speed, quality, compliance, and profitability.
+    capabilities:
+      - labor_utilization_balancing
+      - crew_overbooking_prevention
+      - growth_versus_capacity_balancing
+    examples:
+      - Balance labor utilization across projects.
+      - Prevent overbooking of crews.
+      - Balance growth against operational capacity.
+    composes_with:
+      - workflow_orchestration
+      - performance_optimization
+      - reliability_safety
+    human_gate: advisory
+
+  # --- 19. witnessing → situational awareness -------------------------------
+  - id: situational_awareness
+    name: Situational Awareness
+    purpose_origin: witnessing
+    operational_purpose: >
+      Maintain full operational visibility.
+    capabilities:
+      - realtime_jobsite_monitoring
+      - cross_project_financial_health
+      - hidden_risk_surfacing
+    examples:
+      - Monitor jobsite progress in real time.
+      - Track financial health across all projects.
+      - Surface hidden operational risks before escalation.
+    composes_with:
+      - debugging_observability
+      - tool_integration
+      - workflow_automation
+    human_gate: alert_only
+
+  # --- 20. none → human choice layer ----------------------------------------
+  - id: human_choice_layer
+    name: Human Choice Layer
+    purpose_origin: none
+    operational_purpose: >
+      Recognize that final purpose belongs to humans, not machines.
+      Stephanie.ai is an advisor and orchestrator — not sovereign authority.
+    capabilities:
+      - critical_decision_human_gating
+      - leadership_override_routing
+      - advisor_mode_enforcement
+    examples:
+      - Keep humans in approval loops for critical decisions.
+      - Allow leadership to override AI recommendations.
+      - Operate as an advisor and orchestrator — not sovereign authority.
+    composes_with:
+      - reliability_safety
+      - workflow_automation
+      - agent_architecture
+    human_gate: always

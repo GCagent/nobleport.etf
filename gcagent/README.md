@@ -38,7 +38,8 @@ gcagent/
 │   ├── capability_layers.yaml
 │   ├── skill_registry.yaml
 │   ├── module_registry.yaml
-│   └── output_modes.yaml
+│   ├── output_modes.yaml
+│   └── stephanie_purpose_skills.yaml   # Stephanie.ai internal operating skills
 │
 ├── core/                         # architecture layer
 │   ├── agent_architecture/
@@ -192,6 +193,36 @@ missing fields or unknown skill references fail loudly.
    scaffolding.
 4. If any domain module needs it, add it to that module's `required_skills`.
 5. Run `python -m gcagent.capabilities` to validate the registry loads.
+
+## Stephanie.ai internal purpose & skill matrix
+
+`config/stephanie_purpose_skills.yaml` defines 20 internal operating skills for
+**Stephanie.ai**, derived from a human-purpose framework and translated into
+functional execution capabilities. These are not philosophical traits — they
+are operating modes that compose with the gcagent core skills above.
+
+The TypeScript runtime mirror lives at `src/lib/stephaniePurposeSkills.ts` and
+is wired into the `StephanieAI` class in `src/lib/stephanieAI.ts`. Keep the
+two in sync; YAML is authoritative.
+
+Each entry declares:
+
+| Field | Meaning |
+|---|---|
+| `id` | Stable identifier (e.g., `operational_continuity`). |
+| `name` | Human-readable name. |
+| `purpose_origin` | Human-purpose theme this skill operationalizes. |
+| `operational_purpose` | What Stephanie.ai actually does. |
+| `capabilities` | Concrete competencies exercised. |
+| `examples` | Real NoblePort operational examples. |
+| `composes_with` | Core gcagent skills this calls into. |
+| `human_gate` | Where humans hold the approval edge. |
+
+`human_gate` values: `always`, `required_for_destructive_action`,
+`required_for_external_send`, `required_for_publish`,
+`required_for_intervention`, `advisory`, `alert_only`. The `human_choice_layer`
+skill is gated `always` — Stephanie.ai is an advisor and orchestrator, not
+sovereign authority.
 
 ## Design notes
 
