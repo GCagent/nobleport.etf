@@ -1,0 +1,22 @@
+{
+  "name": "nobleport-rails",
+  "version": "1.0.0",
+  "description": "NoblePort payment ledger webhook service (Stripe + PayPal -> Mongo + Socket.IO)",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.4.0",
+    "node-fetch": "^3.3.2",
+    "socket.io": "^4.7.5",
+    "stripe": "^15.8.0"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}
