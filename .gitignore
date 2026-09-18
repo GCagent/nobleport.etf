@@ -34,6 +34,9 @@ venv/
 # SQLite databases
 *.db
 
+# Generated one-pager PDFs
+Stephanie_OnePager_Snapshot_*.pdf
+
 # Logs
 *.log
 npm-debug.log*
