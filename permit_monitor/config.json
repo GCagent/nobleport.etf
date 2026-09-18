@@ -1,0 +1,65 @@
+{
+  "_comment": "PermitStream.ai Essex County permit monitor configuration. The 'sample' sources keep the workflow runnable before live municipal endpoints are wired in; switch type to 'arcgis' or 'socrata' with a real url + field_map to go live. See README.md.",
+  "data_dir": "data",
+  "slack_channel_label": "#permits",
+  "min_estimated_value": 50000,
+  "watch_keywords": [
+    "roof",
+    "roofing",
+    "solar",
+    "addition",
+    "deck",
+    "demolition",
+    "new construction",
+    "foundation"
+  ],
+  "sources": [
+    {
+      "name": "Newburyport (sample)",
+      "municipality": "Newburyport",
+      "type": "sample",
+      "path": "sample_permits.json",
+      "enabled": true
+    },
+    {
+      "name": "Newbury (sample)",
+      "municipality": "Newbury",
+      "type": "sample",
+      "path": "sample_permits.json",
+      "enabled": true
+    },
+    {
+      "name": "Amesbury (sample)",
+      "municipality": "Amesbury",
+      "type": "sample",
+      "path": "sample_permits.json",
+      "enabled": true
+    },
+    {
+      "name": "Salisbury (sample)",
+      "municipality": "Salisbury",
+      "type": "sample",
+      "path": "sample_permits.json",
+      "enabled": true
+    },
+    {
+      "name": "Newburyport (live — template)",
+      "municipality": "Newburyport",
+      "type": "arcgis",
+      "url": "https://REPLACE-ME.example/arcgis/rest/services/Permits/FeatureServer/0",
+      "where": "1=1",
+      "max_records": 500,
+      "field_map": {
+        "permit_id": "PERMIT_NO",
+        "address": "SITE_ADDRESS",
+        "permit_type": "PERMIT_TYPE",
+        "status": "STATUS",
+        "description": "DESCRIPTION",
+        "applicant": "APPLICANT",
+        "estimated_value": "EST_COST",
+        "filed_date": "ISSUE_DATE"
+      },
+      "enabled": false
+    }
+  ]
+}
