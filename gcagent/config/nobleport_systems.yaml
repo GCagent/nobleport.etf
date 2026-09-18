@@ -1,0 +1,370 @@
+---
+# NoblePort Nano Ecosystem — Systems Intake (v1.0)
+# Source: NoblePort Nano Ecosystem Overview (Stephanie.ai Command Center).
+# This file is the canonical inventory of operational subsystems, payment
+# rails, fail-closed invariants, the intake schema, the eight-gate revenue
+# loop, and the runtime stack. It is loaded by `gcagent.nobleport`.
+#
+# Update protocol:
+#   - Editable. Add new subsystems or gates here; the typed loader
+#     enforces required fields.
+#   - Cross-references to `gcagent/config/module_registry.yaml` use the
+#     declared module ids. Names must stay stable once shipped.
+
+version: 1.0
+
+ecosystem:
+  name: NoblePort Nano Ecosystem
+  positioning: >-
+    Stephanie.ai orchestrates. GCagent.ai operates construction.
+    PermitStream.ai handles permits/zoning. Cyborg.ai stands guard.
+    Chainlink feeds the truth. Aragon governs.
+  reference_job: irwin_residence
+  routing_surface:
+    - nobleport.ai
+    - nobleportsystems.io
+    - dashboard.nobleport.ai
+    - kuzo.uni.eth
+
+# ---------------------------------------------------------------------------
+# Subsystems — one record per operational system in the ecosystem.
+# ---------------------------------------------------------------------------
+
+subsystems:
+
+  - id: stephanie_ai
+    name: Stephanie.ai
+    role: sovereign_orchestrator
+    purpose: >-
+      Routes intake, payments, governance, audit. Voice-and-video front
+      door; downstream routing to GCagent, PermitStream, Cyborg, NBPT,
+      Aragon.
+    domains: [intake, payments, governance, audit]
+    capabilities:
+      - voice_structured_project_capture
+      - webrtc_live_channel
+      - sip_3cx_bridge
+      - elevenlabs_synthesis
+      - multilingual_tts
+      - edge_gpu_lip_sync
+      - facial_animation
+      - downstream_routing
+    integrations: [gcagent_ai, permitstream_ai, cyborg_ai, nbpt, aragon_dao]
+    health_metric: avatar_render_p95
+    notes: >-
+      "From avatar to engine" — captures contact, property, scope, budget
+      envelope, KYC posture, and deposit intent as a single record.
+
+  - id: gcagent_ai
+    name: GCagent.ai
+    role: contractor_operations
+    purpose: >-
+      Estimating, scheduling, permits, cost, field workflows. Built for
+      the GC, not for a marketing dashboard.
+    domains: [field, permits, tokenization, construction]
+    capabilities:
+      - estimating
+      - scheduling
+      - permit_workflow
+      - cost_tracking
+      - daily_field_log_digitization
+      - change_order_discipline
+      - validator_sync
+    gcagent_module: construction_operations         # gcagent/domains/construction_operations
+    integrations: [permitstream_ai, stephanie_ai, nbpt]
+
+  - id: permitstream_ai
+    name: PermitStream.ai
+    role: zoning_compliance_engine
+    purpose: >-
+      Zoning validation, prequalification, municipality bridge.
+      Workflow halts until PermitStream.ai clears.
+    domains: [municipal_workflow, zoning, permits]
+    capabilities:
+      - zoning_prequalification
+      - permit_interlock
+      - municipality_bridge
+      - permit_posture_signal
+    integrations: [gcagent_ai, aragon_dao]
+    notes: >-
+      Snapshot proposals can require permit posture; transfer
+      restrictions on regulated NBPT compose with permit state.
+
+  - id: cyborg_ai
+    name: Cyborg.ai
+    role: security_guardian
+    purpose: >-
+      Cyborg security guardian. Must hit production threshold before
+      broader expansion.
+    domains: [security, observability]
+    capabilities:
+      - threat_detection
+      - audit_emit
+      - fail_closed_enforcement
+    integrations: [stephanie_ai]
+    health_metric: stabilization_percent
+    target_threshold: 90
+
+  - id: nbpt
+    name: NBPT
+    role: utility_governance_token
+    purpose: >-
+      Utility token used for contractor staking, holdback, milestone
+      release, and governance participation. Framed as operational
+      utility, not investment contract.
+    domains: [tokenomics, treasury]
+    capabilities:
+      - contractor_staking
+      - holdback_and_milestone_release
+      - governance_participation
+      - allowance_tracking
+      - burn_mechanisms
+    settlement_layer: arbitrum_l2
+    standard: erc_1400
+    compliance_posture: regulated_securities_controls
+    investor_routing: compliance_bridge
+    notes: >-
+      All investor communication routes through `compliance_bridge`
+      controls and ERC-1400 positioning. Transfer restrictions enforced
+      on regulated assets.
+
+  - id: aragon_dao
+    name: Aragon DAO
+    role: governance_substrate
+    purpose: >-
+      Snapshot voting, liquid democracy, treasury controls. Treasury
+      and parameter changes execute on-chain via Aragon after signal
+      threshold and human ratification.
+    domains: [governance, treasury]
+    capabilities:
+      - snapshot_signal
+      - liquid_democracy
+      - aragon_execution
+      - dao_interoperability
+    integrations: [nbpt, stephanie_ai, permitstream_ai]
+
+  - id: agent_mesh
+    name: Agent Mesh
+    role: distributed_agent_runtime
+    purpose: 112-agent operational mesh coordinating cross-cutting workflows.
+    domains: [cross_cutting]
+    capabilities:
+      - mesh_topology
+      - capability_inventory
+      - downstream_routing
+    integrations: [stephanie_ai, gcagent_ai, cyborg_ai]
+
+# ---------------------------------------------------------------------------
+# Payment rails — three independent, never-commingled rails.
+# ---------------------------------------------------------------------------
+
+payment_rails:
+
+  - id: fiat
+    name: Fiat (Stripe / PayPal / Mercury)
+    surface: stripe_paypal_mercury
+    purpose: Customer deposits, invoicing, payouts, AR/AP reconciliation.
+    reconciles_into: audit_ledger
+    commingled_with: []
+
+  - id: usdc_escrow
+    name: USDC Escrow (Arbitrum)
+    surface: arbitrum_l2
+    purpose: Milestone escrow held against AWO line items.
+    reconciles_into: audit_ledger
+    commingled_with: []
+
+  - id: nbpt_rail
+    name: NBPT (utility/governance)
+    surface: arbitrum_l2
+    purpose: Contractor staking, holdback, milestone release, governance.
+    reconciles_into: audit_ledger
+    commingled_with: []
+
+# ---------------------------------------------------------------------------
+# Invariants — six fail-closed disciplines. Every workflow inherits these.
+# ---------------------------------------------------------------------------
+
+invariants:
+
+  - id: audit_first
+    name: Audit-first workflows
+    rule: Every action emits an immutable record before side effects.
+    enforcement: fail_closed
+
+  - id: fail_closed_on_uncertainty
+    name: Fail-closed on uncertainty
+    rule: On uncertainty, the system halts. Human approval is required to advance.
+    enforcement: fail_closed
+
+  - id: human_approval_required
+    name: Human approval on regulated-domain transitions
+    rule: Permit, payment, and governance flows require human approval.
+    enforcement: mandatory
+    applies_to: [permit_workflow, payment_rails, governance]
+
+  - id: rails_do_not_mix
+    name: Rails do not mix
+    rule: Three independent payment rails. Never commingled.
+    enforcement: fail_closed
+    applies_to: [fiat, usdc_escrow, nbpt_rail]
+
+  - id: reconciliation_first
+    name: Reconciliation-first accounting
+    rule: Stripe, PayPal, Mercury reconcile into the same audit ledger; escrow and NBPT remain segregated by design.
+    enforcement: required
+
+  - id: margin_protection
+    name: Margin protection
+    rule: No verbal pricing. No undocumented discount. Every scope shift logged, priced, owner-approved.
+    enforcement: required
+
+# ---------------------------------------------------------------------------
+# Intake schema — the eight structured fields captured by Stephanie.ai
+# at nobleport.ai/intake. Each field is routed and gated downstream.
+# ---------------------------------------------------------------------------
+
+intake:
+  endpoint: nobleport.ai/intake
+  capture_mode: voice_structured
+  orchestrator: stephanie_ai
+  fields:
+    - id: contact
+      label: Contact
+      routed_to: [crm, audit_log]
+      required: true
+    - id: property
+      label: Property
+      routed_to: [permitstream_ai, gcagent_ai]
+      required: true
+    - id: scope
+      label: Scope
+      routed_to: [gcagent_ai]
+      required: true
+    - id: budget_envelope
+      label: Budget envelope
+      routed_to: [gcagent_ai, finance]
+      required: true
+    - id: kyc_posture
+      label: KYC posture
+      routed_to: [compliance_bridge]
+      required: true
+    - id: deposit_intent
+      label: Deposit intent
+      routed_to: [payments, schedule_lock]
+      required: true
+    - id: permit_posture
+      label: Permit posture
+      routed_to: [permitstream_ai]
+      required: true
+    - id: audit_signals
+      label: Off-chain audit signals
+      routed_to: [audit_log, cyborg_ai]
+      required: true
+
+# ---------------------------------------------------------------------------
+# Revenue loop — eight gates. Each is required to advance. None can be skipped.
+# ---------------------------------------------------------------------------
+
+revenue_loop:
+  description: >-
+    A single spine. Each transition is gated, logged, and reconciled.
+    Payment rails are deliberately segregated. The system fails closed on
+    any unresolved state.
+  gates:
+    - order: 1
+      id: intake
+      name: Intake capture
+      requires: [contact, property, scope, budget_envelope, kyc_posture]
+      owner: stephanie_ai
+      emits: intake.captured
+    - order: 2
+      id: deposit
+      name: Confirmed deposit
+      requires: [deposit_intent, payment_received]
+      owner: payments
+      emits: payment.deposit_confirmed
+      gates_invariant: rails_do_not_mix
+    - order: 3
+      id: schedule_lock
+      name: Schedule lock
+      requires: [deposit]
+      owner: gcagent_ai
+      emits: schedule.locked
+      note: Schedule lock is downstream of money received.
+    - order: 4
+      id: awo
+      name: Authorization of Work Order (AWO)
+      requires: [schedule_lock, permit_posture, owner_approval]
+      owner: gcagent_ai
+      emits: awo.authorized
+      note: Required before any allocation, procurement, or schedule lock.
+    - order: 5
+      id: change_order
+      name: Change-order pricing
+      requires: [awo]
+      owner: gcagent_ai
+      emits: change_order.recorded
+      gates_invariant: margin_protection
+    - order: 6
+      id: invoice
+      name: Invoice gate
+      requires: [awo, milestone_complete]
+      owner: payments
+      emits: invoice.issued
+    - order: 7
+      id: payment_rails
+      name: Payment rails
+      requires: [invoice]
+      owner: payments
+      rails: [fiat, usdc_escrow, nbpt_rail]
+      emits: payment.received
+      gates_invariant: rails_do_not_mix
+    - order: 8
+      id: reconciliation
+      name: Reconcile rails to ledger
+      requires: [payment_rails]
+      owner: finance
+      emits: ledger.reconciled
+      gates_invariant: reconciliation_first
+
+# ---------------------------------------------------------------------------
+# Stack inventory — what runs where.
+# ---------------------------------------------------------------------------
+
+stack:
+  runtime:
+    - node_js_express
+    - fastapi_state_layer
+    - postgres
+    - redis
+    - mongodb_mongoose
+    - socketio_realtime
+  chain_permanence:
+    - arbitrum_l2
+    - chainlink_oracles
+    - alchemy_rpc
+    - arweave_archive
+    - ipfs_pinning
+    - snapshot
+  observability:
+    - prometheus
+    - grafana
+    - opentelemetry
+    - jaeger
+  deployment:
+    - railway
+  edge_dns:
+    - cloudflare_or_equivalent          # not asserted by overview; placeholder
+
+# ---------------------------------------------------------------------------
+# Explicit non-priorities — stating what we are NOT doing is load-bearing.
+# ---------------------------------------------------------------------------
+
+non_priorities:
+  - Any work without a clear revenue or compliance link
+  - Marketing-driven dashboards without operational tie
+  - Net-new municipal integrations beyond current 3
+  - Avatar visual polish beyond p95 performance
+  - Speculative tokenomics narratives
+  - New feature scope unrelated to deposits
