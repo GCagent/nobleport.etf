@@ -1,0 +1,187 @@
+---
+# NoblePort — Team Coordination Framework (v1.0)
+# Machine-readable contract for the five-agent mesh implemented in
+# backend/agents/. This file is the registry counterpart to
+# docs/architecture/team-coordination-framework.md: the prose explains the
+# model, this declares it. Keep the two in sync.
+#
+# Pattern: Supervisor / Worker with an always-on audit spine.
+# Kernel:  backend/agents/orchestrator.py (AgentMesh)
+
+version: 1.0
+
+pattern: supervisor_worker_with_audit_spine
+
+kernel:
+  component: AgentMesh
+  source: backend/agents/orchestrator.py
+  routing_table: EVENT_ROUTING
+  rules:
+    - Typed events route to exactly one owning family.
+    - Unknown events fall back to Stephanie (the front door).
+    - Agents never call each other directly; all coordination goes through the mesh.
+    - Every non-audit event is also recorded in AuditBeacon before its effects are trusted.
+
+# ---------------------------------------------------------------------------
+# Agents
+# ---------------------------------------------------------------------------
+agents:
+
+  - family: Stephanie
+    name: Stephanie.ai
+    role: Front door, intake, executive voice, operational router, telemetry, trust coordinator
+    source: backend/agents/stephanie.py
+    coordination: supervisor          # routes work to workers; default owner of unknowns
+    can_block: false
+    final_financial_gate: false
+    authority:
+      - read
+      - write
+      - approve_estimate
+      - approve_change_order
+      - process_payment
+      - view_audit_trail
+
+  - family: GCagent
+    name: GCagent.ai
+    role: Construction execution intelligence
+    source: backend/agents/gcagent.py
+    coordination: worker
+    can_block: false
+    final_financial_gate: false
+    authority:
+      - read
+      - write
+
+  - family: PermitStream
+    name: PermitStream.ai
+    role: Permit/zoning/compliance intelligence (MA-focused)
+    source: backend/agents/permit_stream.py
+    coordination: worker
+    can_block: false
+    final_financial_gate: false
+    authority:
+      - read
+
+  - family: Cyborg
+    name: Cyborg.ai
+    role: Security, governance, risk verification
+    source: backend/agents/cyborg.py
+    coordination: gate                # verifies sensitive actions; can block
+    can_block: true
+    final_financial_gate: false       # enforces the gate; humans hold final approval
+    authority:
+      - verify_action
+      - audit_compliance
+      - assess_risk
+      - enforce_kill_switch
+      - check_authorization
+
+  - family: AuditBeacon
+    name: AuditBeacon
+    role: Immutable operational memory (hash-chain ledger)
+    source: backend/agents/audit_beacon.py
+    coordination: spine               # records every routed event; append-only
+    can_block: false
+    final_financial_gate: false
+    authority:
+      - record_event
+      - get_audit_trail
+      - verify_chain_integrity
+      - get_proof_of_trust
+
+# ---------------------------------------------------------------------------
+# Revenue spine — stage ownership and hand-offs
+# ---------------------------------------------------------------------------
+revenue_spine:
+  sequence: [Lead, Intake, Estimate, Permit, Build, Invoice, Closeout]
+  handoff_contract: >
+    A stage owner emits a completion event; the mesh routes it to the next
+    owner; AuditBeacon records the transition. Owners never mutate a downstream
+    stage's state. Conflicts escalate, they do not overwrite.
+  stages:
+    - stage: Intake
+      owner: Stephanie
+      next: Stephanie
+      gate: none
+    - stage: Estimate
+      owner: Stephanie
+      next: Cyborg
+      gate: human_approval_above_review_limit
+    - stage: Permit
+      owner: PermitStream
+      next: GCagent
+      gate: permit_before_build
+    - stage: Build
+      owner: GCagent
+      next: Stephanie
+      gate: deposit_before_build, co_approval_before_work
+    - stage: Invoice
+      owner: Stephanie
+      next: Cyborg
+      gate: human_approval_high_value, dual_approval_refunds
+    - stage: Closeout
+      owner: GCagent
+      next: AuditBeacon
+      gate: audit_trail_complete
+
+# ---------------------------------------------------------------------------
+# Governance — Cyborg policy surface (mirrors backend/agents/cyborg.py)
+# ---------------------------------------------------------------------------
+governance:
+  decisions: [allowed, requires_approval, blocked]
+  financial_thresholds:
+    auto_approve_limit: 5000
+    elevated_review_limit: 25000
+    executive_approval_limit: 100000
+  enforced_policy_rules:
+    - id: deposit-before-build
+      rule: Deposit must be collected before job activation.
+    - id: permit-before-build
+      rule: Permit must be issued before construction (unless exempt).
+    - id: co-approval-before-work
+      rule: Change orders must be approved before work begins.
+    - id: human-approval-high-value
+      rule: Human approval required above the elevated-review limit.
+    - id: dual-approval-refunds
+      rule: Refunds require dual approval.
+
+# ---------------------------------------------------------------------------
+# Human-in-the-loop boundaries
+# ---------------------------------------------------------------------------
+human_gates:
+  principle: >
+    Agents assist, analyze, and draft. They never autonomously execute
+    financial transactions, legal filings, permit submissions, or contract
+    generation. Those cross a human approval gate.
+  required_for:
+    - permit_submission
+    - financial_transaction_above_review_limit
+    - refunds
+    - change_order_approval_before_work
+    - external_customer_communications
+    - investor_visible_communications
+
+# ---------------------------------------------------------------------------
+# Coordination invariants — must always hold
+# ---------------------------------------------------------------------------
+invariants:
+  - One owner per event (audit records in addition, never as a second handler).
+  - No direct agent-to-agent calls; coordination flows through the mesh.
+  - No silent cross-stage overwrites; conflicts escalate.
+  - Every coordinated event is recorded before its effects are trusted.
+  - Sensitive actions are verified by Cyborg and gated by policy before completion.
+  - Humans hold the final gate on money, filings, permits, and contracts.
+  - Corrections are append-only and versioned; never edited in place.
+
+# ---------------------------------------------------------------------------
+# Health telemetry — shared contract (backend/agents/base.py)
+# ---------------------------------------------------------------------------
+health:
+  source: backend/agents/base.py
+  model: AgentTelemetry
+  degraded_when:
+    error_rate_gt: 0.10
+    queue_depth_gt: 100
+  unhealthy_when: [status_error, status_offline]
+  system_health: worst_of_all_members
