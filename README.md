@@ -695,6 +695,75 @@ A resolved `did:ens:nobleport.eth` returns a DID Document containing:
 - [ENS Documentation](https://docs.ens.domains/)
 - [DID Core Specification](https://www.w3.org/TR/did-core/)
 
+## 🦉 OWL Agent Orchestration
+
+NoblePort ETF integrates OWL (Open Web Agent Layer) to provide policy-driven, agent-assisted automation for GitHub workflows. OWL fills the missing middle layer between convenience tools (Copilot) and governance requirements.
+
+### Architecture Overview
+
+```
+Developer → Writes code
+         ↓
+┌─────────────────────────────────────────────────┐
+│              OWL AGENT LAYER                    │
+├─────────────────────────────────────────────────┤
+│ CodeReviewAgent  → Reviews PR structure/quality │
+│ SecurityAgent    → Runs vulnerability scans     │
+│ LicenseAgent     → Verifies OSS compliance      │
+│ ComplianceAgent  → SEC/regulatory checks        │
+└─────────────────────────────────────────────────┘
+         ↓
+CI → Tests pass/fail
+         ↓
+Human → Final approval (exceptions only)
+```
+
+### Key Benefits
+
+| Current Setup | With OWL |
+|---------------|----------|
+| AI suggests | AI acts within guardrails |
+| Humans review everything | Humans review exceptions |
+| Implicit decision trail | Explicit policy + hash audit trail |
+| Probabilistic suggestions | Deterministic, rule-constrained |
+
+### Agent Permission Levels
+
+| Level | Description |
+|-------|-------------|
+| **L0** | Read-only: observe, analyze, report |
+| **L1** | Annotate: add comments, labels, suggestions |
+| **L2** | Request: request changes, block merge |
+| **L3** | Modify: make code changes (with approval) |
+| **L4** | Execute: trigger actions (deploy, test) |
+
+### Pilot Agents
+
+Three read-only agents deployed for zero-risk evaluation:
+
+1. **SecurityScanAgent** - CVE detection, secret scanning
+2. **LicenseComplianceAgent** - OSS license verification
+3. **PRQualityAgent** - PR description and structure review
+
+### DID-Based Agent Identity
+
+Each OWL agent receives an ENS-based DID for attribution:
+
+| Agent | DID |
+|-------|-----|
+| SecurityScanAgent | `did:ens:security-agent.owl.nobleport.eth` |
+| LicenseComplianceAgent | `did:ens:license-agent.owl.nobleport.eth` |
+| PRQualityAgent | `did:ens:quality-agent.owl.nobleport.eth` |
+
+### Full Documentation
+
+See [OWL GitHub Integration Analysis](src/docs/owl-github-integration.md) for:
+- Complete workflow diagrams
+- Agent permission matrix
+- Pilot specification and success criteria
+- Policy configuration examples
+- Integration with Stephanie.ai and NoblePort modules
+
 ## 📘 PitchBook Resources
 
 The term "PitchBook" refers to two distinct but related concepts in finance that are relevant to Noble Port ETF operations:
