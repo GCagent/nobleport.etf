@@ -1,0 +1,120 @@
+version: "3.9"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Core application
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - KUZO_SERVICE_NAME=kuzo-api
+      - KUZO_VERSION=0.1.0
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://kuzo:kuzo@postgres:5432/kuzo
+      - CORS_ORIGINS=http://localhost:3000
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - kuzo
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["arq", "app.workers.context.WorkerSettings"]
+    ports:
+      - "8001:8001"
+    environment:
+      - KUZO_SERVICE_NAME=kuzo-worker
+      - KUZO_VERSION=0.1.0
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://kuzo:kuzo@postgres:5432/kuzo
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - kuzo
+
+  # ---------------------------------------------------------------------------
+  # Data stores
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - kuzo
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=kuzo
+      - POSTGRES_PASSWORD=kuzo
+      - POSTGRES_DB=kuzo
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - kuzo
+
+  # ---------------------------------------------------------------------------
+  # Observability
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    depends_on:
+      - api
+      - worker
+    networks:
+      - kuzo
+
+  grafana:
+    image: grafana/grafana:10.4.1
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./infra/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./infra/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - kuzo
+
+# ---------------------------------------------------------------------------
+# Persistent volumes
+# ---------------------------------------------------------------------------
+volumes:
+  redis_data:
+  pg_data:
+  prometheus_data:
+  grafana_data:
+
+# ---------------------------------------------------------------------------
+# Network
+# ---------------------------------------------------------------------------
+networks:
+  kuzo:
+    driver: bridge
