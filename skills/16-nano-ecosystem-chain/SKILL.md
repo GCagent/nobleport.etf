@@ -60,6 +60,11 @@ acquired, or funded without source evidence and a named gate.
 Worked demonstration (hypothetical, not a live parcel determination):
 `skills/nano-ecosystem/EXAMPLE-amesbury-newburyport-infill.md`.
 
+Grounded parcel run — 236 High Road, Newbury, MA (`SITE-236HIGH`):
+`skills/nano-ecosystem/EXAMPLE-236-high-road-newbury.md`. Assessor records
+ingested; 8-unit density **FAILED BASELINE**; overall
+`STAGED — DENSITY GATE LOCKED`. Still not an AHJ determination.
+
 ## Outputs
 - Chain run record (SITE-id, stage, gates, evidence completeness)
 - Staged acquisition screen, feasibility model, entitlement matrix

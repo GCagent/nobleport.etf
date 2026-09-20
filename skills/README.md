@@ -65,6 +65,8 @@ The chain turns one project into a reusable evidence graph instead of PDFs,
 emails, spreadsheets, and people’s heads. All `nano.*` modules are **STAGED**.
 Worked demonstration (hypothetical Amesbury/Newburyport 6-unit + 2 ADU):
 [EXAMPLE-amesbury-newburyport-infill.md](nano-ecosystem/EXAMPLE-amesbury-newburyport-infill.md).
+Grounded parcel run (236 High Road, Newbury — density gate locks 8-unit):
+[EXAMPLE-236-high-road-newbury.md](nano-ecosystem/EXAMPLE-236-high-road-newbury.md).
 
 | # | Skill | Purpose | System counterpart |
 |---|-------|---------|--------------------|
