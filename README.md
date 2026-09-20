@@ -1,8 +1,22 @@
 # Noble Port ETF
 
-**Blockchain-Enabled Real Estate ETF Integration**
+> **Readiness (v1.0):** this repository’s ETF wrapper, SEC-registration language,
+> and “institutional access” copy are **PROPOSED architecture**, not independently
+> verified production or a live registered offering. Canonical positioning:
+> [`skills/nano-ecosystem/POSITIONING-v1.md`](skills/nano-ecosystem/POSITIONING-v1.md).
+> Physical evidence is the source of truth. Tokenization does not replace the
+> deed, LLC, or securities compliance. Do not use the $654.39T RealFi/XRP TAM;
+> use Deloitte’s ~$4T-by-2035 outlook.
 
-This repository contains the infrastructure for integrating Noble Port Realty's tokenized real estate assets with traditional Exchange-Traded Fund (ETF) structures, bridging decentralized finance with institutional investment vehicles.
+**Proposed** blockchain-enabled real estate ETF integration — staged in this
+repo, not a production-ready or SEC-registered product until runtime, legal,
+compliance, and transaction evidence says otherwise.
+
+This repository contains **designed/staged** infrastructure concepts for
+integrating Noble Port Realty's tokenized real-estate interests with traditional
+Exchange-Traded Fund (ETF) structures. Treat the sections below as architecture
+and product vision unless a cited source independently verifies them.
+
 
 ## 🎯 Overview
 

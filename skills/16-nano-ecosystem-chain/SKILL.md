@@ -65,6 +65,11 @@ Grounded parcel run — 236 High Road, Newbury, MA (`SITE-236HIGH`):
 ingested; 8-unit density **FAILED BASELINE**; overall
 `STAGED — DENSITY GATE LOCKED`. Still not an AHJ determination.
 
+Positioning and readiness tags (VERIFIED / STAGED / PROPOSED / BLOCKED):
+skill **26** and `skills/nano-ecosystem/POSITIONING-v1.md`. Governed
+tokenization of SITE-236HIGH as an 8-unit offering is **BLOCKED**.
+Physical evidence is the source of truth; the token follows the asset.
+
 ## Outputs
 - Chain run record (SITE-id, stage, gates, evidence completeness)
 - Staged acquisition screen, feasibility model, entitlement matrix
