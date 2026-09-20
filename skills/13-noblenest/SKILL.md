@@ -1,6 +1,6 @@
 ---
 name: noblenest
-description: Use for the NobleNest homeowner platform — generating maintenance plans, property reports, and upgrade recommendations for homeowners. Use when producing the homeowner-facing view of a property's systems, history, and recommended care.
+description: Use for the NobleNest homeowner platform — generating maintenance plans, property reports, and upgrade recommendations for homeowners. Use when producing the homeowner-facing view of a property's systems, history, and recommended care. For post-closeout operations on a nano-chain infill/ADU asset (vendors, OpEx, recurring problems on the evidence graph), use the property-management copilot.
 ---
 
 # NobleNest Skill
@@ -17,6 +17,9 @@ home's systems, a maintenance plan, and grounded upgrade recommendations.
 ## When NOT to use
 - Internal CRM / renewal cadence → **08-trust-pipeline**.
 - Pricing recommended upgrades → **01-estimator**.
+- Post-closeout ops on a nano-chain development asset (multi-unit
+  maintenance, vendor SLAs, OpEx vs. underwriting, recurring-problem
+  detection on the evidence graph) → **24-property-management-copilot**.
 
 ## Inputs
 - Property record, installed systems (roof, siding, windows, HVAC, electrical,
@@ -38,6 +41,7 @@ home's systems, a maintenance plan, and grounded upgrade recommendations.
 - Customer layer (NobleNest) in `docs/np-os/master-operating-system.md`.
 - Maintenance model: `backend/models/maintenance.py`; property/system history
   links to projects (`/api/projects`) and media (`backend/models/media.py`).
+- Nano-chain ops: `nano.property_ops` in `nano_infill_chain`.
 
 ## Guardrails
 - Recommendations are grounded in the property's real systems and history — no

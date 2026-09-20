@@ -1,6 +1,6 @@
 ---
 name: project-manager
-description: Use to run NoblePort job execution — writing daily logs, building and adjusting schedules, tracking materials and deliveries, coordinating subcontractors, scheduling inspections, and producing daily field reports or job-health assessments for active construction projects.
+description: Use to run NoblePort job execution — writing daily logs, building and adjusting schedules, tracking materials and deliveries, coordinating subcontractors, scheduling inspections, and producing daily field reports or job-health assessments for active construction projects. For infill/ADU concept-to-CO sequencing (critical path, long-lead, weather), use the construction-sequence optimizer first.
 ---
 
 # Project Manager Skill
@@ -19,6 +19,9 @@ between a signed contract and closeout.
 ## When NOT to use
 - Pricing scope or change-order cost → **01-estimator** / **09-change-orders**.
 - Releasing payments to subs/vendors → **10-payment-node** (human-gated).
+- Turning a selected infill/ADU *concept* into the preconstruction→CO spine
+  with supplier, inspection, weather, and long-lead on the critical path →
+  **21-construction-sequence**. This skill then runs that spine in the field.
 
 ## Inputs
 - Job/project record, current schedule, daily activity, crew & sub assignments.
@@ -46,6 +49,7 @@ between a signed contract and closeout.
 - APIs: `/api/jobs`, `/api/schedules`.
 - Daily logs + photos feed **11-content-engine** (Journey Agent) as artifacts;
   detected scope creep feeds **09-change-orders**.
+- Nano-chain sequence: `nano.sequence_optimizer` in `nano_infill_chain`.
 
 ## Guardrails
 - Surface schedule slips and cost variance early and honestly — do not smooth

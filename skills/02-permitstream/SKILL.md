@@ -1,6 +1,6 @@
 ---
 name: permitstream
-description: Use for permit intelligence in NoblePort's Massachusetts/Essex County markets — summarizing permit activity, identifying and scoring permit-derived leads, producing municipality reports, assessing permit risk or approval timelines, and surfacing AHJ (authority having jurisdiction) requirements for ADUs, roofing, additions, and renovations.
+description: Use for permit intelligence in NoblePort's Massachusetts/Essex County markets — summarizing permit activity, identifying and scoring permit-derived leads, producing municipality reports, assessing permit risk or approval timelines, and surfacing AHJ (authority having jurisdiction) requirements for ADUs, roofing, additions, and renovations. For infill/ADU entitlement verification matrices (dimensional, density, parking, ADU eligibility), use the entitlement navigator.
 ---
 
 # PermitStream Skill
@@ -18,6 +18,10 @@ approval-risk signals.
 ## When NOT to use
 - Actually submitting a permit (human-gated; advisory only here).
 - Code interpretation of the work itself → **04-building-code**.
+- Building the infill/ADU *entitlement verification matrix* (dimensional,
+  density, parking, ADU eligibility, utilities, fire, stormwater,
+  conservation/flood, required approvals) → **19-entitlement-navigator**.
+  Nothing is labeled “permitted” without source evidence.
 
 ## Inputs
 - Target municipalities (Essex County focus; Seacoast NH expansion).
@@ -44,6 +48,8 @@ approval-risk signals.
 - Permit/inspection data surfaces through `/api/projects` and the Mission
   Control dashboard (`/api/v1/dashboard/permits`).
 - Scored leads hand off to **07-sales-router** (`route_intake`).
+- Nano-chain entitlement: `nano.entitlement` (PermitStream-owned) in
+  `nano_infill_chain`.
 
 ## Guardrails
 - PermitStream is **advisory**. It does not submit permits or commit the company;

@@ -7,9 +7,10 @@ YAML frontmatter + operating instructions). Skills are model-invokable: the
 body tells it *how* to operate.
 
 These skills are the human/assistant-facing operating procedures that sit on top
-of the NoblePort OS backend (the FastAPI agent mesh under `backend/`). Where a
-skill has a live system counterpart, it names the real endpoint, model, and mesh
-agent so the skill drives the actual platform rather than improvising.
+of the NoblePort OS backend (the FastAPI agent mesh under `backend/`) and the
+nano-ecosystem platform core (`nobleport-systems/` in `GCagent/nobleport-ecosystem`).
+Where a skill has a live system counterpart, it names the real endpoint, model,
+and mesh agent so the skill drives the actual platform rather than improvising.
 
 ## Governance posture (applies to every skill)
 
@@ -21,10 +22,14 @@ the same Truth-Layer discipline used across the codebase
   credentials. Code, structural, and financial outputs are drafts requiring the
   named licensed reviewer (CSL/HIC contractor, PE, financial/legal) before they
   bind anything.
-- **Human approval gates** on money movement, permit submission, and contract
-  execution — never bypassed by a skill.
+- **Human approval gates** on money movement, permit submission, contract
+  execution, **acquisition**, and **construction-loan draws** — never bypassed
+  by a skill. Stephanie does not authorize acquisition.
 - **No invented facts.** Where a field, code value, or engineering figure is
   unknown, the skill surfaces it as a gap to verify — it does not guess.
+- **Nothing is labeled “permitted”** until source evidence supports it.
+- Hypothetical nano-chain runs are **STAGED — DUE DILIGENCE REQUIRED**, not live
+  parcel/zoning determinations.
 
 ## Tiers
 
@@ -55,11 +60,35 @@ the same Truth-Layer discipline used across the codebase
 | 14 | [Recruiting](14-recruiting/SKILL.md) | Hiring & subcontractor onboarding | recruiting channel |
 | 15 | [SOP](15-sop/SKILL.md) | Standard operating procedures | cross-cutting |
 
+### Tier 4 — Nano Ecosystem Chain (infill / ADU evidence graph)
+The chain turns one project into a reusable evidence graph instead of PDFs,
+emails, spreadsheets, and people’s heads. All `nano.*` modules are **STAGED**.
+Worked demonstration (hypothetical Amesbury/Newburyport 6-unit + 2 ADU):
+[EXAMPLE-amesbury-newburyport-infill.md](nano-ecosystem/EXAMPLE-amesbury-newburyport-infill.md).
+
+| # | Skill | Purpose | System counterpart |
+|---|-------|---------|--------------------|
+| 16 | [Nano Ecosystem Chain](16-nano-ecosystem-chain/SKILL.md) | End-to-end orchestrator + evidence graph | `nano_infill_chain`, `nano.orchestrator` |
+| 17 | [Hyperlocal Site Selector](17-hyperlocal-site-selector/SKILL.md) | Parcel acquisition screen (SITE-NNN) | `nano.site_selector` |
+| 18 | [Nano-Feasibility](18-nano-feasibility/SKILL.md) | Cost/value model; no acquisition auth | `nano.feasibility` |
+| 19 | [Entitlement Navigator](19-entitlement-navigator/SKILL.md) | Verification matrix; never “permitted” without evidence | `nano.entitlement` |
+| 20 | [Generative Design](20-generative-design/SKILL.md) | Three concepts (yield / cost / fit) | `nano.generative_design` |
+| 21 | [Construction Sequence](21-construction-sequence/SKILL.md) | Preconstruction → CO critical path | `nano.sequence_optimizer` |
+| 22 | [Loan Draw Manager](22-loan-draw-manager/SKILL.md) | Evidence-backed draws (HIGH human gate) | `nano.draw_manager` |
+| 23 | [Risk Stress Tester](23-risk-stress-tester/SKILL.md) | Cost / delay / rate / absorption / permitting | `nano.stress_tester` |
+| 24 | [Property Management Copilot](24-property-management-copilot/SKILL.md) | Post-closeout ops on the same graph | `nano.property_ops` |
+| 25 | [Five-Harness](25-five-harness/SKILL.md) | Execution · Governance · Security · Evidence · Testing | `nano.five_harness` |
+
+Chain order: **17 → 18 → 19 → 20 → 21 → (22 ∥ 23) → 24 → 16/25**.
+
 ## First five to deploy
 
 If standing NoblePort up from scratch, deploy these first — together they cover
 ~80% of daily operational workload: **Estimator · Project Manager · Building
 Code · Structural Review · Stephanie Executive.**
+
+The nano chain (Tier 4) is the development operating layer; deploy it when an
+infill/ADU parcel is in diligence, not as a substitute for Tier 1.
 
 ## Skill contract
 

@@ -1,6 +1,6 @@
 ---
 name: payment-node
-description: Use for NoblePort financial controls — structuring draw schedules, validating deposits against Massachusetts HIC limits, tracking retention, and reviewing compliance before money moves. Use to prepare and check payment actions; the actual release of funds always requires human approval.
+description: Use for NoblePort financial controls — structuring draw schedules, validating deposits against Massachusetts HIC limits, tracking retention, and reviewing compliance before money moves. Use to prepare and check payment actions; the actual release of funds always requires human approval. For construction-loan draws on nano-chain infill projects (evidence completeness, lien waivers, inspection holds), use the loan-draw manager.
 ---
 
 # Payment Node Skill
@@ -17,6 +17,9 @@ draw, deposit, and retention — then hand a clean package to the human approver
 ## When NOT to use
 - Authorizing/releasing funds — **human approval is mandatory** (see Guardrails).
 - Pricing scope → **01-estimator**.
+- Construction-loan draws on a nano-chain SITE-NNN (budget ↔ COs ↔ work in
+  place ↔ invoices ↔ waivers ↔ inspections, with HOLD on exceptions) →
+  **22-loan-draw-manager**. HIC schedule rules still apply here.
 
 ## Inputs
 - Contract value, signed payment schedule, milestone status, invoices, retention
@@ -40,6 +43,7 @@ draw, deposit, and retention — then hand a clean package to the human approver
   gate logic in the job model (`deposit_gate_passed`).
 - NP-OS financial layer authority (`manifest.ts`): `canReleasePayments` is gated
   on HIC compliance + human approval + immutable ledger on every release.
+- Nano-chain draws: `nano.draw_manager` (HIGH) in `nano_infill_chain`.
 
 ## Guardrails
 - **Never release funds autonomously.** This skill prepares and validates; a human

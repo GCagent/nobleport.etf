@@ -1,6 +1,6 @@
 ---
 name: stephanie-executive
-description: Use for executive orchestration of NoblePort — producing the daily executive briefing, revenue forecasts, job-health rollups, risk alerts, and KPI reporting across the whole operation. Use when the owner/executive needs a single coordinated view or a strategic recommendation spanning sales, production, permits, and finance.
+description: Use for executive orchestration of NoblePort — producing the daily executive briefing, revenue forecasts, job-health rollups, risk alerts, and KPI reporting across the whole operation. Use when the owner/executive needs a single coordinated view or a strategic recommendation spanning sales, production, permits, finance, or the nano-ecosystem infill chain.
 ---
 
 # Stephanie Executive Skill
@@ -14,25 +14,31 @@ a forecast, and a short list of decisions that need the owner.
 - A revenue forecast or KPI report is needed.
 - Cross-system risk needs surfacing (stale leads, deposits, permit blockers,
   at-risk margins, receivables, inspection deadlines, renewals).
+- A nano-chain SITE-NNN needs an executive read or five-harness rollup.
 
 ## When NOT to use
-- Executing money/permit/contract actions — Stephanie is **advisory only**.
+- Executing money/permit/contract/acquisition actions — Stephanie is
+  **advisory only** and does **not authorize acquisition**.
 - Deep single-domain work → defer to that domain's skill.
+- Running the infill evidence-graph chain itself → **16-nano-ecosystem-chain**.
 
 ## Inputs
 - Live pipeline, jobs, permits, invoices, and agent telemetry.
+- Nano-chain run state and five-harness report when a SITE-NNN is open.
 
 ## Workflow
 1. **Gather** the brief's sections (stale leads, deposits due, permit blockers,
-   crews behind, at-risk jobs, receivables, inspections, renewals).
+   crews behind, at-risk jobs, receivables, inspections, renewals, open
+   SITE-NNN diligence).
 2. **Score severity** (critical/high/medium) and compute the health score.
 3. **Forecast** revenue/pipeline from current stages.
 4. **Recommend**: the few highest-leverage actions, each with an owner.
 5. **Deliver** the briefing — lead with what changed and what needs a decision.
+   Nano-chain items report via **25-five-harness**, not a single green/red.
 
 ## Outputs
 - Daily executive briefing · revenue forecast · job health
-- Risk alerts · KPI reporting
+- Risk alerts · KPI reporting · five-harness rollup for open SITE-NNNs
 
 ## System integration
 - Mesh agent: `StephanieAgent` (`backend/agents/stephanie.py`,
@@ -41,12 +47,15 @@ a forecast, and a short list of decisions that need the owner.
   `/api/governance`.
 - Aggregates the whole mesh via `AgentMesh.get_system_health()`.
 - NP-OS executive layer: `docs/np-os/master-operating-system.md`.
+- Nano chain: `POST /api/workflows/nano_infill_chain/start`; modules `nano.*`.
 
 ## Guardrails
 - **Advisory authority only** (`STEPHANIE_AUTHORITY` in
-  `src/lib/nobleport-os/manifest.ts`): no payment release, permit submission, or
-  contract execution. Briefs, plans, monitors, recommends — humans authorize.
+  `src/lib/nobleport-os/manifest.ts`): no payment release, permit submission,
+  contract execution, or **acquisition**. Briefs, plans, monitors, recommends —
+  humans authorize.
 - Metrics are **measured, not asserted**; if a number is an estimate, say so.
+- Hypothetical nano runs stay `STAGED — DUE DILIGENCE REQUIRED`.
 
 ## Success criteria
 - The brief opens with deltas and decisions, not raw data.

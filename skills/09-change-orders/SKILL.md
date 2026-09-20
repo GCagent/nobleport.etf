@@ -1,6 +1,6 @@
 ---
 name: change-orders
-description: Use to control project scope on NoblePort jobs — drafting change orders (AWOs), quantifying cost and schedule impact, routing them for approval, and maintaining the audit trail. Use whenever work is added, removed, or altered after the contract is signed.
+description: Use to control project scope on NoblePort jobs — drafting change orders (AWOs), quantifying cost and schedule impact, routing them for approval, and maintaining the audit trail. Use whenever work is added, removed, or altered after the contract is signed. Unapproved COs must HOLD on nano-chain construction-loan draws.
 ---
 
 # Change Order Skill
@@ -17,6 +17,9 @@ contract becomes a documented, approved, auditable change order.
 ## When NOT to use
 - Pricing the original scope → **01-estimator**.
 - Collecting the resulting payment → **10-payment-node** (human-gated).
+- Paying an *unapproved* electrical (or any) CO through a construction-loan
+  draw → **22-loan-draw-manager** HOLDs the affected amount until this skill
+  records a final approval.
 
 ## Inputs
 - Original contract scope, the proposed change, current job/schedule state.
@@ -40,6 +43,8 @@ contract becomes a documented, approved, auditable change order.
 - Detection: `GCAgent` `detect_scope_creep`.
 - Audit: every CO event records through `AuditBeacon` (`record_event`) — the same
   hash-chained ledger the rest of the OS uses.
+- Nano-chain draws: `nano.draw_manager` treats missing CO approval as an
+  exception that HOLDs the affected amount.
 
 ## Guardrails
 - **No work on an unapproved change.** The approval gate is the control; the skill
