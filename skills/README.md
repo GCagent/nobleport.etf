@@ -82,11 +82,13 @@ Grounded parcel run (236 High Road, Newbury — density gate locks 8-unit):
 | 25 | [Five-Harness](25-five-harness/SKILL.md) | Execution · Governance · Security · Evidence · Testing | `nano.five_harness` |
 | 26 | [Nano Ecosystem v1.0](26-nano-ecosystem-v1/SKILL.md) | Positioning + VERIFIED/STAGED/PROPOSED/BLOCKED tags; property-to-token chain | `POSITIONING-v1.md` |
 | 27 | [Cryptographic World Computer](27-cryptographic-world-computer/SKILL.md) | Stephanie pattern plus Stellar as an evaluation rail, not a replacement | Settlement router → Stellar / EVM / Solana |
+| 28 | [AI capacity](28-ai-capacity/SKILL.md) | NVIDIA capacity into Stephanie results. Proposed stack, not a live cluster | Rubin H2 2026 ≠ Kyber / 800 VDC 2027 |
 
 Chain order: **17 → 18 → 19 → 20 → 21 → (22 ∥ 23) → 24 → 16/25**.
 Use **26** whenever describing tokenization, TAM, or “SEC compliant /
 production-ready” claims. Use **27** for Stephanie’s computer pattern,
 Fusaka/PeerDAS, later Ethereum forks, and any validator or ops/sec claim.
+Use **28** before connecting NVIDIA, Rubin, Kyber, NeMo, or IPFS to NoblePort.
 Canonical copy:
 [POSITIONING-v1.md](nano-ecosystem/POSITIONING-v1.md).
 
