@@ -1,6 +1,6 @@
 ---
 name: cryptographic-world-computer
-description: Use to design Stephanie.ai as a cryptographic world computer. Off-chain execution, on-chain verification, human gates. Ethereum/NBPT is the trust and settlement computer, not the NoblePort database. Tags Fusaka as verified Ethereum protocol and keeps Glamsterdam, Hegotá, Lean consensus, and internal validator counts out of verified state.
+description: Use to design Stephanie.ai as a cryptographic world computer and to evaluate Stellar as a settlement rail. Off-chain execution, on-chain verification, human gates. Ethereum is the trust and attestation computer, not the database. Stellar is an evaluation lane behind the settlement router, not a replacement for EVM or Solana, and not a reason to buy XLM.
 ---
 
 # Cryptographic World Computer — Stephanie.ai
@@ -17,6 +17,7 @@ business.
 - Validator counts, node counts, or operations-per-second from deployment PDFs.
 - Construction payments that should end in a hash receipt, not a file dump
   on-chain.
+- Stellar, Soroban, anchors, BENJI, DTCC tokenization, or “should we buy XLM?”
 
 ## When NOT to use
 - Authorizing payment, acquisition, or a filing. Humans do that.
@@ -24,8 +25,11 @@ business.
 - Treating this skill as a legal opinion.
 
 ## Path
-NoblePort applications → Stephanie Gateway → MCP → off-chain execution →
-evidence/proof → human authorization → Ethereum settlement/attestation.
+NoblePort applications → Stephanie Gateway / MCP → policy and human approval →
+settlement router → Stellar, EVM, or Solana.
+
+Ethereum is the trust and attestation computer. It is not the database.
+Stellar does not replace that, and it does not replace Solana.
 
 Not: request → one giant model → one giant transaction → database or chain.
 
@@ -76,6 +80,42 @@ USDC may be discussed as the payment rail. NBPT is governance. Never mixed.
 No yield on a payment stablecoin. Nothing in this skill releases funds.
 SITE-236HIGH draw stays draft / human approval required. 8-unit tokenization
 stays BLOCKED.
+
+## Stellar — evaluation yes, production no
+Question: should Stellar become an approved settlement and RWA rail behind
+the Stephanie Gateway? Technical evaluation yes. Not “should NoblePort buy XLM?”
+
+Fit: regulated RWAs, stablecoin settlement, escrow and contractor payments,
+issuer-level asset controls, anchors (deposit/redemption), Soroban contracts.
+Not a replacement for the EVM attestation lane or the Solana lane.
+
+Adapter v0.1, in order. Stop if a gate is open:
+1. Read-only network health (public Horizon + Soroban `getHealth`). No keys.
+2. Asset verification (code, issuer, auth flags). A public USDC sample is not
+   a NoblePort asset. Do not copy USDC’s auth-required-off flags onto a
+   regulated NoblePort asset.
+3. Soroban sandbox. RPC health is not a deployed contract.
+4. Testnet settlement. Reaching testnet is not a submitted payment.
+5. Audit receipt.
+6. Human approval. Not granted by the evaluation.
+7. Mainnet consideration. Only after policy, security testing, compliance
+   review, and human approval. No production funds and no contractual assets
+   before that.
+
+| Claim | Tag |
+|---|---|
+| SDF: RWAs crossed $3B in June 2026. Blockworks Q2 close $3.00B excluding stablecoins. Real estate in that breakdown is about $166M, not a NoblePort inventory. | VERIFIED as their published figures |
+| DTCC, 27 May 2026: DTC tokenization service plans to connect to Stellar; eligible assets expected 1H 2027 | RESEARCH — announced, not live |
+| Franklin Templeton, 30 Apr 2026: BENJI on Stellar over $650M as of April 2026 | VERIFIED as their reported figure. Not a NoblePort holding. Suite-wide AUM is not all on Stellar |
+| Issuer flags, anchors, Soroban | VERIFIED as network capabilities. NoblePort has configured none of them |
+| NBPT_Ultra_Scarce_Model.md: ERC-1400, fixed 100M supply, regulatory assertions | PROPOSED / UNVERIFIED until counsel and technical evidence |
+
+Sources:
+- https://stellar.org/blog/foundation-news/q2-2026-what-stellar-was-built-for-has-arrived
+- https://www.dtcc.com/press-releases/2026/tokenization-service-to-connect-with-stellar-public-blockchain-as-dtc-advances-multi-chain-strategy
+- https://www.franklintempleton.com/press-releases/news-room/2026/franklin-templeton-stellar-development-foundation-mark-five-years-of-benji-the-first-u.s.-registered-tokenized-money-market-fund
+- https://developers.stellar.org/docs/tokens/control-asset-access
+- https://developers.stellar.org/docs/learn/fundamentals/anchors
 
 ## Sources
 - https://blog.ethereum.org/2025/11/06/fusaka-mainnet-announcement
