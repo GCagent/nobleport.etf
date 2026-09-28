@@ -22,7 +22,7 @@ business.
 ## When NOT to use
 - Authorizing payment, acquisition, or a filing. Humans do that.
 - Marking SITE-236HIGH permitted, or tokenizing the halted 8-unit program.
-- Treating this skill as a legal opinion.
+- Treating this skill as a legal opinion or as a Soroban audit.
 
 ## Path
 NoblePort applications → Stephanie Gateway / MCP → policy and human approval →
@@ -116,6 +116,26 @@ Sources:
 - https://www.franklintempleton.com/press-releases/news-room/2026/franklin-templeton-stellar-development-foundation-mark-five-years-of-benji-the-first-u.s.-registered-tokenized-money-market-fund
 - https://developers.stellar.org/docs/tokens/control-asset-access
 - https://developers.stellar.org/docs/learn/fundamentals/anchors
+
+## Soroban security — documented host rules, not an audit
+No NoblePort WASM, no static scan, no audit report, no testnet deploy.
+A healthy RPC is not a clearance. Open controls on the desk are the same list.
+
+1. **Host-enforced authorization.** `require_auth` / `require_auth_for_args` are enforced by the host. Replay protection is in the host. The contract does not automatically trust its caller. Failure: treating a `from` or `admin` argument as proof, or calling `require_auth` on an admin the caller supplied instead of the admin stored in the contract.
+2. **Authorize at the entry point.** Cross-contract calls are direct calls into the callee’s code and storage. An inner authorized call (token transfer) can be submitted alone unless the outer function also `require_auth`s the user. There is no delegatecall to hide behind.
+3. **Storage and TTL.** Persistent and instance entries archive when TTL hits zero and can be restored. Temporary entries are deleted forever. Anyone can extend any entry’s TTL with no authorization. A deadline belongs in the stored value as an absolute ledger, not in TTL alone. Balances do not go in temporary storage.
+4. **WASM upgrade.** `update_current_contract` replaces the code. The documented pattern reads the admin from instance storage and `require_auth`s that admin first. The new WASM must already be on the ledger. An upgrade with no admin check hands over every balance the contract controls.
+5. **Own storage only.** A contract cannot write another contract’s entries. An escrow must allowlist the asset contract. A user-supplied token address is not a host guarantee.
+6. **Issuer flags still apply.** The Stellar Asset Contract follows authorization-required, revocable, and clawback. Do not copy the public USDC sample (authorization-required off) onto a regulated NoblePort asset.
+7. **A revert is not an approval.** The auth tree commits together. Panic fails the transaction. It does not decide who was allowed to try.
+
+Sources:
+- https://developers.stellar.org/docs/learn/fundamentals/contract-development/authorization
+- https://developers.stellar.org/docs/learn/fundamentals/contract-development/storage/persisting-data
+- https://developers.stellar.org/docs/build/guides/storage/choosing-the-right-storage
+- https://developers.stellar.org/docs/build/guides/conventions/upgrading-contracts
+- https://developers.stellar.org/docs/build/guides/auth/contract-authorization
+- https://developers.stellar.org/docs/tokens/stellar-asset-contract
 
 ## Sources
 - https://blog.ethereum.org/2025/11/06/fusaka-mainnet-announcement
