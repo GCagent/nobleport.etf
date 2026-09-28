@@ -61,3 +61,9 @@ Overall: **STAGED**. Do not mark LIVE.
 Realty/Construction → SPV/LLC → Evidence & Asset Registry (SoT) →
 identity/compliance → permissioned ERC-3643/T-REX → oracle/data →
 settlement/distribution.
+
+## See also
+Stephanie’s execution pattern — off-chain work, on-chain proofs, human gates,
+and the UNVERIFIED validator counts — is skill **27**, not a change to these
+four readiness tags. Fusaka is verified Ethereum protocol. It is not a
+NoblePort validator fleet.
