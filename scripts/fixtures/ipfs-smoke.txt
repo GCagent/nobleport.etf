@@ -1,0 +1,3 @@
+NoblePort IPFS smoke fixture.
+Used by scripts/ipfs-upload.mjs and the IPFS Pin GitHub Action.
+Do not store secrets in this file.
