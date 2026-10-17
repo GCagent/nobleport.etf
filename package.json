@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint src --ext .ts,.tsx",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "ipfs:upload": "node scripts/ipfs-upload.mjs",
+    "ipfs:self-test": "node scripts/ipfs-upload.mjs --self-test"
   },
   "dependencies": {
     "@coinbase/wallet-sdk": "^4.3.7",

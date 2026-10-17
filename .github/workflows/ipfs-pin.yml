@@ -1,0 +1,124 @@
+name: IPFS Pin
+
+# Pins files to IPFS via Pinata. nft.storage Classic (api.nft.storage) sunset
+# 2024-06-30 — a Classic NFT_STORAGE_KEY will never succeed.
+#
+# Required secret (Settings → Secrets and variables → Actions):
+#   PINATA_JWT
+# NFT_STORAGE_KEY is accepted only if it is NOT a Classic nft.storage JWT.
+#
+# This workflow is not environment-scoped. If you later bind PINATA_JWT to a
+# GitHub Environment, add `environment:` on the pin job to match.
+
+on:
+  pull_request:
+    paths:
+      - "scripts/ipfs-upload.mjs"
+      - "scripts/nftstorage-upload.js"
+      - "scripts/fixtures/**"
+      - ".github/workflows/ipfs-pin.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/ipfs-upload.mjs"
+      - "scripts/nftstorage-upload.js"
+      - "scripts/fixtures/**"
+      - ".github/workflows/ipfs-pin.yml"
+  workflow_dispatch:
+    inputs:
+      path:
+        description: File or directory to pin
+        required: true
+        default: scripts/fixtures/ipfs-smoke.txt
+      verify:
+        description: Fetch the CID from a public gateway after pinning
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ipfs-pin-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  self-test:
+    name: Uploader unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run credential and CLI self-test
+        run: node scripts/ipfs-upload.mjs --self-test
+
+  pin:
+    name: Pin to IPFS
+    if: github.event_name == 'workflow_dispatch'
+    needs: self-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      cid: ${{ steps.pin.outputs.cid }}
+      ipfs_uri: ${{ steps.pin.outputs.ipfs_uri }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Fail-fast credential check
+        env:
+          PINATA_JWT: ${{ secrets.PINATA_JWT }}
+          NFT_STORAGE_KEY: ${{ secrets.NFT_STORAGE_KEY }}
+        run: |
+          set +x
+          if [ -z "${PINATA_JWT}" ] && [ -z "${NFT_STORAGE_KEY}" ]; then
+            echo "::error::PINATA_JWT is not configured."
+            echo "Add it at Settings → Secrets and variables → Actions."
+            echo "Do not use an nft.storage Classic key — that API sunset on 2024-06-30."
+            exit 1
+          fi
+          echo "A pinning credential is present (value not printed)."
+
+      - name: Pin
+        id: pin
+        env:
+          PINATA_JWT: ${{ secrets.PINATA_JWT }}
+          NFT_STORAGE_KEY: ${{ secrets.NFT_STORAGE_KEY }}
+        run: |
+          set -euo pipefail
+          set +x
+          PATH_TO_PIN="${{ github.event.inputs.path }}"
+          args=(--path "$PATH_TO_PIN" --json)
+          if [ "${{ github.event.inputs.verify }}" = "true" ]; then
+            args+=(--verify)
+          fi
+          node scripts/ipfs-upload.mjs "${args[@]}" > pin-result.json
+          CID="$(jq -r '.cid' pin-result.json)"
+          if [ -z "$CID" ] || [ "$CID" = "null" ]; then
+            echo "::error::Uploader did not emit a CID"
+            cat pin-result.json
+            exit 1
+          fi
+          {
+            echo "cid=$CID"
+            echo "ipfs_uri=$(jq -r '.ipfsUri' pin-result.json)"
+          } >> "$GITHUB_OUTPUT"
+          echo "Pinned CID: $CID"
+
+      - name: Upload pin receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipfs-pin-receipt
+          path: pin-result.json
