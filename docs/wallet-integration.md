@@ -65,3 +65,12 @@ Copy `.env.example` to `.env.local` and set:
 
 Base is the default chain for all of the above; the connect flow requests
 Base on connection and the button exposes a one-click network switcher.
+
+## Payment Node stablecoin readiness
+
+Stablecoin support for the Payment Node (USDC checkout, stablecoin payout
+tracking, contractor wallet compatibility, and `fiat` / `stablecoin` /
+`payout` / `refund` ledger tagging) is scoped to contractor/vendor payouts
+and construction receivables only. See
+[`strategy/payment-node-stablecoin-roadmap.md`](./strategy/payment-node-stablecoin-roadmap.md)
+for the full roadmap, monitoring plan, and compliance gate.
