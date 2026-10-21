@@ -82,10 +82,24 @@ export const nobleportRoofingRestoration: ServiceBusiness = {
       app: 'field_operations',
     },
     {
+      key: 'roof-estimator-engine',
+      name: 'Roof Estimator Engine',
+      description: 'Turns roof measurements (Hover / EagleView / drone / manual) into a deterministic material takeoff and labor forecast — squares, ridge/hip/valley, starter, ice & water, underlayment, flashing, waste factors, crew-days (see src/lib/roofing/estimator.ts).',
+      status: 'live',
+      app: 'estimating',
+    },
+    {
       key: 'proposal-generator',
       name: 'Roofing Proposal Generator',
-      description: 'Builds line-item proposals from measurements using transparent $/SF rates (see src/lib/roofing/proposals.ts).',
+      description: 'Builds line-item proposals from the estimator takeoff using transparent $/SF rates (see src/lib/roofing/proposals.ts).',
       status: 'live',
+      app: 'estimating',
+    },
+    {
+      key: 'agent-mesh',
+      name: 'Roofing Agent Mesh & Connected Tools',
+      description: 'The ten-agent division mesh and the Hover/EagleView/CompanyCam/Xactimate integrations, each mapped to an NP-OS layer on a single Project ID (see src/lib/roofing/division.ts).',
+      status: 'beta',
       app: 'estimating',
     },
     {
